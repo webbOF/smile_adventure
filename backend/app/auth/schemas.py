@@ -141,9 +141,8 @@ class UserRegister(UserBase):
     @model_validator(mode='after')
     def validate_professional_fields(self):
         """Validate professional-specific fields"""
-        if self.role == UserRoleSchema.PROFESSIONAL:
-            if not self.license_number:
-                raise ValueError('License number is required for healthcare professionals')
+        if self.role == UserRoleSchema.PROFESSIONAL and not self.license_number:
+            raise ValueError('License number is required for healthcare professionals')
         return self
     
     model_config = {
