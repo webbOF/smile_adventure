@@ -1,0 +1,63 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: smile_adventure_db
+    environment:
+      POSTGRES_DB: smile_adventure
+      POSTGRES_USER: smileuser
+      POSTGRES_PASSWORD: smilepass123
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smileuser -d smile_adventure"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - smile_network
+
+  # FastAPI Backend
+  backend:
+    build: ./backend
+    container_name: smile_adventure_backend
+    environment:
+      DATABASE_URL: postgresql://smileuser:smilepass123@db:5432/smile_adventure
+      SECRET_KEY: your-super-secret-key-change-in-production
+      DEBUG: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - smile_network
+
+  # pgAdmin (Database Management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: smile_adventure_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@smileadventure.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - smile_network
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  smile_network:
+    driver: bridge
