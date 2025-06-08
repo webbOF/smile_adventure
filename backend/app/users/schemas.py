@@ -7,6 +7,15 @@ from datetime import datetime, date
 from typing import Optional, List, Dict, Any, Union
 from pydantic import BaseModel, Field, field_validator, model_validator
 from enum import Enum
+import re
+
+# =============================================================================
+# VALIDATION CONSTANTS
+# =============================================================================
+
+PHONE_PATTERN = r'^[+]?[1-9][\d\s\-()]{7,15}$'
+PHONE_ERROR_MSG = 'Invalid phone number format'
+NAME_PATTERN = r'^[a-zA-Z\s\-\']+$'
 
 # =============================================================================
 # ENUMS FOR VALIDATION
@@ -478,7 +487,7 @@ class ChildUpdate(BaseModel):
     support_level: Optional[SupportLevelEnum] = None
     communication_style: Optional[CommunicationStyleEnum] = None
     communication_notes: Optional[str] = Field(None, max_length=1000)
-    sensory_profile: Optional[SensoryProfileSchema] = None
+    sensory_profile: Optional[SensoryProfileSchema] = Field(None)
     behavioral_notes: Optional[str] = Field(None, max_length=2000)
     current_therapies: Optional[List[TherapyInfoSchema]] = None
     safety_protocols: Optional[SafetyProtocolSchema] = None
@@ -1497,6 +1506,186 @@ class NotificationPreferencesSchema(BaseModel):
     quiet_hours_end: Optional[str] = Field(None, pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$")
 
 # =============================================================================
+# TASK 14: PROFILE MANAGEMENT SCHEMAS
+# =============================================================================
+
+class ProfileCompletionResponse(BaseModel):
+    """Profile completion status response"""
+    completion_percentage: float = Field(..., ge=0, le=100)
+    completed_sections: List[str] = Field(default_factory=list)
+    missing_sections: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "completion_percentage": 85.0,
+                "completed_sections": ["basic_info", "contact", "professional"],
+                "missing_sections": ["avatar", "bio"],
+                "recommendations": ["Upload a profile photo", "Add a professional bio"]
+            }
+        }
+
+class UserProfileUpdate(BaseModel):
+    """Schema for updating user profile information"""
+    first_name: Optional[str] = Field(None, min_length=2, max_length=50)
+    last_name: Optional[str] = Field(None, min_length=2, max_length=50)
+    phone: Optional[str] = Field(None, max_length=20)
+    bio: Optional[str] = Field(None, max_length=1000)
+    timezone: Optional[str] = Field(None, max_length=50)
+    language: Optional[str] = Field(None, max_length=10)
+    
+    @field_validator('first_name', 'last_name')
+    @classmethod
+    def validate_names(cls, v):
+        if v is None:
+            return v
+        if not re.match(NAME_PATTERN, v.strip()):
+            raise ValueError('Names can only contain letters, spaces, hyphens, and apostrophes')
+        return v.strip().title()
+    
+    @field_validator('phone')
+    @classmethod
+    def validate_phone(cls, v):
+        if v is None:
+            return v
+        if not re.match(PHONE_PATTERN, v.strip()):
+            raise ValueError(PHONE_ERROR_MSG)
+        return v.strip()
+
+class AvatarUploadResponse(BaseModel):
+    """Response schema for avatar upload"""
+    avatar_url: str = Field(..., description="URL of the uploaded avatar")
+    success: bool = Field(default=True)
+    message: str = Field(default="Avatar uploaded successfully")
+
+class UserPreferences(BaseModel):
+    """User preferences schema"""
+    email_notifications: bool = Field(default=True)
+    sms_notifications: bool = Field(default=False)
+    push_notifications: bool = Field(default=True)
+    data_sharing_consent: bool = Field(default=False)
+    marketing_consent: bool = Field(default=False)
+    preferred_communication_time: Optional[str] = Field(None, pattern="^(morning|afternoon|evening|any)$")
+    language: str = Field(default="en", max_length=10)
+    timezone: str = Field(default="UTC", max_length=50)
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email_notifications": True,
+                "sms_notifications": False,
+                "push_notifications": True,
+                "data_sharing_consent": False,
+                "marketing_consent": False,
+                "preferred_communication_time": "morning",
+                "language": "en",
+                "timezone": "America/New_York"
+            }
+        }
+
+class ProfessionalSearchFilters(BaseModel):
+    """Filters for professional search functionality"""
+    specialty: Optional[str] = Field(None, max_length=200)
+    location: Optional[str] = Field(None, max_length=200)
+    max_distance: Optional[int] = Field(None, ge=1, le=100)
+    accepts_new_patients: Optional[bool] = None
+    asd_specialization: Optional[bool] = None
+    preferred_age_groups: Optional[List[str]] = None
+    languages_spoken: Optional[List[str]] = None
+    min_experience_years: Optional[int] = Field(None, ge=0, le=50)
+    max_rating: Optional[float] = Field(None, ge=1.0, le=5.0)
+    
+    @field_validator('preferred_age_groups')
+    @classmethod
+    def validate_age_groups(cls, v):
+        if v is None:
+            return v
+        allowed_groups = [
+            'infants', 'toddlers', 'preschool', 'elementary', 'middle_school',
+            'high_school', 'young_adults', 'adults'
+        ]
+        for group in v:
+            if group.lower().replace(' ', '_') not in allowed_groups:
+                raise ValueError(f'Invalid age group: {group}')
+        return [group.lower().replace(' ', '_') for group in v]
+
+class ProfessionalSearchResponse(BaseModel):
+    """Response schema for professional search"""
+    professionals: List[ProfessionalProfileResponse] = Field(default_factory=list)
+    total_count: int = Field(default=0)
+    page: int = Field(default=1)
+    page_size: int = Field(default=20)
+    total_pages: int = Field(default=0)
+
+class AdminUserFilters(BaseModel):
+    """Filters for admin user management"""
+    role: Optional[str] = Field(None, pattern="^(parent|professional|admin)$")
+    status: Optional[str] = Field(None, pattern="^(active|inactive|pending|locked)$")
+    is_verified: Optional[bool] = None
+    created_after: Optional[datetime] = None
+    created_before: Optional[datetime] = None
+    search_query: Optional[str] = Field(None, max_length=100)
+
+class AdminUserResponse(BaseModel):
+    """Admin view of user information"""
+    id: int
+    email: str
+    first_name: str
+    last_name: str
+    full_name: str
+    role: str
+    status: str
+    is_active: bool
+    is_verified: bool
+    email_verified_at: Optional[datetime] = None
+    last_login_at: Optional[datetime] = None
+    failed_login_attempts: int = 0
+    locked_until: Optional[datetime] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    # Role-specific data
+    children_count: Optional[int] = None
+    professional_verified: Optional[bool] = None
+    
+    model_config = {"from_attributes": True}
+
+class AdminUserUpdate(BaseModel):
+    """Schema for admin user updates"""
+    status: Optional[str] = Field(None, pattern="^(active|inactive|pending|locked)$")
+    is_active: Optional[bool] = None
+    is_verified: Optional[bool] = None
+    role: Optional[str] = Field(None, pattern="^(parent|professional|admin)$")
+    reset_failed_attempts: Optional[bool] = False
+    unlock_account: Optional[bool] = False
+
+# =============================================================================
+# NOTIFICATION AND SYSTEM SCHEMAS
+# =============================================================================
+
+class NotificationSchema(BaseModel):
+    """Schema for system notifications"""
+    id: Optional[int] = None
+    user_id: int
+    title: str = Field(..., max_length=200)
+    message: str = Field(..., max_length=1000)
+    type: str = Field(..., pattern="^(info|warning|error|success)$")
+    is_read: bool = Field(default=False)
+    created_at: Optional[datetime] = None
+
+class SystemHealthResponse(BaseModel):
+    """System health check response"""
+    status: str = Field(..., pattern="^(healthy|degraded|unhealthy)$")
+    database_connected: bool
+    total_users: int
+    active_users: int
+    total_children: int
+    total_professionals: int
+    system_uptime: str
+    version: str
+
+# =============================================================================
 # FORWARD REFERENCES RESOLUTION (Updated)
 # =============================================================================
 
@@ -1724,4 +1913,134 @@ class ProgressNoteSchema(BaseModel):
                 raise ValueError('Individual tags cannot exceed 30 characters')
         return [tag.strip().lower() for tag in v if tag.strip()]
 
+# =============================================================================
+# TASK 14 PROFILE ENHANCEMENT SCHEMAS
+# =============================================================================
+
+class ProfileCompletionResponse(BaseModel):
+    """Profile completion status response"""
+    completion_percentage: int = Field(..., ge=0, le=100, description="Profile completion percentage")
+    missing_fields: List[str] = Field(default_factory=list, description="List of missing profile fields")
+    recommendations: List[str] = Field(default_factory=list, description="Profile improvement recommendations")
+    
+    class Config:
+        from_attributes = True
+
+class UserProfileUpdate(BaseModel):
+    """Enhanced user profile update schema"""
+    first_name: Optional[str] = Field(None, min_length=1, max_length=50, description="User's first name")
+    last_name: Optional[str] = Field(None, min_length=1, max_length=50, description="User's last name")
+    phone_number: Optional[str] = Field(None, description="User's phone number")
+    bio: Optional[str] = Field(None, max_length=500, description="User biography")
+    location: Optional[str] = Field(None, max_length=100, description="User location")
+    emergency_contact_name: Optional[str] = Field(None, max_length=100, description="Emergency contact name")
+    emergency_contact_phone: Optional[str] = Field(None, description="Emergency contact phone")
+    preferred_communication: Optional[str] = Field(None, description="Preferred communication method")
+    
+    @field_validator('first_name', 'last_name', 'emergency_contact_name')
+    @classmethod
+    def validate_names(cls, v):
+        if v is not None:
+            if not re.match(NAME_PATTERN, v):
+                raise ValueError('Name must contain only letters, spaces, hyphens, and apostrophes')
+        return v
+    
+    @field_validator('phone_number', 'emergency_contact_phone')
+    @classmethod
+    def validate_phone(cls, v):
+        if v is not None:
+            if not re.match(PHONE_PATTERN, v):
+                raise ValueError(PHONE_ERROR_MSG)
+        return v
+
+class AvatarUploadResponse(BaseModel):
+    """Avatar upload response schema"""
+    success: bool = Field(..., description="Upload success status")
+    avatar_url: Optional[str] = Field(None, description="URL of uploaded avatar")
+    message: str = Field(..., description="Upload status message")
+    
+    class Config:
+        from_attributes = True
+
+class UserPreferences(BaseModel):
+    """User preferences schema"""
+    language: str = Field(default="en", description="Preferred language")
+    timezone: str = Field(default="UTC", description="User timezone")
+    notifications_enabled: bool = Field(default=True, description="Email notifications enabled")
+    privacy_level: str = Field(default="standard", description="Privacy level setting")
+    theme: str = Field(default="light", description="UI theme preference")
+    
+    @field_validator('language')
+    @classmethod
+    def validate_language(cls, v):
+        allowed_languages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'zh', 'ja', 'ko']
+        if v not in allowed_languages:
+            raise ValueError(f"Language must be one of: {', '.join(allowed_languages)}")
+        return v
+    
+    @field_validator('privacy_level')
+    @classmethod
+    def validate_privacy_level(cls, v):
+        allowed_levels = ['public', 'standard', 'private']
+        if v not in allowed_levels:
+            raise ValueError(f"Privacy level must be one of: {', '.join(allowed_levels)}")
+        return v
+    
+    @field_validator('theme')
+    @classmethod
+    def validate_theme(cls, v):
+        allowed_themes = ['light', 'dark', 'auto']
+        if v not in allowed_themes:
+            raise ValueError(f"Theme must be one of: {', '.join(allowed_themes)}")
+        return v
+
+class ProfessionalSearchFilters(BaseModel):
+    """Professional search filters schema"""
+    specializations: Optional[List[str]] = Field(None, description="Professional specializations")
+    location: Optional[str] = Field(None, description="Search location")
+    experience_years: Optional[int] = Field(None, ge=0, le=50, description="Minimum years of experience")
+    availability: Optional[str] = Field(None, description="Availability preference")
+    max_distance: Optional[int] = Field(None, ge=1, le=100, description="Maximum distance in miles")
+    accepts_insurance: Optional[bool] = Field(None, description="Accepts insurance")
+    
+    @field_validator('specializations')
+    @classmethod
+    def validate_specializations(cls, v):
+        if v is not None:
+            allowed_specializations = [
+                'behavioral_therapy', 'occupational_therapy', 'speech_therapy',
+                'physical_therapy', 'psychology', 'psychiatry', 'dentistry',
+                'pediatrics', 'neurology', 'special_education'
+            ]
+            for spec in v:
+                if spec not in allowed_specializations:
+                    raise ValueError(f"Invalid specialization. Allowed: {', '.join(allowed_specializations)}")
+        return v
+    
+    @field_validator('availability')
+    @classmethod
+    def validate_availability(cls, v):
+        if v is not None:
+            allowed_availability = ['weekdays', 'weekends', 'evenings', 'flexible']
+            if v not in allowed_availability:
+                raise ValueError(f"Availability must be one of: {', '.join(allowed_availability)}")
+        return v
+
+class AdminUserResponse(BaseModel):
+    """Admin user management response schema"""
+    id: int = Field(..., description="User ID")
+    email: str = Field(..., description="User email")
+    full_name: str = Field(..., description="User full name")
+    role: str = Field(..., description="User role")
+    is_active: bool = Field(..., description="User active status")
+    is_verified: bool = Field(..., description="User verification status")
+    created_at: datetime = Field(..., description="Account creation date")
+    last_login: Optional[datetime] = Field(None, description="Last login date")
+    profile_completion: int = Field(..., description="Profile completion percentage")
+    
+    class Config:
+        from_attributes = True
+
+# =============================================================================
+# END OF FILE
 # =============================================================================

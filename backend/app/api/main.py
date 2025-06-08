@@ -20,7 +20,7 @@ api_router.include_router(
 api_router.include_router(
     users_router,
     prefix="/users",
-    tags=["users"]
+    tags=["users", "profile"]
 )
 
 api_router.include_router(

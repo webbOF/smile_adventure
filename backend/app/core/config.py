@@ -119,8 +119,7 @@ class Settings(BaseSettings):
     POINTS_PER_ACTIVITY: int = Field(default=10, description="Default points per activity")
     LEVEL_UP_THRESHOLD: int = Field(default=100, description="Points needed to level up")
     MAX_LEVEL: int = Field(default=50, description="Maximum level achievable")
-    
-    # =============================================================================
+      # =============================================================================
     # FILE UPLOAD CONFIGURATION
     # =============================================================================
     MAX_FILE_SIZE: int = Field(default=5 * 1024 * 1024, description="Max file size in bytes (5MB)")
@@ -129,6 +128,40 @@ class Settings(BaseSettings):
         default=["jpg", "jpeg", "png", "gif", "pdf"],
         description="Allowed file extensions"
     )
+    
+    # =============================================================================
+    # TASK 14 PROFILE ENHANCEMENT CONFIGURATION
+    # =============================================================================
+    # Avatar upload settings
+    AVATAR_MAX_SIZE: int = Field(default=2 * 1024 * 1024, description="Max avatar size in bytes (2MB)")
+    AVATAR_ALLOWED_TYPES: List[str] = Field(
+        default=["jpg", "jpeg", "png", "gif"],
+        description="Allowed avatar file types"
+    )
+    AVATAR_UPLOAD_PATH: str = Field(default="uploads/avatars", description="Avatar upload directory")
+    
+    # Profile completion settings
+    PROFILE_COMPLETION_REQUIRED_FIELDS: List[str] = Field(
+        default=["first_name", "last_name", "email", "phone_number"],
+        description="Required fields for profile completion"
+    )
+    PROFILE_COMPLETION_OPTIONAL_FIELDS: List[str] = Field(
+        default=["bio", "location", "avatar", "emergency_contact_name", "emergency_contact_phone"],
+        description="Optional fields that contribute to profile completion"
+    )
+    
+    # Professional search settings
+    PROFESSIONAL_SEARCH_RADIUS: int = Field(default=25, description="Default search radius in miles")
+    PROFESSIONAL_SEARCH_LIMIT: int = Field(default=50, description="Maximum search results")
+    
+    # Admin settings
+    ADMIN_USER_MANAGEMENT_PAGE_SIZE: int = Field(default=20, description="Admin user list page size")
+    
+    # User preferences defaults
+    DEFAULT_LANGUAGE: str = Field(default="en", description="Default user language")
+    DEFAULT_TIMEZONE: str = Field(default="UTC", description="Default user timezone")
+    DEFAULT_THEME: str = Field(default="light", description="Default UI theme")
+    DEFAULT_PRIVACY_LEVEL: str = Field(default="standard", description="Default privacy level")
     
     # =============================================================================
     # VALIDATORS

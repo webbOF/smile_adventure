@@ -18,8 +18,21 @@ from app.auth.dependencies import (
 from app.users.models import Child, Activity, GameSession
 from app.users import crud
 
+# Import profile router
+from app.users.profile_routes import router as profile_router
+
+# Constants
+WEEK_FORMAT = "%Y-W%U"
+
 # Create router
 router = APIRouter()
+
+# Include profile routes
+router.include_router(
+    profile_router,
+    prefix="/profile",
+    tags=["profile"]
+)
 
 # =============================================================================
 # DASHBOARD ENDPOINTS
@@ -36,8 +49,7 @@ async def get_dashboard_stats(
     Returns different dashboard data based on user role:
     - Parents: Statistics for their children
     - Professionals: Statistics for assigned children
-    - Admins: Platform-wide statistics
-    """
+    - Admins: Platform-wide statistics    """
     try:
         if current_user.role == UserRole.PARENT:
             return await _get_parent_dashboard(current_user.id, db)
@@ -53,7 +65,7 @@ async def get_dashboard_stats(
             
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve dashboard statistics"
@@ -192,10 +204,11 @@ async def _get_parent_dashboard(parent_id: int, db: Session) -> Dict[str, Any]:
         "generated_at": now.isoformat()
     }
 
-async def _get_professional_dashboard(professional_id: int, db: Session) -> Dict[str, Any]:
+async def _get_professional_dashboard(_: int, db: Session) -> Dict[str, Any]:
     """Get dashboard statistics for professional users"""
     # For now, return placeholder data
     # This would be implemented when professional-child assignment system is added
+    _ = db  # Placeholder to avoid unused parameter warning
     return {
         "user_type": "professional",
         "assigned_children": 0,
@@ -208,7 +221,7 @@ async def _get_professional_dashboard(professional_id: int, db: Session) -> Dict
         "generated_at": datetime.now(timezone.utc).isoformat()
     }
 
-async def _get_admin_dashboard(admin_id: int, db: Session) -> Dict[str, Any]:
+async def _get_admin_dashboard(_: int, db: Session) -> Dict[str, Any]:
     """Get dashboard statistics for admin users"""
     now = datetime.now(timezone.utc)
     month_ago = now - timedelta(days=30)
@@ -354,8 +367,7 @@ async def get_child_progress_report(
                 "end_date": end_date.isoformat(),
                 "days": days
             },
-            "activity_analytics": activity_analytics,
-            "session_analytics": session_analytics,
+            "activity_analytics": activity_analytics,            "session_analytics": session_analytics,
             "emotional_progress": emotional_progress,
             "daily_progress": daily_progress,
             "weekly_trends": weekly_trends,
@@ -364,7 +376,7 @@ async def get_child_progress_report(
         
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate progress report"
@@ -679,7 +691,7 @@ def _initialize_weekly_data(start_date: datetime, end_date: datetime) -> Dict[st
     current_date = start_date
     while current_date <= end_date:
         week_start = current_date - timedelta(days=current_date.weekday())
-        week_key = week_start.strftime("%Y-W%U")
+        week_key = week_start.strftime(WEEK_FORMAT)
         
         if week_key not in weekly_data:
             weekly_data[week_key] = {
@@ -698,7 +710,7 @@ def _populate_activities_data(weekly_data: Dict[str, Dict[str, Any]], activities
     """Populate weekly data with activities information"""
     for activity in activities:
         activity_week = activity.completed_at - timedelta(days=activity.completed_at.weekday())
-        week_key = activity_week.strftime("%Y-W%U")
+        week_key = activity_week.strftime(WEEK_FORMAT)
         
         if week_key in weekly_data:
             weekly_data[week_key]["activities"] += 1
@@ -708,7 +720,7 @@ def _populate_sessions_data(weekly_data: Dict[str, Dict[str, Any]], sessions: Li
     """Populate weekly data with game sessions information"""
     for session in sessions:
         session_week = session.started_at - timedelta(days=session.started_at.weekday())
-        week_key = session_week.strftime("%Y-W%U")
+        week_key = session_week.strftime(WEEK_FORMAT)
         
         if week_key in weekly_data:
             weekly_data[week_key]["sessions"] += 1
@@ -875,8 +887,7 @@ async def get_platform_analytics(
                 "total_activities": total_activities,
                 "verified_activities": verified_activities,
                 "verification_rate": (verified_activities / total_activities * 100) if total_activities > 0 else 0,
-                "activity_distribution": activity_dist_dict
-            },
+                "activity_distribution": activity_dist_dict            },
             "session_analytics": {
                 "total_sessions": total_sessions,
                 "completed_sessions": completed_sessions,
@@ -886,7 +897,7 @@ async def get_platform_analytics(
             "generated_at": datetime.now(timezone.utc).isoformat()
         }
         
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate platform analytics"
@@ -1058,8 +1069,7 @@ async def export_child_data(
         export_data = _prepare_export_data(
             child, activities, sessions, current_user, format, include_sensitive
         )
-        
-        # Generate response in requested format
+          # Generate response in requested format
         if format == "json":
             return _generate_json_response(export_data, child_id)
         elif format == "csv":
@@ -1067,7 +1077,7 @@ async def export_child_data(
         
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to export child data"
