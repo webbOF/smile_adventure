@@ -320,6 +320,9 @@ volumes/
 # MySQL
 *.sql
 
+# Alembic configuration (contains sensitive database URLs)
+alembic.ini
+
 # Database migration temp files
 migrations/versions/*.pyc
 
