@@ -1,38 +1,36 @@
 """
-Pydantic schemas for request/response models - FIXED VERSION
-Aggiornati per supportare il nuovo sistema auth e ASD features
+Users Schemas - Enhanced Pydantic models for ASD-focused user management
+Comprehensive validation rules and serialization for all user types
 """
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, List, Dict, Any, Union
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from enum import Enum
 
 # =============================================================================
 # ENUMS FOR VALIDATION
 # =============================================================================
 
+class SupportLevelEnum(int, Enum):
+    """ASD Support Level Enum"""
+    LEVEL_1 = 1  # Requiring support
+    LEVEL_2 = 2  # Requiring substantial support
+    LEVEL_3 = 3  # Requiring very substantial support
+
 class ActivityTypeEnum(str, Enum):
-    """Activity types for children"""
+    """Activity types"""
     DENTAL_CARE = "dental_care"
     THERAPY_SESSION = "therapy_session"
     MEDICATION = "medication"
     EXERCISE = "exercise"
     SOCIAL_INTERACTION = "social_interaction"
     SENSORY_BREAK = "sensory_break"
-    FREE_PLAY = "free_play"
     EDUCATIONAL = "educational"
-
-class SessionTypeEnum(str, Enum):
-    """Game session types"""
-    DENTAL_VISIT = "dental_visit"
-    THERAPY_SESSION = "therapy_session"
     FREE_PLAY = "free_play"
-    ASSESSMENT = "assessment"
-    PRACTICE_SESSION = "practice_session"
 
 class EmotionalStateEnum(str, Enum):
-    """Emotional states for tracking"""
+    """Emotional states"""
     CALM = "calm"
     HAPPY = "happy"
     EXCITED = "excited"
@@ -42,74 +40,51 @@ class EmotionalStateEnum(str, Enum):
     FOCUSED = "focused"
     TIRED = "tired"
 
-class SupportLevelEnum(str, Enum):
-    """Support levels for activities"""
-    MINIMAL = "minimal"
-    MODERATE = "moderate"
-    EXTENSIVE = "extensive"
+class CommunicationStyleEnum(str, Enum):
+    """Communication styles"""
+    VERBAL = "verbal"
+    NON_VERBAL = "non_verbal"
+    MIXED = "mixed"
+    ALTERNATIVE = "alternative"
 
 # =============================================================================
-# USER PROFILE SCHEMAS
+# SENSORY PROFILE SCHEMAS
 # =============================================================================
 
-class UserProfileUpdate(BaseModel):
-    """Schema for updating user profile"""
-    first_name: Optional[str] = Field(None, min_length=2, max_length=100)
-    last_name: Optional[str] = Field(None, min_length=2, max_length=100)
-    phone: Optional[str] = Field(None, pattern=r'^\+?[\d\s\-\(\)]{10,15}$')
-    timezone: Optional[str] = Field(None, max_length=50)
-    language: Optional[str] = Field(None, max_length=10)
-    bio: Optional[str] = Field(None, max_length=500)
-    avatar_url: Optional[str] = Field(None, max_length=500)
-    
-    # Professional fields (only for professionals)
-    license_number: Optional[str] = Field(None, max_length=100)
-    specialization: Optional[str] = Field(None, max_length=200)
-    clinic_name: Optional[str] = Field(None, max_length=200)
-    clinic_address: Optional[str] = Field(None, max_length=500)
-    
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "first_name": "John",
-                "last_name": "Doe",
-                "phone": "+1234567890",
-                "timezone": "America/New_York",
-                "bio": "Parent of two wonderful children"
-            }
-        }
-    }
+class SensoryDomainSchema(BaseModel):
+    """Individual sensory domain configuration"""
+    sensitivity: str = Field(..., pattern="^(high|moderate|low)$")
+    preferences: List[str] = Field(default_factory=list)
+    triggers: List[str] = Field(default_factory=list)
+    accommodations: List[str] = Field(default_factory=list)
 
-class UserWithChildrenResponse(BaseModel):
-    """User response with children information"""
-    id: int
-    email: str
-    first_name: str
-    last_name: str
-    full_name: str
-    phone: Optional[str] = None
-    role: str
-    is_active: bool
-    is_verified: bool
-    created_at: datetime
-    children: List['ChildResponse'] = []
-    total_children: int = 0
-    
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "example": {
-                "id": 1,
-                "email": "parent@example.com",
-                "first_name": "John",
-                "last_name": "Doe",
-                "full_name": "John Doe",
-                "role": "parent",
-                "children": [],
-                "total_children": 2
-            }
-        }
-    }
+class SensoryProfileSchema(BaseModel):
+    """Comprehensive sensory profile"""
+    auditory: Optional[SensoryDomainSchema] = None
+    visual: Optional[SensoryDomainSchema] = None
+    tactile: Optional[SensoryDomainSchema] = None
+    vestibular: Optional[SensoryDomainSchema] = None
+    proprioceptive: Optional[SensoryDomainSchema] = None
+    gustatory: Optional[SensoryDomainSchema] = None
+    olfactory: Optional[SensoryDomainSchema] = None
+
+class TherapyInfoSchema(BaseModel):
+    """Therapy information schema"""
+    type: str = Field(..., description="Type of therapy (ABA, speech, OT, PT)")
+    provider: str = Field(..., description="Therapy provider name")
+    frequency: str = Field(..., description="Frequency (e.g., '2x_weekly')")
+    start_date: date = Field(..., description="Therapy start date")
+    goals: List[str] = Field(default_factory=list, description="Current therapy goals")
+    notes: Optional[str] = Field(None, description="Additional notes")
+
+class SafetyProtocolSchema(BaseModel):
+    """Safety protocols and emergency information"""
+    elopement_risk: str = Field(..., pattern="^(high|moderate|low|none)$")
+    medical_conditions: List[str] = Field(default_factory=list)
+    medications: List[str] = Field(default_factory=list)
+    emergency_procedures: List[str] = Field(default_factory=list)
+    calming_strategies: List[str] = Field(default_factory=list)
+    triggers_to_avoid: List[str] = Field(default_factory=list)
 
 # =============================================================================
 # CHILD SCHEMAS
@@ -118,39 +93,73 @@ class UserWithChildrenResponse(BaseModel):
 class ChildBase(BaseModel):
     """Base child schema"""
     name: str = Field(..., min_length=2, max_length=100)
-    age: int = Field(..., ge=0, le=18)
+    age: int = Field(..., ge=0, le=25)
+    date_of_birth: Optional[date] = None
     avatar_url: Optional[str] = Field(None, max_length=500)
     
     @field_validator('name')
     @classmethod
     def validate_name(cls, v):
-        """Validate child name"""
         if not v or not v.strip():
             raise ValueError('Name cannot be empty')
         return v.strip().title()
 
 class ChildCreate(ChildBase):
     """Schema for creating a child"""
-    # ASD-specific fields
+    # Clinical information
     diagnosis: Optional[str] = Field(None, max_length=200, description="ASD diagnosis details")
-    support_level: Optional[int] = Field(None, ge=1, le=3, description="Support level (1=minimal, 2=moderate, 3=extensive)")
-    sensory_profile: Optional[Dict[str, Any]] = Field(None, description="JSON sensory preferences and triggers")
-    behavioral_notes: Optional[str] = Field(None, max_length=1000, description="Behavioral observations and notes")
+    support_level: Optional[SupportLevelEnum] = Field(None, description="ASD support level 1-3")
+    diagnosis_date: Optional[date] = Field(None, description="Date of diagnosis")
+    diagnosing_professional: Optional[str] = Field(None, max_length=200)
+    
+    # Communication
+    communication_style: Optional[CommunicationStyleEnum] = Field(None)
+    communication_notes: Optional[str] = Field(None, max_length=1000)
+    
+    # Comprehensive profiles
+    sensory_profile: Optional[SensoryProfileSchema] = Field(None)
+    behavioral_notes: Optional[str] = Field(None, max_length=2000)
+    
+    # Therapy information
+    current_therapies: List[TherapyInfoSchema] = Field(default_factory=list)
+    
+    # Safety and emergency
+    emergency_contacts: List[Dict[str, str]] = Field(default_factory=list)
+    safety_protocols: Optional[SafetyProtocolSchema] = Field(None)
     
     model_config = {
         "json_schema_extra": {
             "example": {
                 "name": "Emma",
                 "age": 8,
+                "date_of_birth": "2016-03-15",
                 "diagnosis": "Autism Spectrum Disorder",
                 "support_level": 2,
+                "communication_style": "mixed",
                 "sensory_profile": {
-                    "sound_sensitivity": "high",
-                    "light_sensitivity": "moderate",
-                    "preferred_textures": ["soft", "smooth"],
-                    "calming_activities": ["deep pressure", "music"]
+                    "auditory": {
+                        "sensitivity": "high",
+                        "triggers": ["sudden_loud_noises", "overlapping_sounds"],
+                        "accommodations": ["noise_cancelling_headphones", "quiet_space"]
+                    },
+                    "visual": {
+                        "sensitivity": "moderate",
+                        "preferences": ["dim_lighting", "minimal_visual_clutter"]
+                    }
                 },
-                "behavioral_notes": "Responds well to visual schedules and routine"
+                "current_therapies": [
+                    {
+                        "type": "ABA",
+                        "provider": "Behavioral Health Center",
+                        "frequency": "3x_weekly",
+                        "start_date": "2024-01-15",
+                        "goals": ["increase_communication", "reduce_problem_behaviors"]
+                    }
+                ],
+                "safety_protocols": {
+                    "elopement_risk": "moderate",
+                    "calming_strategies": ["deep_pressure", "sensory_break", "preferred_music"]
+                }
             }
         }
     }
@@ -158,62 +167,78 @@ class ChildCreate(ChildBase):
 class ChildUpdate(BaseModel):
     """Schema for updating child information"""
     name: Optional[str] = Field(None, min_length=2, max_length=100)
-    age: Optional[int] = Field(None, ge=0, le=18)
+    age: Optional[int] = Field(None, ge=0, le=25)
     avatar_url: Optional[str] = Field(None, max_length=500)
     diagnosis: Optional[str] = Field(None, max_length=200)
-    support_level: Optional[int] = Field(None, ge=1, le=3)
-    sensory_profile: Optional[Dict[str, Any]] = None
-    behavioral_notes: Optional[str] = Field(None, max_length=1000)
-    
-    @field_validator('name')
-    @classmethod
-    def validate_name(cls, v):
-        """Validate child name if provided"""
-        if v is not None:
-            if not v or not v.strip():
-                raise ValueError('Name cannot be empty')
-            return v.strip().title()
-        return v
+    support_level: Optional[SupportLevelEnum] = None
+    communication_style: Optional[CommunicationStyleEnum] = None
+    communication_notes: Optional[str] = Field(None, max_length=1000)
+    sensory_profile: Optional[SensoryProfileSchema] = None
+    behavioral_notes: Optional[str] = Field(None, max_length=2000)
+    current_therapies: Optional[List[TherapyInfoSchema]] = None
+    safety_protocols: Optional[SafetyProtocolSchema] = None
 
 class ChildResponse(ChildBase):
     """Child response schema"""
     id: int
+    parent_id: int
     points: int = 0
     level: int = 1
-    support_level: Optional[int] = None
+    achievements: List[str] = Field(default_factory=list)
+    
+    # Clinical information
     diagnosis: Optional[str] = None
+    support_level: Optional[int] = None
+    communication_style: Optional[str] = None
+    
+    # Status and metadata
     is_active: bool = True
     created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    # Computed properties
+    full_profile_complete: Optional[bool] = None
+    age_category: Optional[str] = None
     
     model_config = {
         "from_attributes": True,
         "json_schema_extra": {
             "example": {
                 "id": 1,
+                "parent_id": 1,
                 "name": "Emma",
                 "age": 8,
                 "points": 250,
                 "level": 3,
-                "support_level": 2,
+                "achievements": ["dental_rookie", "therapy_starter"],
                 "diagnosis": "Autism Spectrum Disorder",
+                "support_level": 2,
+                "communication_style": "mixed",
                 "is_active": True,
-                "created_at": "2025-06-01T10:00:00Z"
+                "created_at": "2024-06-01T10:00:00Z",
+                "full_profile_complete": True,
+                "age_category": "elementary"
             }
         }
     }
 
 class ChildDetailResponse(ChildResponse):
-    """Detailed child response with additional information"""
+    """Detailed child response with full profile"""
+    diagnosis_date: Optional[date] = None
+    diagnosing_professional: Optional[str] = None
+    communication_notes: Optional[str] = None
     sensory_profile: Optional[Dict[str, Any]] = None
     behavioral_notes: Optional[str] = None
-    updated_at: Optional[datetime] = None
-    progress_summary: Optional[Dict[str, Any]] = None
+    current_therapies: List[Dict[str, Any]] = Field(default_factory=list)
+    emergency_contacts: List[Dict[str, Any]] = Field(default_factory=list)
+    safety_protocols: Optional[Dict[str, Any]] = None
+    progress_notes: List[Dict[str, Any]] = Field(default_factory=list)
+    last_assessment_date: Optional[datetime] = None
+    
+    # Recent activity summary
     recent_activities_count: int = 0
     recent_sessions_count: int = 0
-    
-    model_config = {
-        "from_attributes": True
-    }
+    current_week_points: int = 0
 
 # =============================================================================
 # ACTIVITY SCHEMAS
@@ -221,33 +246,61 @@ class ChildDetailResponse(ChildResponse):
 
 class ActivityBase(BaseModel):
     """Base activity schema"""
-    activity_type: ActivityTypeEnum = Field(..., description="Type of activity")
-    activity_name: str = Field(..., min_length=2, max_length=200, description="Name of the activity")
-    description: Optional[str] = Field(None, max_length=1000, description="Activity description")
-    points_earned: int = Field(default=0, ge=0, le=100, description="Points earned for completion")
+    activity_type: ActivityTypeEnum
+    activity_name: str = Field(..., min_length=2, max_length=200)
+    description: Optional[str] = Field(None, max_length=1000)
+    category: Optional[str] = Field(None, max_length=50)
+    points_earned: int = Field(default=0, ge=0, le=100)
+    difficulty_level: Optional[int] = Field(None, ge=1, le=5)
 
 class ActivityCreate(ActivityBase):
     """Schema for creating an activity"""
-    child_id: int = Field(..., description="ID of the child performing the activity")
+    child_id: int = Field(..., description="ID of child performing activity")
     
-    # ASD-specific tracking fields
-    emotional_state_before: Optional[EmotionalStateEnum] = Field(None, description="Child's emotional state before activity")
-    emotional_state_after: Optional[EmotionalStateEnum] = Field(None, description="Child's emotional state after activity")
-    difficulty_level: Optional[int] = Field(None, ge=1, le=5, description="Difficulty level (1-5 scale)")
-    support_needed: Optional[SupportLevelEnum] = Field(None, description="Level of support needed")
+    # Timing
+    started_at: Optional[datetime] = None
+    duration_minutes: Optional[int] = Field(None, ge=0, le=480)  # Max 8 hours
+    
+    # ASD-specific tracking
+    emotional_state_before: Optional[EmotionalStateEnum] = None
+    emotional_state_after: Optional[EmotionalStateEnum] = None
+    anxiety_level_before: Optional[int] = Field(None, ge=1, le=10)
+    anxiety_level_after: Optional[int] = Field(None, ge=1, le=10)
+    
+    # Support information
+    support_level_needed: Optional[str] = Field(None, pattern="^(minimal|moderate|extensive)$")
+    support_provided_by: Optional[str] = Field(None, max_length=100)
+    assistive_technology_used: List[str] = Field(default_factory=list)
+    
+    # Environment
+    environment_type: Optional[str] = Field(None, pattern="^(home|clinic|school|community)$")
+    environmental_modifications: List[str] = Field(default_factory=list)
+    sensory_accommodations: List[str] = Field(default_factory=list)
+    
+    # Outcome
+    success_rating: Optional[int] = Field(None, ge=1, le=5)
+    challenges_encountered: List[str] = Field(default_factory=list)
+    strategies_used: List[str] = Field(default_factory=list)
+    notes: Optional[str] = Field(None, max_length=1000)
     
     model_config = {
         "json_schema_extra": {
             "example": {
                 "child_id": 1,
                 "activity_type": "dental_care",
-                "activity_name": "Brushing teeth with timer",
-                "description": "Successfully brushed teeth for 2 minutes using visual timer",
-                "points_earned": 10,
+                "activity_name": "Brushing teeth with visual schedule",
+                "description": "Used visual schedule to guide tooth brushing routine",
+                "points_earned": 15,
+                "difficulty_level": 3,
                 "emotional_state_before": "anxious",
                 "emotional_state_after": "calm",
-                "difficulty_level": 3,
-                "support_needed": "moderate"
+                "anxiety_level_before": 6,
+                "anxiety_level_after": 3,
+                "support_level_needed": "moderate",
+                "environment_type": "home",
+                "sensory_accommodations": ["soft_toothbrush", "favorite_toothpaste_flavor"],
+                "success_rating": 4,
+                "strategies_used": ["visual_schedule", "positive_reinforcement", "countdown_timer"]
             }
         }
     }
@@ -256,500 +309,363 @@ class ActivityResponse(ActivityBase):
     """Activity response schema"""
     id: int
     child_id: int
+    
+    # Timing information
+    started_at: Optional[datetime] = None
+    completed_at: datetime
+    duration_minutes: Optional[int] = None
+    
+    # ASD tracking data
     emotional_state_before: Optional[str] = None
     emotional_state_after: Optional[str] = None
-    difficulty_level: Optional[int] = None
-    support_needed: Optional[str] = None
-    completed_at: datetime
-    verified_by_parent: bool = False
+    anxiety_level_before: Optional[int] = None
+    anxiety_level_after: Optional[int] = None
     
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "example": {
-                "id": 1,
-                "child_id": 1,
-                "activity_type": "dental_care",
-                "activity_name": "Brushing teeth",
-                "points_earned": 10,
-                "emotional_state_before": "anxious",
-                "emotional_state_after": "calm",
-                "completed_at": "2025-06-08T09:00:00Z",
-                "verified_by_parent": True
-            }
-        }
-    }
+    # Support and environment
+    support_level_needed: Optional[str] = None
+    support_provided_by: Optional[str] = None
+    environment_type: Optional[str] = None
+    
+    # Outcome data
+    completion_status: str
+    success_rating: Optional[int] = None
+    challenges_encountered: List[str] = Field(default_factory=list)
+    strategies_used: List[str] = Field(default_factory=list)
+    notes: Optional[str] = None
+    
+    # Verification
+    verified_by_parent: bool = False
+    verified_by_professional: bool = False
+    
+    # Metadata
+    created_at: datetime
+    data_source: str = "manual"
+    
+    model_config = {"from_attributes": True}
 
 # =============================================================================
 # GAME SESSION SCHEMAS
 # =============================================================================
 
-class GameSessionBase(BaseModel):
-    """Base game session schema"""
-    session_type: SessionTypeEnum = Field(..., description="Type of game session")
-    scenario_name: str = Field(..., min_length=2, max_length=200, description="Name of the scenario")
-
-class GameSessionCreate(GameSessionBase):
+class GameSessionCreate(BaseModel):
     """Schema for creating a game session"""
-    child_id: int = Field(..., description="ID of the child playing")
-    
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "child_id": 1,
-                "session_type": "dental_visit",
-                "scenario_name": "Visit to Dr. Smith's Clinic"
-            }
-        }
-    }
+    child_id: int
+    session_type: str = Field(..., max_length=50)
+    scenario_name: str = Field(..., max_length=200)
+    scenario_id: Optional[str] = Field(None, max_length=100)
+    device_type: Optional[str] = Field(None, max_length=50)
 
 class GameSessionUpdate(BaseModel):
     """Schema for updating game session progress"""
     levels_completed: Optional[int] = Field(None, ge=0)
+    max_level_reached: Optional[int] = Field(None, ge=0)
     score: Optional[int] = Field(None, ge=0)
     interactions_count: Optional[int] = Field(None, ge=0)
+    correct_responses: Optional[int] = Field(None, ge=0)
+    help_requests: Optional[int] = Field(None, ge=0)
+    
+    # ASD-specific data
     emotional_data: Optional[Dict[str, Any]] = None
-    interaction_data: Optional[Dict[str, Any]] = None
+    interaction_patterns: Optional[Dict[str, Any]] = None
+    
+    # Parent feedback
     parent_notes: Optional[str] = Field(None, max_length=1000)
     parent_rating: Optional[int] = Field(None, ge=1, le=5)
+    parent_observed_behavior: Optional[Dict[str, Any]] = None
 
-class GameSessionResponse(GameSessionBase):
+class GameSessionResponse(BaseModel):
     """Game session response schema"""
     id: int
     child_id: int
+    session_type: str
+    scenario_name: str
+    scenario_id: Optional[str] = None
+    
+    # Timing
     started_at: datetime
     ended_at: Optional[datetime] = None
     duration_seconds: Optional[int] = None
+    
+    # Game metrics
     levels_completed: int = 0
+    max_level_reached: int = 0
     score: int = 0
     interactions_count: int = 0
-    completion_status: str = "in_progress"
+    correct_responses: int = 0
+    help_requests: int = 0
     
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "example": {
-                "id": 1,
-                "child_id": 1,
-                "session_type": "dental_visit",
-                "scenario_name": "Visit to Dr. Smith's Clinic",
-                "started_at": "2025-06-08T10:00:00Z",
-                "ended_at": "2025-06-08T10:15:00Z",
-                "duration_seconds": 900,
-                "levels_completed": 3,
-                "score": 85,
-                "completion_status": "completed"
-            }
-        }
-    }
+    # Status
+    completion_status: str
+    exit_reason: Optional[str] = None
+    achievement_unlocked: List[str] = Field(default_factory=list)
+    
+    # Parent feedback
+    parent_rating: Optional[int] = None
+    parent_notes: Optional[str] = None
+    
+    # Computed metrics
+    engagement_score: Optional[float] = None
+    
+    model_config = {"from_attributes": True}
 
 # =============================================================================
-# PROGRESS AND ANALYTICS SCHEMAS
+# PROFESSIONAL SCHEMAS
 # =============================================================================
 
-class ChildProgressResponse(BaseModel):
-    """Comprehensive child progress response"""
+class ProfessionalProfileCreate(BaseModel):
+    """Schema for creating professional profile"""
+    license_type: Optional[str] = Field(None, max_length=100)
+    license_number: Optional[str] = Field(None, max_length=100)
+    license_state: Optional[str] = Field(None, max_length=50)
+    license_expiry: Optional[date] = None
+    
+    primary_specialty: Optional[str] = Field(None, max_length=200)
+    subspecialties: List[str] = Field(default_factory=list)
+    certifications: List[str] = Field(default_factory=list)
+    years_experience: Optional[int] = Field(None, ge=0, le=50)
+    
+    clinic_name: Optional[str] = Field(None, max_length=200)
+    clinic_address: Optional[str] = Field(None, max_length=500)
+    clinic_phone: Optional[str] = Field(None, max_length=20)
+    practice_type: Optional[str] = Field(None, max_length=100)
+    
+    asd_experience_years: Optional[int] = Field(None, ge=0, le=50)
+    asd_certifications: List[str] = Field(default_factory=list)
+    preferred_age_groups: List[str] = Field(default_factory=list)
+    treatment_approaches: List[str] = Field(default_factory=list)
+    
+    bio: Optional[str] = Field(None, max_length=2000)
+    treatment_philosophy: Optional[str] = Field(None, max_length=1000)
+    languages_spoken: List[str] = Field(default=["English"])
+    
+    accepts_new_patients: bool = True
+
+class ProfessionalProfileResponse(BaseModel):
+    """Professional profile response schema"""
+    id: int
+    user_id: int
+    license_type: Optional[str] = None
+    license_number: Optional[str] = None
+    primary_specialty: Optional[str] = None
+    subspecialties: List[str] = Field(default_factory=list)
+    years_experience: Optional[int] = None
+    
+    clinic_name: Optional[str] = None
+    clinic_address: Optional[str] = None
+    practice_type: Optional[str] = None
+    
+    asd_experience_years: Optional[int] = None
+    asd_certifications: List[str] = Field(default_factory=list)
+    preferred_age_groups: List[str] = Field(default_factory=list)
+    treatment_approaches: List[str] = Field(default_factory=list)
+    
+    patient_count: int = 0
+    average_rating: Optional[float] = None
+    total_sessions: int = 0
+    
+    bio: Optional[str] = None
+    treatment_philosophy: Optional[str] = None
+    languages_spoken: List[str] = Field(default_factory=list)
+    
+    accepts_new_patients: bool = True
+    is_verified: bool = False
+    
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    model_config = {"from_attributes": True}
+
+# =============================================================================
+# ASSESSMENT SCHEMAS
+# =============================================================================
+
+class AssessmentCreate(BaseModel):
+    """Schema for creating assessments"""
     child_id: int
-    child_name: str
-    current_level: int
-    total_points: int
-    period_days: int
-    activity_stats: Dict[str, Any]
-    game_stats: Dict[str, Any]
-    progress_summary: Dict[str, Any]
-    generated_at: datetime
+    assessment_type: str = Field(..., max_length=100)
+    assessment_name: str = Field(..., max_length=200)
+    version: Optional[str] = Field(None, max_length=50)
+    administered_by: str = Field(..., max_length=200)
+    administered_date: datetime
+    location: Optional[str] = Field(None, max_length=200)
     
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "child_id": 1,
-                "child_name": "Emma",
-                "current_level": 3,
-                "total_points": 250,
-                "period_days": 30,
-                "activity_stats": {
-                    "total_activities": 15,
-                    "total_points": 150,
-                    "activity_types": {
-                        "dental_care": {"count": 8, "total_points": 80},
-                        "therapy_session": {"count": 7, "total_points": 70}
-                    }
-                },
-                "game_stats": {
-                    "total_sessions": 12,
-                    "completed_sessions": 10,
-                    "completion_rate": 83.33,
-                    "average_score": 78.5
-                },
-                "generated_at": "2025-06-08T12:00:00Z"
-            }
-        }
-    }
+    raw_scores: Optional[Dict[str, Any]] = None
+    standard_scores: Optional[Dict[str, Any]] = None
+    percentiles: Optional[Dict[str, Any]] = None
+    age_equivalents: Optional[Dict[str, Any]] = None
+    
+    interpretation: Optional[str] = Field(None, max_length=5000)
+    recommendations: List[str] = Field(default_factory=list)
+    goals_identified: List[str] = Field(default_factory=list)
 
-class ActivityStatsResponse(BaseModel):
-    """Activity statistics response"""
-    period_days: int
-    total_activities: int
-    total_points: int
-    verified_activities: int
-    activity_types: Dict[str, Dict[str, Union[int, float]]]
+class AssessmentResponse(BaseModel):
+    """Assessment response schema"""
+    id: int
+    child_id: int
+    assessment_type: str
+    assessment_name: str
+    version: Optional[str] = None
+    administered_by: str
+    administered_date: datetime
+    location: Optional[str] = None
     
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "period_days": 30,
-                "total_activities": 25,
-                "total_points": 250,
-                "verified_activities": 20,
-                "activity_types": {
-                    "dental_care": {
-                        "count": 12,
-                        "total_points": 120,
-                        "avg_difficulty": 2.5
-                    },
-                    "therapy_session": {
-                        "count": 13,
-                        "total_points": 130,
-                        "avg_difficulty": 3.2
-                    }
-                }
-            }
-        }
-    }
-
-class GameStatsResponse(BaseModel):
-    """Game session statistics response"""
-    period_days: int
-    total_sessions: int
-    completed_sessions: int
-    completion_rate: float
-    total_score: int
-    average_score: float
-    total_duration_minutes: float
-    average_duration_minutes: float
+    raw_scores: Optional[Dict[str, Any]] = None
+    standard_scores: Optional[Dict[str, Any]] = None
+    percentiles: Optional[Dict[str, Any]] = None
+    age_equivalents: Optional[Dict[str, Any]] = None
     
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "period_days": 30,
-                "total_sessions": 15,
-                "completed_sessions": 12,
-                "completion_rate": 80.0,
-                "total_score": 940,
-                "average_score": 78.33,
-                "total_duration_minutes": 180.5,
-                "average_duration_minutes": 15.04
-            }
-        }
-    }
-
-class FamilyStatsResponse(BaseModel):
-    """Family statistics response"""
-    total_children: int
-    total_points: int
-    total_activities: int
-    total_sessions: int
-    children: List[Dict[str, Any]]
+    interpretation: Optional[str] = None
+    recommendations: List[str] = Field(default_factory=list)
+    goals_identified: List[str] = Field(default_factory=list)
     
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "total_children": 2,
-                "total_points": 450,
-                "total_activities": 40,
-                "total_sessions": 25,
-                "children": [
-                    {
-                        "id": 1,
-                        "name": "Emma",
-                        "level": 3,
-                        "points": 250,
-                        "activities_count": 25,
-                        "sessions_count": 15
-                    },
-                    {
-                        "id": 2,
-                        "name": "Alex",
-                        "level": 2,
-                        "points": 200,
-                        "activities_count": 15,
-                        "sessions_count": 10
-                    }
-                ]
-            }
-        }
-    }
+    progress_summary: Optional[str] = None
+    areas_of_growth: List[str] = Field(default_factory=list)
+    areas_of_concern: List[str] = Field(default_factory=list)
+    
+    status: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    model_config = {"from_attributes": True}
 
 # =============================================================================
-# SEARCH AND FILTER SCHEMAS
+# PAGINATION AND SEARCH SCHEMAS
 # =============================================================================
+
+class PaginationParams(BaseModel):
+    """Standard pagination parameters"""
+    page: int = Field(default=1, ge=1)
+    size: int = Field(default=20, ge=1, le=100)
+    sort_by: Optional[str] = Field(None, max_length=50)
+    sort_order: str = Field(default="desc", pattern="^(asc|desc)$")
 
 class ChildSearchFilters(BaseModel):
     """Filters for child search"""
     search_term: Optional[str] = Field(None, min_length=1, max_length=100)
-    age_min: Optional[int] = Field(None, ge=0, le=18)
-    age_max: Optional[int] = Field(None, ge=0, le=18)
-    support_level: Optional[int] = Field(None, ge=1, le=3)
+    age_min: Optional[int] = Field(None, ge=0, le=25)
+    age_max: Optional[int] = Field(None, ge=0, le=25)
+    support_level: Optional[SupportLevelEnum] = None
+    diagnosis_keyword: Optional[str] = Field(None, max_length=100)
     
-    @field_validator('age_max')
-    @classmethod
-    def validate_age_range(cls, v, info):
-        """Validate that age_max >= age_min"""
-        if v is not None and info.data.get('age_min') is not None:
-            if v < info.data['age_min']:
+    @model_validator(mode='after')
+    def validate_age_range(self):
+        if self.age_max is not None and self.age_min is not None:
+            if self.age_max < self.age_min:
                 raise ValueError('age_max must be greater than or equal to age_min')
-        return v
+        return self
 
-class ActivitySearchFilters(BaseModel):
+class ActivityFilters(BaseModel):
     """Filters for activity search"""
     activity_type: Optional[ActivityTypeEnum] = None
     date_from: Optional[datetime] = None
     date_to: Optional[datetime] = None
-    verified_only: Optional[bool] = False
+    verified_only: bool = False
     min_points: Optional[int] = Field(None, ge=0)
     max_points: Optional[int] = Field(None, ge=0)
+    support_level: Optional[str] = Field(None, pattern="^(minimal|moderate|extensive)$")
+    environment_type: Optional[str] = Field(None, pattern="^(home|clinic|school|community)$")
+    success_rating_min: Optional[int] = Field(None, ge=1, le=5)
     
-    @field_validator('max_points')
-    @classmethod
-    def validate_points_range(cls, v, info):
-        """Validate that max_points >= min_points"""
-        if v is not None and info.data.get('min_points') is not None:
-            if v < info.data['min_points']:
-                raise ValueError('max_points must be greater than or equal to min_points')
-        return v
-    
-    @field_validator('date_to')
-    @classmethod
-    def validate_date_range(cls, v, info):
-        """Validate that date_to >= date_from"""
-        if v is not None and info.data.get('date_from') is not None:
-            if v < info.data['date_from']:
-                raise ValueError('date_to must be greater than or equal to date_from')
-        return v
+    @model_validator(mode='after')
+    def validate_filters(self):
+        if (self.max_points is not None and self.min_points is not None and 
+            self.max_points < self.min_points):
+            raise ValueError('max_points must be greater than or equal to min_points')
+        
+        if (self.date_to is not None and self.date_from is not None and 
+            self.date_to < self.date_from):
+            raise ValueError('date_to must be greater than or equal to date_from')
+        
+        return self
 
 # =============================================================================
-# BULK OPERATIONS SCHEMAS
+# RESPONSE SCHEMAS
 # =============================================================================
-
-class BulkVerifyRequest(BaseModel):
-    """Request schema for bulk activity verification"""
-    activity_ids: List[int] = Field(..., min_length=1, max_length=50)
-    verified: bool = True
-    
-    @field_validator('activity_ids')
-    @classmethod
-    def validate_activity_ids(cls, v):
-        """Validate activity IDs list"""
-        if not v:
-            raise ValueError('At least one activity ID is required')
-        if len(set(v)) != len(v):
-            raise ValueError('Duplicate activity IDs are not allowed')
-        return v
-    
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "activity_ids": [1, 2, 3, 4, 5],
-                "verified": True
-            }
-        }
-    }
-
-class BulkVerifyResponse(BaseModel):
-    """Response schema for bulk activity verification"""
-    message: str
-    updated_count: int
-    total_requested: int
-    failed_ids: List[int] = []
-    
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "message": "Successfully verified 4 out of 5 activities",
-                "updated_count": 4,
-                "total_requested": 5,
-                "failed_ids": [3]
-            }
-        }
-    }
-
-# =============================================================================
-# ERROR AND VALIDATION SCHEMAS
-# =============================================================================
-
-class ValidationErrorResponse(BaseModel):
-    """Validation error response schema"""
-    error: bool = True
-    message: str
-    field_errors: Dict[str, List[str]] = {}
-    
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "error": True,
-                "message": "Validation failed",
-                "field_errors": {
-                    "age": ["Age must be between 0 and 18"],
-                    "name": ["Name is required"]
-                }
-            }
-        }
-    }
 
 class SuccessResponse(BaseModel):
-    """Generic success response schema"""
+    """Generic success response"""
     success: bool = True
     message: str
     data: Optional[Dict[str, Any]] = None
-    
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "success": True,
-                "message": "Operation completed successfully",
-                "data": {"id": 1, "status": "completed"}
-            }
-        }
-    }
+
+class BulkOperationResponse(BaseModel):
+    """Response for bulk operations"""
+    success: bool
+    total_requested: int
+    processed_count: int
+    failed_count: int
+    failed_ids: List[int] = Field(default_factory=list)
+    errors: List[str] = Field(default_factory=list)
+    message: str
 
 # =============================================================================
-# PAGINATION SCHEMAS
+# DASHBOARD SCHEMAS
 # =============================================================================
 
-class PaginationParams(BaseModel):
-    """Pagination parameters"""
-    page: int = Field(default=1, ge=1, description="Page number (1-based)")
-    size: int = Field(default=20, ge=1, le=100, description="Number of items per page")
-    
-    @property
-    def offset(self) -> int:
-        """Calculate offset for database queries"""
-        return (self.page - 1) * self.size
-
-class PaginatedResponse(BaseModel):
-    """Generic paginated response schema"""
-    items: List[Any]
-    total: int
-    page: int
-    size: int
-    pages: int
-    has_next: bool
-    has_prev: bool
-    
-    @classmethod
-    def create(
-        cls, 
-        items: List[Any], 
-        total: int, 
-        page: int, 
-        size: int
-    ) -> 'PaginatedResponse':
-        """Create paginated response"""
-        pages = (total + size - 1) // size  # Ceiling division
-        return cls(
-            items=items,
-            total=total,
-            page=page,
-            size=size,
-            pages=pages,
-            has_next=page < pages,
-            has_prev=page > 1
-        )
-
-# =============================================================================
-# PROFESSIONAL SCHEMAS (for healthcare professionals)
-# =============================================================================
-
-class ProfessionalChildAccess(BaseModel):
-    """Schema for professional access to child data"""
+class ChildProgressSummary(BaseModel):
+    """Child progress summary for dashboards"""
     child_id: int
-    access_level: str = Field(..., regex="^(read|write|full)$")
-    granted_by: int  # Parent user ID
-    granted_at: datetime
-    expires_at: Optional[datetime] = None
-    notes: Optional[str] = Field(None, max_length=500)
-
-class ProfessionalAnalyticsResponse(BaseModel):
-    """Analytics response for healthcare professionals"""
-    professional_id: int
-    license_number: Optional[str] = None
-    specialization: Optional[str] = None
-    assigned_children_count: int
-    total_sessions_observed: int
-    average_improvement_score: Optional[float] = None
-    recommendations_given: int
-    period_start: datetime
-    period_end: datetime
+    child_name: str
+    current_level: int
+    total_points: int
+    current_week_points: int
     
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "professional_id": 1,
-                "license_number": "MD123456",
-                "specialization": "Pediatric Dentistry",
-                "assigned_children_count": 15,
-                "total_sessions_observed": 45,
-                "average_improvement_score": 7.8,
-                "recommendations_given": 12,
-                "period_start": "2025-05-01T00:00:00Z",
-                "period_end": "2025-06-01T00:00:00Z"
-            }
-        }
-    }
-
-# =============================================================================
-# EXPORT SCHEMAS
-# =============================================================================
-
-class ExportRequest(BaseModel):
-    """Request schema for data export"""
-    export_type: str = Field(..., regex="^(activities|sessions|progress|full)$")
-    format: str = Field(default="json", regex="^(json|csv|pdf)$")
-    date_from: Optional[datetime] = None
-    date_to: Optional[datetime] = None
-    include_sensitive: bool = Field(default=False, description="Include sensitive ASD data")
+    # Activity metrics
+    total_activities: int
+    verified_activities: int
+    favorite_activities: List[str]
     
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "export_type": "activities",
-                "format": "csv",
-                "date_from": "2025-05-01T00:00:00Z",
-                "date_to": "2025-06-01T00:00:00Z",
-                "include_sensitive": False
-            }
-        }
-    }
-
-class ExportResponse(BaseModel):
-    """Response schema for data export"""
-    export_id: str
-    file_url: str
-    file_size_bytes: int
-    expires_at: datetime
-    format: str
-    created_at: datetime
+    # Game session metrics
+    total_sessions: int
+    completed_sessions: int
+    average_engagement_score: float
     
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "export_id": "exp_1234567890",
-                "file_url": "/api/exports/exp_1234567890/download",
-                "file_size_bytes": 15432,
-                "expires_at": "2025-06-09T12:00:00Z",
-                "format": "csv",
-                "created_at": "2025-06-08T12:00:00Z"
-            }
-        }
-    }
+    # Progress indicators
+    areas_of_growth: List[str]
+    areas_needing_support: List[str]
+    recent_achievements: List[str]
+    
+    # Time-based data
+    last_activity_date: Optional[datetime] = None
+    last_session_date: Optional[datetime] = None
+    assessment_due: bool = False
+    
+    generated_at: datetime
+
+class ParentDashboardResponse(BaseModel):
+    """Parent dashboard summary data"""
+    user_id: int
+    total_children: int
+    total_points_all_children: int
+    active_children: int
+    
+    # Recent activity summary
+    activities_this_week: int
+    sessions_this_week: int
+    new_achievements: int
+    
+    # Children summary
+    children_summary: List[Dict[str, Any]]
+    
+    # Recent activities across all children
+    recent_activities: List[ActivityResponse]
+    
+    # Weekly progress chart data
+    weekly_progress: Dict[str, int]  # date -> points
+    
+    # Alerts and recommendations
+    alerts: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
+    
+    generated_at: datetime
 
 # =============================================================================
 # FORWARD REFERENCES RESOLUTION
 # =============================================================================
 
-# Update forward references for circular dependencies
-UserWithChildrenResponse.model_rebuild()
 ChildResponse.model_rebuild()
 ChildDetailResponse.model_rebuild()
 ActivityResponse.model_rebuild()
 GameSessionResponse.model_rebuild()
+ProfessionalProfileResponse.model_rebuild()
+AssessmentResponse.model_rebuild()

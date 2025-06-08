@@ -285,4 +285,10 @@ class PasswordResetToken(Base):
     )
     
     def __repr__(self):
-        return f"<PasswordResetToken {self.token[:8]}... for user {self.user_id}>"
+        return f"<PasswordResetToken {self.token[:8]}... for user {self.user_id}>"    # =============================================================================
+    # RELATIONSHIP EXTENSION FOR USER MODEL
+    # =============================================================================
+
+    # Add children relationship to existing User model
+    from sqlalchemy.orm import relationship
+    User.children = relationship("Child", back_populates="parent", lazy="dynamic")
