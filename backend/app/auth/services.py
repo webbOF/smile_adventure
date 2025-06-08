@@ -143,8 +143,7 @@ class AuthService:
                 is_verified=False,
                 failed_login_attempts=0,
                 created_at=datetime.now(timezone.utc),
-                updated_at=datetime.now(timezone.utc)
-            )
+                updated_at=datetime.now(timezone.utc)            )
             
             self.db.add(user)
             self.db.commit()
@@ -153,6 +152,9 @@ class AuthService:
             logger.info(f"User created successfully: {user.email}")
             return user
             
+        except HTTPException:
+            # Re-raise HTTPExceptions (like duplicate email check)
+            raise
         except IntegrityError as e:
             self.db.rollback()
             logger.error(f"Database integrity error creating user: {str(e)}")
@@ -472,7 +474,6 @@ class AuthService:
     # =========================================================================
     # SESSION MANAGEMENT METHODS
     # =========================================================================
-    
     def create_user_session(self, user: User, session_data: Dict[str, Any] = None) -> Optional[UserSession]:
         """
         Create user session
@@ -485,14 +486,19 @@ class AuthService:
             UserSession object if created, None otherwise
         """
         try:
+            # Generate tokens
+            session_token = self._generate_secure_token()
+            refresh_token = self._generate_secure_token()
+            
             session = UserSession(
                 user_id=user.id,
-                session_id=self._generate_secure_token(),
-                ip_address=session_data.get("ip_address") if session_data else None,
-                user_agent=session_data.get("user_agent") if session_data else None,
-                is_active=True,
-                created_at=datetime.now(timezone.utc),
-                last_activity=datetime.now(timezone.utc)
+                session_token=session_token,
+                refresh_token=refresh_token,
+                ip_address=session_data.get("ip_address") if session_data else None,                user_agent=session_data.get("user_agent") if session_data else None,
+                device_info=session_data.get("device_info") if session_data else None,
+                location=session_data.get("location") if session_data else None,
+                expires_at=datetime.now(timezone.utc) + timedelta(hours=24),  # 24 hour session
+                is_active=True
             )
             
             self.db.add(session)
@@ -522,7 +528,7 @@ class AuthService:
                 UserSession.is_active == True
             ).update({
                 "is_active": False,
-                "ended_at": datetime.now(timezone.utc)
+                "revoked_at": datetime.now(timezone.utc)
             })
             
             self.db.commit()

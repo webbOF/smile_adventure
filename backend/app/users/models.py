@@ -37,9 +37,8 @@ class Child(Base):
     is_active = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
-    
-    # Relationships - corrected to use auth User
-    parent = relationship("User", back_populates="children")
+      # Relationships - corrected to use auth User
+    parent = relationship("User")  # Remove back_populates to avoid circular import issues
     activities = relationship("Activity", back_populates="child", cascade="all, delete-orphan")
     game_sessions = relationship("GameSession", back_populates="child", cascade="all, delete-orphan")
     

@@ -85,14 +85,17 @@ class User(Base):
     language = Column(String(10), default="en", nullable=False)
     avatar_url = Column(String(500), nullable=True)
     bio = Column(Text, nullable=True)
-    
-    # Database indexes for performance
+      # Database indexes for performance
     __table_args__ = (
         Index('idx_user_email_status', 'email', 'status'),
         Index('idx_user_role_active', 'role', 'is_active'),
         Index('idx_user_created_at', 'created_at'),
         Index('idx_user_last_login', 'last_login_at'),
     )
+    
+    # Relationships (defined separately to avoid circular imports)
+    # children = relationship("Child", back_populates="parent", lazy="dynamic")
+    # Note: Relationship is defined in users/models.py to avoid circular imports
     
     def __init__(self, **kwargs):
         """Initialize user with computed fields"""

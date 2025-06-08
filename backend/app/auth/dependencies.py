@@ -439,10 +439,9 @@ async def create_user_session_on_login(
     try:
         auth_service = get_auth_service(db)
         session_data = get_request_metadata(request)
-        
         session = auth_service.create_user_session(user, session_data)
         if session:
-            logger.info(f"Session created for user {user.email}: {session.session_id}")
+            logger.info(f"Session created for user {user.email}: {session.session_token[:8]}...")
         else:
             logger.warning(f"Failed to create session for user {user.email}")
             
