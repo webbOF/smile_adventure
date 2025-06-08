@@ -18,8 +18,9 @@ from app.auth.dependencies import (
 from app.users.models import Child, Activity, GameSession
 from app.users import crud
 
-# Import profile router
+# Import profile router and children router
 from app.users.profile_routes import router as profile_router
+from app.users.children_routes import router as children_router
 
 # Constants
 WEEK_FORMAT = "%Y-W%U"
@@ -32,6 +33,13 @@ router.include_router(
     profile_router,
     prefix="/profile",
     tags=["profile"]
+)
+
+# Include children routes
+router.include_router(
+    children_router,
+    prefix="",  # No additional prefix - children routes already have /children
+    tags=["children"]
 )
 
 # =============================================================================
