@@ -13,7 +13,7 @@ from app.auth.models import User, UserRole
 from app.users.models import Child, Activity, GameSession, Assessment, ProfessionalProfile
 from app.users.schemas import (
     ChildCreate, ChildUpdate, ActivityCreate, GameSessionCreate, 
-    GameSessionUpdate, AssessmentCreate, ProfessionalProfileCreate
+    GameSessionUpdate, AssessmentCreate, ProfessionalProfileCreate, ProfessionalProfileUpdate
 )
 
 import logging
@@ -267,8 +267,7 @@ class ChildService:
             child = self.get_child_by_id(child_id, include_relationships=False)
             if not child:
                 return {}
-            
-            # Activity statistics
+              # Activity statistics
             activity_stats = self.db.query(
                 func.count(Activity.id).label('total_activities'),
                 func.sum(Activity.points_earned).label('total_points'),
@@ -798,6 +797,198 @@ class ProfessionalService:
         except Exception as e:
             logger.error(f"Error searching professionals: {str(e)}")
             return []
+    
+        
+    def update_profile(self, user_id: int, profile_data: ProfessionalProfileUpdate) -> Optional[ProfessionalProfile]:
+        """
+        Update professional profile
+        
+        Args:
+            user_id: User ID
+            profile_data: Profile update data
+            
+        Returns:
+            Updated ProfessionalProfile object or None
+        """
+        try:
+            # Get existing profile
+            profile = self.db.query(ProfessionalProfile).filter(
+                ProfessionalProfile.user_id == user_id
+            ).first()
+            
+            if not profile:
+                logger.warning(f"Professional profile not found for user {user_id}")
+                return None
+            
+            # Update only provided fields
+            update_data = profile_data.model_dump(exclude_unset=True)
+            
+            for field, value in update_data.items():
+                if hasattr(profile, field):
+                    setattr(profile, field, value)
+            
+            # Update timestamp
+            profile.updated_at = datetime.now(timezone.utc)
+            
+            self.db.commit()
+            self.db.refresh(profile)
+            
+            logger.info(f"Professional profile updated for user {user_id}")
+            return profile
+            
+        except IntegrityError as e:
+            self.db.rollback()
+            logger.error(f"Integrity error updating professional profile: {str(e)}")
+            return None
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Error updating professional profile: {str(e)}")
+            return None
+    
+    def delete_profile(self, user_id: int) -> bool:
+        """
+        Delete professional profile (soft delete by deactivating)
+        
+        Args:
+            user_id: User ID
+            
+        Returns:
+            True if deleted successfully, False otherwise
+        """
+        try:
+            profile = self.db.query(ProfessionalProfile).filter(
+                ProfessionalProfile.user_id == user_id
+            ).first()
+            
+            if not profile:
+                logger.warning(f"Professional profile not found for user {user_id}")
+                return False
+            
+            # Soft delete by setting verification status to False
+            profile.is_verified = False
+            profile.accepts_new_patients = False
+            profile.updated_at = datetime.now(timezone.utc)
+            
+            self.db.commit()
+            
+            logger.info(f"Professional profile deactivated for user {user_id}")
+            return True
+            
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Error deactivating professional profile: {str(e)}")
+            return False
+
+    def verify_profile(self, user_id: int, verified_by_admin_id: int) -> Optional[ProfessionalProfile]:
+        """
+        Verify professional profile by admin
+        
+        Args:
+            user_id: User ID
+            verified_by_admin_id: Admin user ID performing verification
+            
+        Returns:
+            Updated ProfessionalProfile object or None
+        """
+        try:
+            profile = self.db.query(ProfessionalProfile).filter(
+                ProfessionalProfile.user_id == user_id
+            ).first()
+            
+            if not profile:
+                logger.warning(f"Professional profile not found for user {user_id}")
+                return None
+            
+            profile.is_verified = True
+            profile.verified_at = datetime.now(timezone.utc)
+            profile.verified_by = verified_by_admin_id
+            profile.updated_at = datetime.now(timezone.utc)
+            
+            self.db.commit()
+            self.db.refresh(profile)
+            
+            logger.info(f"Professional profile verified for user {user_id} by admin {verified_by_admin_id}")
+            return profile
+            
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Error verifying professional profile: {str(e)}")
+            return None
+
+    def get_profiles_by_verification_status(self, is_verified: bool = False, limit: int = 50) -> List[ProfessionalProfile]:
+        """
+        Get professional profiles by verification status
+        
+        Args:
+            is_verified: Verification status filter
+            limit: Maximum results
+            
+        Returns:
+            List of ProfessionalProfile objects
+        """
+        try:
+            profiles = self.db.query(ProfessionalProfile).filter(
+                ProfessionalProfile.is_verified == is_verified
+            ).order_by(
+                desc(ProfessionalProfile.created_at)
+            ).limit(limit).all()
+            
+            return profiles
+            
+        except Exception as e:
+            logger.error(f"Error getting profiles by verification status: {str(e)}")
+            return []
+
+    def update_professional_metrics(self, user_id: int, new_rating: Optional[float] = None, 
+                                  increment_sessions: int = 0, increment_patients: int = 0) -> bool:
+        """
+        Update professional metrics (ratings, session count, patient count)
+        
+        Args:
+            user_id: User ID
+            new_rating: New rating to factor into average
+            increment_sessions: Number of sessions to add
+            increment_patients: Number of patients to add
+            
+        Returns:
+            True if updated successfully, False otherwise
+        """
+        try:
+            profile = self.db.query(ProfessionalProfile).filter(
+                ProfessionalProfile.user_id == user_id
+            ).first()
+            
+            if not profile:
+                logger.warning(f"Professional profile not found for user {user_id}")
+                return False
+            
+            # Update session count
+            if increment_sessions > 0:
+                profile.total_sessions += increment_sessions
+            
+            # Update patient count
+            if increment_patients > 0:
+                profile.patient_count += increment_patients
+            
+            # Update rating (simple average for now - could be more sophisticated)
+            if new_rating is not None and 0 <= new_rating <= 5:
+                if profile.average_rating is None:
+                    profile.average_rating = new_rating
+                else:
+                    # Simple weighted average (could be improved with rating count)
+                    profile.average_rating = (profile.average_rating + new_rating) / 2
+            
+            profile.updated_at = datetime.now(timezone.utc)
+            
+            self.db.commit()
+            
+            logger.info(f"Professional metrics updated for user {user_id}")
+            return True
+            
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Error updating professional metrics: {str(e)}")
+            return False
 
 # =============================================================================
 # ASSESSMENT CRUD OPERATIONS
