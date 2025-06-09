@@ -365,7 +365,7 @@ class ValidationResult(BaseModel):
     suggestions: List[str] = Field(default_factory=list)
 
 # Custom validators can be added here for complex validation logic
-def validate_emotional_data(cls, v):
+def validate_emotional_data(v):
     """Validate emotional data structure"""
     if v is None:
         return v
@@ -383,7 +383,7 @@ def validate_emotional_data(cls, v):
     
     return v
 
-def validate_interaction_patterns(cls, v):
+def validate_interaction_patterns(v):
     """Validate interaction patterns structure"""
     if v is None:
         return v
@@ -396,3 +396,266 @@ def validate_interaction_patterns(cls, v):
                 raise ValueError("Average response time cannot be negative")
     
     return v
+
+# =============================================================================
+# ADVANCED VALIDATION RULES AND ENHANCEMENTS
+# =============================================================================
+
+class SessionDataValidator:
+    """Advanced validator for session data integrity"""
+    
+    @staticmethod
+    def validate_session_metrics(session_data: Dict[str, Any]) -> ValidationResult:
+        """Validate session metrics for consistency and logical constraints"""
+        errors = []
+        warnings = []
+        suggestions = []
+        
+        # Check logical consistency
+        if session_data.get('correct_responses', 0) + session_data.get('incorrect_responses', 0) > session_data.get('interactions_count', 0):
+            errors.append("Total responses cannot exceed interaction count")
+        
+        if session_data.get('help_requests', 0) > session_data.get('interactions_count', 0):
+            errors.append("Help requests cannot exceed interaction count")
+        
+        # Performance indicators
+        if session_data.get('levels_completed', 0) == 0 and session_data.get('duration_seconds', 0) > 300:
+            warnings.append("Long session with no levels completed - possible engagement issue")
+        
+        # Score validation
+        score = session_data.get('score', 0)
+        interactions = session_data.get('interactions_count', 0)
+        if score > 0 and interactions == 0:
+            errors.append("Score recorded without interactions")
+        
+        # Duration validation
+        duration = session_data.get('duration_seconds', 0)
+        pause_duration = session_data.get('total_pause_duration', 0)
+        if pause_duration > duration:
+            errors.append("Pause duration cannot exceed total session duration")
+        
+        # Suggestions for improvement
+        if session_data.get('hint_usage_count', 0) > session_data.get('help_requests', 0) * 2:
+            suggestions.append("Consider adjusting hint availability to encourage independent problem-solving")
+        
+        return ValidationResult(
+            is_valid=len(errors) == 0,
+            errors=errors,
+            warnings=warnings,
+            suggestions=suggestions
+        )
+
+class ReportDataValidator:
+    """Advanced validator for report data quality"""
+    
+    @staticmethod
+    def _validate_required_sections(report_type: str, content: Dict[str, Any]) -> List[str]:
+        """Helper function to validate required sections for report types"""
+        errors = []
+        
+        if report_type == 'progress':
+            required_sections = ['executive_summary', 'goals_progress', 'key_achievements']
+        elif report_type == 'assessment':
+            required_sections = ['assessment_overview', 'findings', 'recommendations']
+        else:
+            return errors
+        
+        for section in required_sections:
+            if section not in content:
+                errors.append(f"Missing required section for {report_type} report: {section}")
+        
+        return errors
+    
+    @staticmethod
+    def _validate_date_ranges(period_start, period_end) -> tuple[List[str], List[str]]:
+        """Helper function to validate date ranges"""
+        errors = []
+        warnings = []
+        
+        if period_start and period_end:
+            if period_start >= period_end:
+                errors.append("Report period start date must be before end date")
+            
+            # Check for reasonable reporting periods
+            from datetime import timedelta
+            if (period_end - period_start).days > 365:
+                warnings.append("Report covers more than one year - consider breaking into smaller periods")
+        
+        return errors, warnings
+    
+    @staticmethod
+    def _validate_session_inclusion(sessions_included: List[int], report_type: str) -> List[str]:
+        """Helper function to validate session inclusion"""
+        warnings = []
+        
+        if len(sessions_included) == 0 and report_type in ['progress', 'summary']:
+            warnings.append("No sessions included in report - may lack supporting data")
+        
+        return warnings
+    
+    @staticmethod
+    def validate_report_content(report_data: Dict[str, Any]) -> ValidationResult:
+        """Validate report content for completeness and clinical standards"""
+        errors = []
+        warnings = []
+        suggestions = []
+        
+        # Check required content sections for different report types
+        report_type = report_data.get('report_type')
+        content = report_data.get('content', {})
+        
+        # Validate required sections
+        section_errors = ReportDataValidator._validate_required_sections(report_type, content)
+        errors.extend(section_errors)
+        
+        # Validate date ranges
+        period_start = report_data.get('period_start')
+        period_end = report_data.get('period_end')
+        date_errors, date_warnings = ReportDataValidator._validate_date_ranges(period_start, period_end)
+        errors.extend(date_errors)
+        warnings.extend(date_warnings)
+        
+        # Validate session inclusion
+        sessions_included = report_data.get('sessions_included', [])
+        session_warnings = ReportDataValidator._validate_session_inclusion(sessions_included, report_type)
+        warnings.extend(session_warnings)
+        
+        return ValidationResult(
+            is_valid=len(errors) == 0,
+            errors=errors,
+            warnings=warnings,
+            suggestions=suggestions
+        )
+
+# =============================================================================
+# ENHANCED FIELD VALIDATORS
+# =============================================================================
+
+def _validate_engagement_score(v: Dict[str, Any]) -> None:
+    """Helper function to validate engagement score range"""
+    if 'engagement_score' in v:
+        score = v['engagement_score']
+        if not isinstance(score, (int, float)) or score < 0 or score > 1:
+            raise ValueError("Engagement score must be between 0 and 1")
+
+def _validate_attention_metrics(v: Dict[str, Any]) -> None:
+    """Helper function to validate attention metrics"""
+    if 'attention_spans' in v:
+        attention_data = v['attention_spans']
+        if isinstance(attention_data, list):
+            for span in attention_data:
+                if not isinstance(span, (int, float)) or span < 0:
+                    raise ValueError("Attention span values must be non-negative")
+
+def validate_engagement_metrics(v):
+    """Enhanced validation for engagement metrics"""
+    if v is None:
+        return v
+    
+    if not isinstance(v, dict):
+        raise ValueError("Engagement metrics must be a dictionary")
+    
+    # Use helper functions to reduce complexity
+    _validate_engagement_score(v)
+    _validate_attention_metrics(v)
+    
+    return v
+
+def validate_progress_markers(cls, v):
+    """Validate progress marker achievements"""
+    if v is None:
+        return v
+    
+    if not isinstance(v, list):
+        raise ValueError("Progress markers must be a list")
+    
+    # Validate marker format
+    valid_prefixes = ['skill_', 'behavior_', 'social_', 'emotional_', 'cognitive_']
+    for marker in v:
+        if not isinstance(marker, str):
+            raise ValueError("Progress markers must be strings")
+        if not any(marker.startswith(prefix) for prefix in valid_prefixes):
+            raise ValueError(f"Invalid progress marker format: {marker}")
+    
+    return v
+
+def validate_ai_analysis(cls, v):
+    """Validate AI analysis data structure"""
+    if v is None:
+        return v
+    
+    if not isinstance(v, dict):
+        raise ValueError("AI analysis must be a dictionary")
+    
+    # Check for required analysis components
+    required_components = ['insights', 'recommendations', 'confidence_score']
+    for component in required_components:
+        if component not in v:
+            raise ValueError(f"Missing required AI analysis component: {component}")
+    
+    # Validate confidence score
+    confidence = v.get('confidence_score')
+    if not isinstance(confidence, (int, float)) or confidence < 0 or confidence > 1:
+        raise ValueError("AI confidence score must be between 0 and 1")
+    
+    return v
+
+# =============================================================================
+# SPECIALIZED SCHEMAS FOR ASD FEATURES
+# =============================================================================
+
+class SensoryProfileData(BaseModel):
+    """Schema for sensory profile tracking in sessions"""
+    visual_sensitivity: Optional[int] = Field(None, ge=1, le=5, description="Visual sensitivity level (1-5)")
+    auditory_sensitivity: Optional[int] = Field(None, ge=1, le=5, description="Auditory sensitivity level (1-5)")
+    tactile_sensitivity: Optional[int] = Field(None, ge=1, le=5, description="Tactile sensitivity level (1-5)")
+    vestibular_preferences: Optional[List[str]] = Field(None, description="Vestibular activity preferences")
+    proprioceptive_needs: Optional[List[str]] = Field(None, description="Proprioceptive input needs")
+    environmental_modifications: Optional[List[str]] = Field(None, description="Environmental accommodations made")
+
+class CommunicationData(BaseModel):
+    """Schema for communication patterns in sessions"""
+    verbal_communication: bool = Field(True, description="Whether child used verbal communication")
+    communication_methods: List[str] = Field(default_factory=list, description="Methods used for communication")
+    communication_effectiveness: Optional[int] = Field(None, ge=1, le=5, description="Communication effectiveness (1-5)")
+    social_interaction_attempts: Optional[int] = Field(None, ge=0, description="Number of social interaction attempts")
+    nonverbal_cues_observed: Optional[List[str]] = Field(None, description="Nonverbal communication observed")
+    communication_support_needed: Optional[bool] = Field(None, description="Whether communication support was needed")
+
+class BehavioralRegulationData(BaseModel):
+    """Schema for behavioral regulation tracking"""
+    self_regulation_strategies: Optional[List[str]] = Field(None, description="Self-regulation strategies used")
+    emotional_regulation_level: Optional[int] = Field(None, ge=1, le=5, description="Emotional regulation effectiveness (1-5)")
+    transition_handling: Optional[int] = Field(None, ge=1, le=5, description="How well transitions were handled (1-5)")
+    frustration_tolerance: Optional[int] = Field(None, ge=1, le=5, description="Frustration tolerance level (1-5)")
+    coping_mechanisms_used: Optional[List[str]] = Field(None, description="Coping mechanisms observed")
+    support_strategies_effective: Optional[List[str]] = Field(None, description="Support strategies that were effective")
+
+# =============================================================================
+# ENHANCED ANALYTICS SCHEMAS
+# =============================================================================
+
+class DetailedSessionAnalytics(GameSessionAnalytics):
+    """Extended analytics with ASD-specific insights"""
+    sensory_profile_analysis: Optional[Dict[str, Any]] = Field(None, description="Sensory processing analysis")
+    communication_analysis: Optional[Dict[str, Any]] = Field(None, description="Communication patterns analysis")
+    regulation_analysis: Optional[Dict[str, Any]] = Field(None, description="Self-regulation analysis")
+    environmental_factors: Optional[Dict[str, Any]] = Field(None, description="Environmental factor impacts")
+    accommodation_effectiveness: Optional[Dict[str, Any]] = Field(None, description="Accommodation strategy effectiveness")
+
+class LongitudinalProgressMetrics(BaseModel):
+    """Schema for tracking progress over extended periods"""
+    child_id: int
+    baseline_period: Dict[str, Any] = Field(..., description="Baseline measurement period")
+    current_period: Dict[str, Any] = Field(..., description="Current measurement period")
+    improvement_areas: List[str] = Field(..., description="Areas showing improvement")
+    concern_areas: List[str] = Field(..., description="Areas of concern")
+    skill_acquisition_rate: Dict[str, float] = Field(..., description="Rate of skill acquisition by domain")
+    intervention_effectiveness: Dict[str, Any] = Field(..., description="Effectiveness of different interventions")
+    family_feedback_trends: Dict[str, Any] = Field(..., description="Family feedback over time")
+    clinical_recommendations: List[str] = Field(..., description="Clinical recommendations based on trends")
+
+# Apply validators to existing schemas
+GameSessionUpdate.model_validate = validate_engagement_metrics
+GameSessionUpdate.model_validate = validate_progress_markers  
+GameSessionUpdate.model_validate = validate_ai_analysis
