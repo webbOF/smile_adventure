@@ -19,6 +19,11 @@ from app.auth.middleware import setup_auth_middleware
 
 # Import API routers
 from app.api.main import api_router
+from app.api.v1.api import (
+    global_http_exception_handler,
+    global_validation_exception_handler,
+    global_generic_exception_handler
+)
 from app.professional.routes import router as professional_router
 from app.reports.routes import router as reports_router
 
@@ -121,90 +126,14 @@ app.add_middleware(
 setup_auth_middleware(app)
 
 # =============================================================================
-# GLOBAL EXCEPTION HANDLERS
+# GLOBAL EXCEPTION HANDLERS - TASK 17 API GATEWAY
 # =============================================================================
 
-@app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    """
-    Global HTTP exception handler
-    Provides consistent error response format
-    """
-    logger.warning(
-        f"HTTP {exc.status_code}: {exc.detail} - "
-        f"{request.method} {request.url.path} from {request.client.host if request.client else 'unknown'}"
-    )
-    
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "error": True,
-            "message": exc.detail,
-            "status_code": exc.status_code,
-            "path": request.url.path,
-            "method": request.method
-        }
-    )
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """
-    Request validation error handler
-    Provides detailed validation error information
-    """
-    logger.warning(
-        f"Validation error: {request.method} {request.url.path} - "
-        f"{len(exc.errors())} errors from {request.client.host if request.client else 'unknown'}"
-    )
-    
-    # Format validation errors for better readability
-    errors = {}
-    for error in exc.errors():
-        field = " -> ".join(str(loc) for loc in error["loc"][1:])  # Skip 'body'
-        if field not in errors:
-            errors[field] = []
-        errors[field].append(error["msg"])
-    
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "error": True,
-            "message": "Validation failed",
-            "status_code": 422,
-            "validation_errors": errors,
-            "path": request.url.path,
-            "method": request.method
-        }
-    )
-
-@app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
-    """
-    Global exception handler for unexpected errors
-    Logs error details and returns generic error response
-    """
-    logger.error(
-        f"Unexpected error: {request.method} {request.url.path} - "
-        f"{type(exc).__name__}: {str(exc)} from {request.client.host if request.client else 'unknown'}",
-        exc_info=True
-    )
-    
-    # Don't expose internal error details in production
-    if settings.is_production:
-        detail = "An unexpected error occurred. Please try again later."
-    else:
-        detail = f"{type(exc).__name__}: {str(exc)}"
-    
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "error": True,
-            "message": detail,
-            "status_code": 500,
-            "path": request.url.path,
-            "method": request.method
-        }
-    )
+# Add the new Task 17 global exception handlers
+app.add_exception_handler(StarletteHTTPException, global_http_exception_handler)
+app.add_exception_handler(HTTPException, global_http_exception_handler)
+app.add_exception_handler(RequestValidationError, global_validation_exception_handler)
+app.add_exception_handler(Exception, global_generic_exception_handler)
 
 # =============================================================================
 # HEALTH CHECK ENDPOINTS
