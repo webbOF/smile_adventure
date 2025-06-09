@@ -19,6 +19,8 @@ from app.auth.middleware import setup_auth_middleware
 
 # Import API routers
 from app.api.main import api_router
+from app.professional.routes import router as professional_router
+from app.reports.routes import router as reports_router
 
 # Configure logging
 logging.basicConfig(
@@ -358,6 +360,27 @@ async def database_health_check():
 # =============================================================================
 # API ROUTING
 # =============================================================================
+
+# Include Task 16 professional routes directly (without prefix)
+app.include_router(
+    professional_router,
+    responses={
+        404: {"description": "Not found"},
+        422: {"description": "Validation Error"},
+        500: {"description": "Internal Server Error"}
+    }
+)
+
+# Include Task 16 clinical analytics routes directly (without prefix)
+app.include_router(
+    reports_router,
+    prefix="/reports",
+    responses={
+        404: {"description": "Not found"},
+        422: {"description": "Validation Error"},
+        500: {"description": "Internal Server Error"}
+    }
+)
 
 # Include all API routes under /api/v1 prefix
 app.include_router(

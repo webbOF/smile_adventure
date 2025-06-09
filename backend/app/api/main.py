@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from app.auth.routes import router as auth_router
 from app.users.routes import router as users_router
 from app.reports.routes import router as reports_router
+from app.professional.routes import router as professional_router
 
 # Create main API router
 api_router = APIRouter()
@@ -27,4 +28,10 @@ api_router.include_router(
     reports_router,
     prefix="/reports",
     tags=["reports"]
+)
+
+# Task 16: Professional routes at root level
+api_router.include_router(
+    professional_router,
+    tags=["professional", "task16"]
 )

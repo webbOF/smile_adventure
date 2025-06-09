@@ -595,6 +595,57 @@ async def export_clinical_analytics(
         )
 
 # =============================================================================
+# TASK 16 CLINICAL ANALYTICS ROUTE ALIASES
+# =============================================================================
+
+# Task 16 expects routes at /clinical-analytics/ instead of /analytics/
+# These are aliases to the existing analytics endpoints
+
+@router.get("/clinical-analytics/population", response_model=Dict[str, Any])
+async def clinical_analytics_population(
+    date_from: Optional[datetime] = Query(None, description="Start date for analysis"),
+    date_to: Optional[datetime] = Query(None, description="End date for analysis"),
+    age_min: Optional[int] = Query(None, ge=0, le=25, description="Minimum age filter"),
+    age_max: Optional[int] = Query(None, ge=0, le=25, description="Maximum age filter"),
+    support_level: Optional[int] = Query(None, ge=1, le=3, description="Support level filter"),
+    current_user: User = Depends(require_professional),
+    db: Session = Depends(get_db)
+):
+    """
+    Task 16 Clinical Analytics - Population Overview
+    Alias for existing /analytics/population endpoint
+    """
+    # Call the existing population analytics function
+    return await get_population_analytics(
+        date_from=date_from,
+        date_to=date_to,
+        age_min=age_min,
+        age_max=age_max,
+        support_level=support_level,
+        current_user=current_user,
+        db=db
+    )
+
+@router.get("/clinical-analytics/insights", response_model=Dict[str, Any])
+async def clinical_analytics_insights(
+    analysis_period: int = Query(default=90, ge=7, le=365, description="Analysis period in days"),
+    focus_areas: Optional[str] = Query(None, description="Comma-separated focus areas"),
+    current_user: User = Depends(require_professional),
+    db: Session = Depends(get_db)
+):
+    """
+    Task 16 Clinical Analytics - Insights Overview
+    Alias for existing /analytics/insights endpoint
+    """
+    # Call the existing insights analytics function
+    return await get_clinical_insights(
+        analysis_period=analysis_period,
+        focus_areas=focus_areas,
+        current_user=current_user,
+        db=db
+    )
+
+# =============================================================================
 # ENDPOINT DI TESTING E SVILUPPO
 # =============================================================================
 
