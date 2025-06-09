@@ -27,7 +27,6 @@ class TestTask21Integration:
         db = next(get_db())
         yield db
         db.close()
-    
     @pytest.fixture(scope="class")
     def test_child(self, db_session):
         """Create a test child for session testing"""
@@ -38,7 +37,15 @@ class TestTask21Integration:
             gender="male",
             autism_diagnosis=True,
             diagnosis_date=datetime(2018, 6, 1),
-            is_active=True
+            is_active=True,
+            parent_id=1,  # Using existing parent from seed data
+            points=0,
+            level=1,
+            achievements=[],
+            current_therapies=[],
+            emergency_contacts=[],
+            safety_protocols=[],
+            progress_notes=[]
         )
         
         db_session.add(child)

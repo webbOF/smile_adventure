@@ -58,8 +58,7 @@ class GameSessionService:
             if not child:
                 logger.warning(f"Child not found or inactive: {child_id}")
                 return None
-            
-            # Check for existing active session
+              # Check for existing active session and auto-complete it
             active_session = self.db.query(GameSession).filter(
                 and_(
                     GameSession.child_id == child_id,
@@ -68,37 +67,29 @@ class GameSessionService:
             ).first()
             
             if active_session:
-                logger.warning(f"Child {child_id} already has active session: {active_session.id}")
-                return None
-            
-            # Create new session with comprehensive initialization
+                logger.warning(f"Child {child_id} has active session {active_session.id}, auto-completing it")
+                # Auto-complete the previous session
+                active_session.mark_completed("auto_completed_new_session")
+                self.db.commit()
+              # Create new session with fields that exist in the model
             session = GameSession(
                 child_id=child_id,
                 session_type=session_data.session_type,
                 scenario_name=session_data.scenario_name,
                 scenario_id=session_data.scenario_id,
-                scenario_version=session_data.scenario_version or "1.0",
                 device_type=session_data.device_type,
-                device_model=session_data.device_model,
                 app_version=session_data.app_version,
-                environment_type=session_data.environment_type or "home",
-                support_person_present=session_data.support_person_present,
                 
-                # Initialize performance tracking
+                # Initialize performance tracking (only fields that exist in model)
                 levels_completed=0,
                 max_level_reached=0,
                 score=0,
                 interactions_count=0,
                 correct_responses=0,
-                incorrect_responses=0,
                 help_requests=0,
-                hint_usage_count=0,
-                pause_count=0,
-                total_pause_duration=0,
                 
-                # Initialize collections
-                achievements_unlocked=[],
-                progress_markers_hit=[],
+                # Initialize collections (use existing field name)
+                achievement_unlocked=[],
                 
                 # Initialize emotional tracking
                 emotional_data={
@@ -178,13 +169,11 @@ class GameSessionService:
             # Add session summary notes
             if completion_data.session_summary_notes:
                 session.parent_notes = completion_data.session_summary_notes
-            
-            # Calculate final metrics using the service method
+              # Calculate final metrics using the service method
             session_metrics = self.calculate_session_metrics(session)
             
-            # Update AI analysis with completion insights
-            ai_analysis = session.ai_analysis or {}
-            ai_analysis.update({
+            # Store completion analysis in interaction_patterns instead of non-existent ai_analysis field
+            completion_insights = {
                 "completion_analysis": {
                     "exit_reason": completion_data.exit_reason,
                     "session_quality": self._assess_session_quality(session),
@@ -193,8 +182,12 @@ class GameSessionService:
                     "next_session_recommendations": self._generate_next_session_recommendations(session)
                 },
                 "calculated_at": ended_at.isoformat()
-            })
-            session.ai_analysis = ai_analysis
+            }
+            
+            # Update interaction_patterns with completion insights
+            interaction_patterns = session.interaction_patterns or {}
+            interaction_patterns.update(completion_insights)
+            session.interaction_patterns = interaction_patterns
             
             self.db.commit()
             self.db.refresh(session)
@@ -272,12 +265,11 @@ class GameSessionService:
                 session = type('obj', (object,), session_data)
             else:
                 session = session_data
-            
-            # Basic performance metrics
+              # Basic performance metrics
             duration_minutes = (session.duration_seconds or 0) / 60
             success_rate = 0
-            if hasattr(session, 'correct_responses') and hasattr(session, 'incorrect_responses'):
-                total_responses = (session.correct_responses or 0) + (session.incorrect_responses or 0)
+            if hasattr(session, 'correct_responses') and hasattr(session, 'interactions_count'):
+                total_responses = session.interactions_count or 0
                 success_rate = (session.correct_responses or 0) / total_responses if total_responses > 0 else 0
             
             # Engagement calculation
@@ -362,24 +354,16 @@ class GameSessionService:
                 if 2 <= interactions_per_minute <= 10:  # Healthy interaction rate
                     score += 0.25
                     factors += 1
-            
-            # Success rate factor
-            total_responses = (session.correct_responses or 0) + (session.incorrect_responses or 0)
+              # Success rate factor
+            total_responses = session.interactions_count or 0
             if total_responses > 0:
                 success_rate = (session.correct_responses or 0) / total_responses
                 score += success_rate * 0.2
                 factors += 1
-            
-            # Completion factor
+              # Completion factor
             if session.completion_status == "completed":
                 score += 0.15
                 factors += 1
-            
-            # Low pause frequency is positive
-            if session.pause_count is not None:
-                if session.pause_count <= 2:
-                    score += 0.1
-                    factors += 1
             
             return score / factors if factors > 0 else 0.0
             
@@ -459,7 +443,7 @@ class GameSessionService:
                 "skill_progression": "stable",
                 "learning_rate": "average",
                 "retention_indicators": [],
-                "breakthrough_moments": len(session.achievements_unlocked or []),
+                "breakthrough_moments": len(session.achievement_unlocked or []),
                 "challenge_adaptation": "appropriate"
             }
             
@@ -493,16 +477,15 @@ class GameSessionService:
     def _analyze_sensory_patterns(self, session: GameSession) -> Dict[str, Any]:
         """Analyze sensory processing patterns during session"""
         try:
-            # This would analyze sensory data if available in the session
-            # For now, return basic structure with placeholder data
+            # This would analyze sensory data if available in the session            # For now, return basic structure with placeholder data
             return {
                 "sensory_preferences": [],
                 "overstimulation_indicators": [],
                 "sensory_seeking_behaviors": [],
                 "environmental_factors": {
                     "device_type": session.device_type or "unknown",
-                    "environment": session.environment_type or "unknown",
-                    "support_present": session.support_person_present
+                    "environment": "unknown",  # field doesn't exist in model
+                    "support_present": False  # field doesn't exist in model
                 }
             }
             
@@ -513,9 +496,12 @@ class GameSessionService:
     def _calculate_progress_indicators(self, session: GameSession) -> Dict[str, Any]:
         """Calculate progress indicators and milestones"""
         try:
+            # Use levels_completed as progress markers since progress_markers_hit doesn't exist
+            progress_markers = session.levels_completed if session.levels_completed else 0
+            
             return {
-                "achievements_earned": len(session.achievements_unlocked or []),
-                "progress_markers": len(session.progress_markers_hit or []),
+                "achievements_earned": len(session.achievement_unlocked or []),
+                "progress_markers": progress_markers,
                 "skill_areas_addressed": [],  # Would be derived from scenario type
                 "milestone_proximity": "unknown",  # Would require child's profile
                 "therapeutic_goals_progress": {}  # Would require goal tracking
@@ -562,9 +548,8 @@ class GameSessionService:
                 recommendations.append("Reduce difficulty level")
             elif help_ratio < 0.05:
                 recommendations.append("Increase challenge level")
-            
-            # Support recommendations
-            if session.pause_count and session.pause_count > 3:
+              # Support recommendations based on help requests
+            if session.help_requests and session.help_requests > 3:
                 recommendations.append("Consider additional break prompts")
             
             return recommendations
@@ -630,11 +615,11 @@ class GameSessionService:
             return "unknown"
         
         duration_minutes = session.duration_seconds / 60
-        pause_frequency = (session.pause_count or 0) / duration_minutes if duration_minutes > 0 else 0
         
-        if pause_frequency < 0.5 and duration_minutes >= 10:
+        # Use duration as primary indicator since pause_count doesn't exist
+        if duration_minutes >= 15:
             return "good"
-        elif pause_frequency < 1.0:
+        elif duration_minutes >= 8:
             return "moderate"
         else:
             return "limited"
@@ -646,7 +631,7 @@ class GameSessionService:
         
         help_ratio = (session.help_requests or 0) / max(session.interactions_count or 1, 1)
         if help_ratio < 0.1:
-            return "good"
+            return "good"        
         elif help_ratio < 0.3:
             return "moderate"
         else:
@@ -654,9 +639,9 @@ class GameSessionService:
     
     def _assess_social_engagement(self, session: GameSession) -> str:
         """Assess social engagement levels"""
-        # This would be enhanced with actual social interaction data
-        if session.support_person_present:
-            return "supported"
+        # Since support_person_present field doesn't exist, use other indicators
+        if session.help_requests and session.help_requests > 0:
+            return "interactive"
         else:
             return "independent"
     
@@ -671,13 +656,11 @@ class GameSessionService:
             return "independent"
         else:
             return "dependent"
-    
     def _recommend_difficulty_adjustment(self, session: GameSession) -> str:
         """Recommend difficulty adjustments for future sessions"""
         success_rate = 0
-        if session.correct_responses and session.incorrect_responses:
-            total = session.correct_responses + session.incorrect_responses
-            success_rate = session.correct_responses / total
+        if session.correct_responses and session.interactions_count:
+            success_rate = session.correct_responses / session.interactions_count
         
         if success_rate > 0.9:
             return "increase"
@@ -704,14 +687,11 @@ class GameSessionService:
     def _recommend_environmental_changes(self, session: GameSession) -> List[str]:
         """Recommend environmental modifications"""
         recommendations = []
-        
-        if session.pause_count and session.pause_count > 3:
-            recommendations.append("reduce_environmental_distractions")
-        
+          # Check if session shows signs of needing environmental changes
         if session.exit_reason == "overwhelmed":
             recommendations.append("provide_calm_space")
         
-        if not session.support_person_present and session.help_requests and session.help_requests > 5:
+        if session.help_requests and session.help_requests > 5:
             recommendations.append("consider_support_person")
         
         return recommendations
@@ -719,16 +699,13 @@ class GameSessionService:
     def _recommend_support_strategies(self, session: GameSession) -> List[str]:
         """Recommend support strategies"""
         recommendations = []
-        
         help_ratio = (session.help_requests or 0) / max(session.interactions_count or 1, 1)
         
         if help_ratio > 0.3:
             recommendations.append("provide_visual_cues")
             recommendations.append("break_tasks_into_smaller_steps")
         
-        if session.pause_count and session.pause_count > 2:
-            recommendations.append("schedule_regular_breaks")
-        
+        # Check emotional data for stress indicators
         emotional_data = session.emotional_data or {}
         if len(emotional_data.get("stress_indicators", [])) > 2:
             recommendations.append("implement_calming_strategies")
@@ -1029,125 +1006,703 @@ class AnalyticsService:
             logger.error(f"Error identifying behavioral patterns for child {child_id}: {str(e)}")
             return {"error": str(e)}
     
-    # Helper methods for analytics calculations
+    def get_session_analytics(self, child_id: int, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+        """
+        Get comprehensive session analytics for a child within a date range
+        
+        Args:
+            child_id: Child ID for analytics
+            start_date: Start date for analysis
+            end_date: End date for analysis
+            
+        Returns:
+            Dictionary with session analytics
+        """
+        try:
+            # Get sessions in date range
+            sessions = self.db.query(GameSession).filter(
+                and_(
+                    GameSession.child_id == child_id,
+                    GameSession.started_at >= start_date,
+                    GameSession.started_at <= end_date
+                )
+            ).order_by(GameSession.started_at).all()
+            
+            if not sessions:
+                return {"error": "No sessions found in date range"}
+            
+            # Generate comprehensive analytics
+            progress_trends = self.calculate_progress_trends(sessions)
+            emotional_patterns = self.analyze_emotional_patterns(sessions)
+            engagement_metrics = self.generate_engagement_metrics(sessions)
+            behavioral_patterns = self.identify_behavioral_patterns(child_id)
+            
+            return {
+                "child_id": child_id,
+                "date_range": {
+                    "start": start_date.isoformat(),
+                    "end": end_date.isoformat()
+                },
+                "session_count": len(sessions),
+                "progress_trends": progress_trends,
+                "emotional_patterns": emotional_patterns,
+                "engagement_metrics": engagement_metrics,
+                "behavioral_patterns": behavioral_patterns,
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting session analytics for child {child_id}: {str(e)}")
+            return {"error": str(e)}
+    
+    def get_progress_trends(self, child_id: int, metric: str, time_period: str) -> Dict[str, Any]:
+        """
+        Get progress trends for a specific metric and time period
+        
+        Args:
+            child_id: Child ID for analysis
+            metric: Metric to analyze (e.g., 'anxiety_reduction', 'skill_development')
+            time_period: Time period for analysis (e.g., '30_days', '90_days')
+            
+        Returns:
+            Dictionary with progress trend analysis
+        """
+        try:
+            # Parse time period
+            if time_period == "30_days":
+                days = 30
+            elif time_period == "90_days":
+                days = 90
+            else:
+                days = int(time_period.split('_')[0]) if '_' in time_period else 30
+            
+            # Get sessions for the time period
+            end_date = datetime.now(timezone.utc)
+            start_date = end_date - timedelta(days=days)
+            
+            sessions = self.db.query(GameSession).filter(
+                and_(
+                    GameSession.child_id == child_id,
+                    GameSession.started_at >= start_date
+                )
+            ).order_by(GameSession.started_at).all()
+            
+            if not sessions:
+                return {"error": f"No sessions found for child {child_id} in {time_period}"}
+            
+            # Calculate specific metric trends
+            if metric == "anxiety_reduction":
+                trend_data = self._analyze_anxiety_reduction_trend(sessions)
+            elif metric == "skill_development":
+                trend_data = self._analyze_skill_development_trend(sessions)
+            elif metric == "engagement":
+                trend_data = self._calculate_engagement_trend(sessions)
+            else:
+                # Default to comprehensive progress trends
+                trend_data = self.calculate_progress_trends(sessions)
+            
+            return {
+                "child_id": child_id,
+                "metric": metric,
+                "time_period": time_period,
+                "trend_data": trend_data,
+                "session_count": len(sessions),
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting progress trends for child {child_id}: {str(e)}")
+            return {"error": str(e)}
+    
+    def get_scenario_insights(self, child_id: int, scenario_type: str) -> Dict[str, Any]:
+        """
+        Get insights for a specific scenario type
+        
+        Args:
+            child_id: Child ID for analysis
+            scenario_type: Type of scenario to analyze (e.g., 'dental_visit')
+            
+        Returns:
+            Dictionary with scenario-specific insights
+        """
+        try:
+            # Get sessions for the specific scenario type
+            sessions = self.db.query(GameSession).filter(
+                and_(
+                    GameSession.child_id == child_id,
+                    GameSession.session_type == scenario_type
+                )
+            ).order_by(GameSession.started_at).all()
+            
+            if not sessions:
+                return {"error": f"No {scenario_type} sessions found for child {child_id}"}
+            
+            # Analyze scenario-specific patterns
+            performance_metrics = self._analyze_scenario_performance(sessions, scenario_type)
+            emotional_journey = self._analyze_scenario_emotional_journey(sessions)
+            learning_outcomes = self._analyze_scenario_learning_outcomes(sessions)
+            adaptation_patterns = self._analyze_scenario_adaptation(sessions)
+            
+            return {
+                "child_id": child_id,
+                "scenario_type": scenario_type,
+                "session_count": len(sessions),
+                "date_range": {
+                    "first_session": sessions[0].started_at.isoformat(),
+                    "last_session": sessions[-1].started_at.isoformat()
+                },
+                "performance_metrics": performance_metrics,
+                "emotional_journey": emotional_journey,
+                "learning_outcomes": learning_outcomes,
+                "adaptation_patterns": adaptation_patterns,
+                "recommendations": self._generate_scenario_recommendations(sessions, scenario_type),
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting scenario insights for child {child_id}: {str(e)}")
+            return {"error": str(e)}
+    
+    # Helper methods for the new analytics functions
+    def _analyze_anxiety_reduction_trend(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze anxiety reduction trends across sessions"""
+        try:
+            anxiety_levels = []
+            for session in sessions:
+                emotional_data = session.emotional_data or {}
+                initial_state = emotional_data.get("initial_state", "unknown")
+                final_state = emotional_data.get("final_state", "unknown")
+                
+                # Simple anxiety level mapping
+                anxiety_map = {"overwhelmed": 5, "anxious": 4, "nervous": 3, "calm": 2, "happy": 1}
+                initial_anxiety = anxiety_map.get(initial_state, 3)
+                final_anxiety = anxiety_map.get(final_state, 3)                
+                anxiety_levels.append({
+                    "session_date": session.started_at.isoformat(),
+                    "initial_anxiety": initial_anxiety,
+                    "final_anxiety": final_anxiety,
+                    "reduction": initial_anxiety - final_anxiety
+                })
+            
+            if anxiety_levels:
+                avg_reduction = sum(a["reduction"] for a in anxiety_levels) / len(anxiety_levels)
+                trend = "improving" if avg_reduction > 0.5 else "stable" if avg_reduction > -0.5 else "declining"
+                
+                return {
+                    "trend": trend,
+                    "average_reduction": avg_reduction,
+                    "anxiety_levels": anxiety_levels
+                }
+            else:
+                return {"trend": "insufficient_data", "average_reduction": 0, "anxiety_levels": []}
+                
+        except Exception as e:
+            logger.error(f"Error analyzing anxiety reduction trend: {str(e)}")
+            return {"trend": "error", "average_reduction": 0, "anxiety_levels": []}
+    
+    # Additional missing helper methods for AnalyticsService
+    
     def _calculate_score_trend(self, sessions: List[GameSession]) -> Dict[str, Any]:
-        """Calculate score trend analysis"""
-        scores = [s.score or 0 for s in sessions if s.score is not None]
-        if len(scores) < 2:
-            return {"trend": "insufficient_data"}
-        
-        # Linear regression for trend
-        x = list(range(len(scores)))
-        slope = self._calculate_linear_trend(x, scores)
-        
-        return {
-            "trend": "improving" if slope > 0.1 else "declining" if slope < -0.1 else "stable",
-            "slope": round(slope, 3),
-            "average_score": round(statistics.mean(scores), 1),
-            "score_variance": round(statistics.variance(scores), 2) if len(scores) > 1 else 0,
-            "recent_performance": scores[-3:] if len(scores) >= 3 else scores
-        }
+        """Calculate score trends across sessions"""
+        try:
+            if len(sessions) < 2:
+                return {"trend": "insufficient_data", "direction": "unknown", "slope": 0}
+            
+            scores = [s.score or 0 for s in sessions if s.score is not None]
+            if len(scores) < 2:
+                return {"trend": "insufficient_data", "direction": "unknown", "slope": 0}
+            
+            # Simple linear trend calculation
+            avg_early = sum(scores[:len(scores)//2]) / (len(scores)//2)
+            avg_late = sum(scores[len(scores)//2:]) / (len(scores) - len(scores)//2)
+            
+            slope = avg_late - avg_early
+            
+            if slope > 5:
+                trend = "improving"
+                direction = "upward"
+            elif slope < -5:
+                trend = "declining"
+                direction = "downward"
+            else:
+                trend = "stable"
+                direction = "steady"
+            
+            return {
+                "trend": trend,
+                "direction": direction,
+                "slope": slope,
+                "early_average": avg_early,
+                "late_average": avg_late
+            }
+        except Exception as e:
+            logger.error(f"Error calculating score trend: {str(e)}")
+            return {"trend": "error", "direction": "unknown", "slope": 0}
     
     def _calculate_engagement_trend(self, sessions: List[GameSession]) -> Dict[str, Any]:
-        """Calculate engagement trend analysis"""
-        engagement_scores = []
-        for session in sessions:
-            score = self._calculate_detailed_engagement_score(session)
-            engagement_scores.append(score)
-        
-        if len(engagement_scores) < 2:
-            return {"trend": "insufficient_data"}
-        
-        x = list(range(len(engagement_scores)))
-        slope = self._calculate_linear_trend(x, engagement_scores)
-        
-        return {
-            "trend": "improving" if slope > 0.05 else "declining" if slope < -0.05 else "stable",
-            "slope": round(slope, 4),
-            "average_engagement": round(statistics.mean(engagement_scores), 3),
-            "engagement_consistency": 1 - (statistics.stdev(engagement_scores) / statistics.mean(engagement_scores)) if statistics.mean(engagement_scores) > 0 else 0
-        }
+        """Calculate engagement trends across sessions"""
+        try:
+            if len(sessions) < 2:
+                return {"trend": "insufficient_data", "direction": "unknown", "slope": 0}
+            
+            engagement_scores = []
+            for session in sessions:
+                if session.duration_seconds and session.interactions_count:
+                    # Calculate simple engagement score based on interactions per minute
+                    interactions_per_minute = (session.interactions_count / session.duration_seconds) * 60
+                    engagement_score = min(interactions_per_minute / 5.0, 1.0)  # Normalize to 0-1
+                    engagement_scores.append(engagement_score)
+                else:
+                    engagement_scores.append(0.0)
+            
+            if len(engagement_scores) < 2:
+                return {"trend": "insufficient_data", "direction": "unknown", "slope": 0}
+            
+            # Simple linear trend calculation
+            avg_early = sum(engagement_scores[:len(engagement_scores)//2]) / (len(engagement_scores)//2)
+            avg_late = sum(engagement_scores[len(engagement_scores)//2:]) / (len(engagement_scores) - len(engagement_scores)//2)
+            
+            slope = avg_late - avg_early
+            
+            if slope > 0.1:
+                trend = "improving"
+                direction = "upward"
+            elif slope < -0.1:
+                trend = "declining"
+                direction = "downward"
+            else:
+                trend = "stable"
+                direction = "steady"
+            
+            return {
+                "trend": trend,
+                "direction": direction,
+                "slope": slope,
+                "early_average": avg_early,
+                "late_average": avg_late,
+                "engagement_scores": engagement_scores
+            }
+        except Exception as e:
+            logger.error(f"Error calculating engagement trend: {str(e)}")
+            return {"trend": "error", "direction": "unknown", "slope": 0}
     
     def _calculate_duration_trend(self, sessions: List[GameSession]) -> Dict[str, Any]:
-        """Calculate session duration trend analysis"""
-        durations = [s.duration_seconds / 60 for s in sessions if s.duration_seconds]
-        if len(durations) < 2:
-            return {"trend": "insufficient_data"}
-        
-        x = list(range(len(durations)))
-        slope = self._calculate_linear_trend(x, durations)
-        
-        return {
-            "trend": "increasing" if slope > 0.5 else "decreasing" if slope < -0.5 else "stable",
-            "slope_minutes_per_session": round(slope, 2),
-            "average_duration_minutes": round(statistics.mean(durations), 1),
-            "optimal_range_adherence": len([d for d in durations if 10 <= d <= 20]) / len(durations)
-        }
+        """Calculate duration trends across sessions"""
+        try:
+            if len(sessions) < 2:
+                return {"trend": "insufficient_data", "direction": "unknown", "slope": 0}
+            
+            durations = []
+            for session in sessions:
+                if session.duration_seconds:
+                    durations.append(session.duration_seconds / 60)  # Convert to minutes
+                else:
+                    durations.append(0.0)
+            
+            if len(durations) < 2:
+                return {"trend": "insufficient_data", "direction": "unknown", "slope": 0}
+            
+            # Simple linear trend calculation
+            avg_early = sum(durations[:len(durations)//2]) / (len(durations)//2)
+            avg_late = sum(durations[len(durations)//2:]) / (len(durations) - len(durations)//2)
+            
+            slope = avg_late - avg_early
+            
+            if slope > 2:  # More than 2 minutes improvement
+                trend = "improving"
+                direction = "upward"
+            elif slope < -2:  # More than 2 minutes decline
+                trend = "declining"
+                direction = "downward"
+            else:
+                trend = "stable"
+                direction = "steady"
+            
+            return {
+                "trend": trend,
+                "direction": direction,
+                "slope": slope,
+                "early_average": avg_early,
+                "late_average": avg_late,
+                "duration_minutes": durations
+            }
+        except Exception as e:
+            logger.error(f"Error calculating duration trend: {str(e)}")
+            return {"trend": "error", "direction": "unknown", "slope": 0}
     
-    def _calculate_linear_trend(self, x: List[int], y: List[float]) -> float:
-        """Calculate linear trend slope using least squares"""
-        if len(x) != len(y) or len(x) < 2:
-            return 0.0
-        
-        n = len(x)
-        sum_x = sum(x)
-        sum_y = sum(y)
-        sum_xy = sum(x[i] * y[i] for i in range(n))
-        sum_x2 = sum(xi ** 2 for xi in x)
-        
-        denominator = n * sum_x2 - sum_x ** 2
-        if denominator == 0:
-            return 0.0
-        
-        slope = (n * sum_xy - sum_x * sum_y) / denominator
-        return slope
+    def _analyze_emotional_state_distribution(self, emotional_states: List[str]) -> Dict[str, Any]:
+        """Analyze distribution of emotional states"""
+        try:
+            if not emotional_states:
+                return {"distribution": {}, "most_common": "unknown", "stability": "unknown"}
+            
+            # Count state occurrences
+            state_counts = Counter(emotional_states)
+            total = len(emotional_states)
+            
+            # Calculate distribution percentages
+            distribution = {state: (count / total) * 100 for state, count in state_counts.items()}
+            
+            # Find most common state
+            most_common = state_counts.most_common(1)[0][0] if state_counts else "unknown"
+            
+            # Assess stability (fewer unique states = more stable)
+            unique_states = len(state_counts)
+            if unique_states <= 2:
+                stability = "high"
+            elif unique_states <= 4:
+                stability = "moderate"
+            else:
+                stability = "low"
+            
+            return {
+                "distribution": distribution,
+                "most_common": most_common,
+                "stability": stability,
+                "unique_states": unique_states
+            }
+        except Exception as e:
+            logger.error(f"Error analyzing emotional state distribution: {str(e)}")
+            return {"distribution": {}, "most_common": "unknown", "stability": "unknown"}
     
     def _calculate_detailed_engagement_score(self, session: GameSession) -> float:
-        """Calculate detailed engagement score with multiple factors"""
+        """Calculate detailed engagement score for a session"""
         try:
-            # Use the existing engagement calculation from GameSessionService
-            service = GameSessionService(self.db)
-            return service._calculate_engagement_score(session)
+            score = 0.0
+            factors = 0
+            
+            # Duration factor
+            if session.duration_seconds:
+                duration_minutes = session.duration_seconds / 60
+                if 8 <= duration_minutes <= 25:  # Optimal range
+                    score += 0.3
+                    factors += 1
+                elif duration_minutes > 0:
+                    score += max(0, 0.3 - abs(duration_minutes - 16.5) * 0.02)
+                    factors += 1
+            
+            # Interaction factor
+            if session.interactions_count and session.duration_seconds:
+                interactions_per_minute = session.interactions_count / (session.duration_seconds / 60)
+                if 1 <= interactions_per_minute <= 8:
+                    score += 0.25
+                    factors += 1
+            
+            # Success rate factor
+            if session.interactions_count and session.correct_responses:
+                success_rate = session.correct_responses / session.interactions_count
+                score += success_rate * 0.2
+                factors += 1
+            
+            # Completion factor
+            if session.completion_status == "completed":
+                score += 0.15
+                factors += 1
+            
+            # Help-seeking appropriateness
+            if session.interactions_count:
+                help_ratio = (session.help_requests or 0) / session.interactions_count
+                if 0.1 <= help_ratio <= 0.3:  # Appropriate help-seeking
+                    score += 0.1
+                    factors += 1
+            
+            return score / factors if factors > 0 else 0.0
+            
         except Exception as e:
             logger.error(f"Error calculating detailed engagement score: {str(e)}")
             return 0.0
     
-    # Additional helper methods would be implemented here for all the analysis functions
-    # This is a substantial implementation that provides the foundation for the analytics service
+    def _analyze_attention_patterns(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze attention patterns across sessions"""
+        try:
+            attention_data = []
+            
+            for session in sessions:
+                if session.duration_seconds:
+                    duration_minutes = session.duration_seconds / 60
+                    
+                    # Simple attention categorization based on duration
+                    if duration_minutes >= 20:
+                        attention_level = "high"
+                    elif duration_minutes >= 10:
+                        attention_level = "moderate"
+                    else:
+                        attention_level = "limited"
+                    
+                    attention_data.append({
+                        "session_id": session.id,
+                        "duration_minutes": duration_minutes,
+                        "attention_level": attention_level
+                    })
+            
+            if not attention_data:
+                return {"average_duration": 0, "attention_trend": "unknown"}
+            
+            # Calculate averages
+            avg_duration = sum(d["duration_minutes"] for d in attention_data) / len(attention_data)
+            
+            # Determine trend
+            if len(attention_data) >= 3:
+                recent_avg = sum(d["duration_minutes"] for d in attention_data[-3:]) / 3
+                early_avg = sum(d["duration_minutes"] for d in attention_data[:3]) / min(3, len(attention_data))
+                
+                if recent_avg > early_avg + 2:
+                    trend = "improving"
+                elif recent_avg < early_avg - 2:
+                    trend = "declining"
+                else:
+                    trend = "stable"
+            else:
+                trend = "insufficient_data"
+            
+            return {
+                "average_duration": round(avg_duration, 2),
+                "attention_trend": trend,
+                "attention_data": attention_data
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing attention patterns: {str(e)}")
+            return {"average_duration": 0, "attention_trend": "unknown"}
     
-    def _analyze_emotional_state_distribution(self, emotional_states: List[Dict]) -> Dict[str, Any]:
-        """Analyze distribution of emotional states"""
-        if not emotional_states:
-            return {"error": "No emotional state data"}
-        
-        state_counts = Counter(state["state"] for state in emotional_states)
-        total_states = len(emotional_states)
-        
-        return {
-            "distribution": {state: count/total_states for state, count in state_counts.items()},
-            "most_common": state_counts.most_common(3),
-            "diversity_index": len(state_counts) / total_states if total_states > 0 else 0
-        }
+    # Placeholder methods for remaining analytics functionality
+    def _calculate_learning_velocity(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Calculate learning velocity metrics"""
+        return {"velocity": "average", "trend": "stable", "note": "placeholder_implementation"}
+    
+    def _analyze_skill_development(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze skill development patterns"""
+        return {"development": "steady", "areas": [], "note": "placeholder_implementation"}
+    
+    def _analyze_behavioral_consistency(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze behavioral consistency patterns"""
+        return {"consistency": "moderate", "note": "placeholder_implementation"}
+    
+    def _predict_future_performance(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Predict future performance based on trends"""
+        return {"prediction": "stable", "confidence": "medium", "note": "placeholder_implementation"}
+    
+    def _recommend_session_scheduling(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Recommend optimal session scheduling"""
+        return {"frequency": "2-3_times_per_week", "duration": "15-20_minutes", "note": "placeholder_implementation"}
+    
+    def _identify_risk_indicators(self, sessions: List[GameSession]) -> List[str]:
+        """Identify potential risk indicators"""
+        return ["placeholder_risk_indicator"]
+    
+    def _assess_therapeutic_goal_progress(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Assess progress toward therapeutic goals"""
+        return {"progress": "on_track", "note": "placeholder_implementation"}
+    
+    def _assess_intervention_effectiveness(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Assess effectiveness of interventions"""
+        return {"effectiveness": "moderate", "note": "placeholder_implementation"}
+    
+    def _assess_family_involvement_impact(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Assess impact of family involvement"""
+        return {"impact": "positive", "note": "placeholder_implementation"}
+    
+    # Additional placeholder methods for comprehensive functionality
+    def _analyze_emotional_triggers(self, triggers: List[str]) -> Dict[str, Any]:
+        """Analyze emotional triggers"""
+        return {"common_triggers": [], "note": "placeholder_implementation"}
+    
+    def _analyze_regulation_strategies(self, strategies: List[str], sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze regulation strategy effectiveness"""
+        return {"effective_strategies": [], "note": "placeholder_implementation"}
+    
+    def _analyze_emotional_trajectory(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze emotional trajectory over time"""
+        return {"trajectory": "stable", "note": "placeholder_implementation"}
     
     def _get_most_common_initial_state(self, sessions: List[GameSession]) -> str:
         """Get most common initial emotional state"""
-        initial_states = []
+        states = []
         for session in sessions:
             emotional_data = session.emotional_data or {}
             if emotional_data.get("initial_state"):
-                initial_states.append(emotional_data["initial_state"])
+                states.append(emotional_data["initial_state"])
         
-        return Counter(initial_states).most_common(1)[0][0] if initial_states else "unknown"
+        if states:
+            return Counter(states).most_common(1)[0][0]
+        return "unknown"
     
     def _get_most_common_final_state(self, sessions: List[GameSession]) -> str:
         """Get most common final emotional state"""
-        final_states = []
+        states = []
         for session in sessions:
             emotional_data = session.emotional_data or {}
             if emotional_data.get("final_state"):
-                final_states.append(emotional_data["final_state"])
+                states.append(emotional_data["final_state"])
         
-        return Counter(final_states).most_common(1)[0][0] if final_states else "unknown"
+        if states:
+            return Counter(states).most_common(1)[0][0]
+        return "unknown"
     
-    # Many more helper methods would be implemented for complete functionality
-    # This provides a solid foundation for the analytics service implementation
+    def _calculate_emotional_volatility(self, sessions: List[GameSession]) -> str:
+        """Calculate emotional volatility across sessions"""
+        total_transitions = 0
+        for session in sessions:
+            emotional_data = session.emotional_data or {}
+            total_transitions += len(emotional_data.get("transitions", []))
+        
+        avg_transitions = total_transitions / len(sessions) if sessions else 0
+        
+        if avg_transitions > 3:
+            return "high"
+        elif avg_transitions > 1:
+            return "moderate"
+        else:
+            return "low"
+    
+    # Additional engagement and behavioral analysis methods (placeholders)
+    def _calculate_overall_engagement_metrics(self, engagement_scores: List[Dict]) -> Dict[str, Any]:
+        """Calculate overall engagement metrics"""
+        if not engagement_scores:
+            return {"average": 0, "trend": "unknown"}
+        
+        scores = [e["engagement_score"] for e in engagement_scores]
+        return {
+            "average": sum(scores) / len(scores),
+            "trend": "stable",
+            "note": "placeholder_implementation"
+        }
+    
+    def _analyze_engagement_temporal_patterns(self, engagement_scores: List[Dict]) -> Dict[str, Any]:
+        """Analyze temporal engagement patterns"""
+        return {"pattern": "consistent", "note": "placeholder_implementation"}
+    
+    def _analyze_scenario_engagement_patterns(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze engagement patterns by scenario"""
+        return {"preferences": [], "note": "placeholder_implementation"}
+    
+    def _analyze_environmental_engagement_factors(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze environmental factors affecting engagement"""
+        return {"factors": [], "note": "placeholder_implementation"}
+    
+    def _generate_engagement_optimization_recommendations(self, sessions: List[GameSession]) -> List[str]:
+        """Generate engagement optimization recommendations"""
+        return ["placeholder_recommendation"]
+    
+    def _identify_peak_engagement_factors(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Identify factors that lead to peak engagement"""
+        return {"factors": [], "note": "placeholder_implementation"}
+    
+    def _identify_engagement_improvement_opportunities(self, sessions: List[GameSession]) -> List[str]:
+        """Identify engagement improvement opportunities"""
+        return ["placeholder_opportunity"]
+    
+    def _calculate_engagement_percentile(self, sessions: List[GameSession]) -> float:
+        """Calculate engagement percentile ranking"""
+        return 50.0  # Placeholder
+    
+    def _assess_engagement_goal_achievement(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Assess engagement goal achievement"""
+        return {"achievement": "on_track", "note": "placeholder_implementation"}
+    
+    def _generate_comparative_engagement_analysis(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Generate comparative engagement analysis"""
+        return {"comparison": "average", "note": "placeholder_implementation"}
+    
+    # Behavioral pattern analysis methods (placeholders)
+    def _analyze_social_interaction_patterns(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze social interaction patterns"""
+        return {"pattern": "typical", "note": "placeholder_implementation"}
+    
+    def _analyze_sensory_processing_patterns(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze sensory processing patterns"""
+        return {"pattern": "typical", "note": "placeholder_implementation"}
+    
+    def _analyze_communication_patterns(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze communication patterns"""
+        return {"pattern": "developing", "note": "placeholder_implementation"}
+    
+    def _analyze_adaptive_behavior_patterns(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze adaptive behavior patterns"""
+        return {"pattern": "appropriate", "note": "placeholder_implementation"}
+    
+    def _identify_behavioral_themes(self, sessions: List[GameSession]) -> List[str]:
+        """Identify consistent behavioral themes"""
+        return ["placeholder_theme"]
+    
+    def _analyze_intervention_responsiveness(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze responsiveness to interventions"""
+        return {"responsiveness": "positive", "note": "placeholder_implementation"}
+    
+    def _generate_behavioral_clinical_insights(self, sessions: List[GameSession]) -> List[str]:
+        """Generate behavioral clinical insights"""
+        return ["placeholder_insight"]
+    
+    def _generate_family_behavioral_guidance(self, sessions: List[GameSession]) -> List[str]:
+        """Generate family behavioral guidance"""
+        return ["placeholder_guidance"]
+    
+    def _recommend_behavioral_interventions(self, sessions: List[GameSession]) -> List[str]:
+        """Recommend behavioral interventions"""
+        return ["placeholder_intervention"]
+    
+    def _identify_behavioral_monitoring_priorities(self, sessions: List[GameSession]) -> List[str]:
+        """Identify behavioral monitoring priorities"""
+        return ["placeholder_priority"]
+    
+    def _assess_behavioral_data_quality(self, sessions: List[GameSession]) -> str:
+        """Assess quality of behavioral data"""
+        return "good"
+    
+    def _analyze_developmental_behavioral_trends(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze developmental behavioral trends"""
+        return {"trend": "positive", "note": "placeholder_implementation"}
+    
+    def _assess_behavioral_milestone_progress(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Assess behavioral milestone progress"""
+        return {"progress": "on_track", "note": "placeholder_implementation"}
+    
+    def _identify_behavioral_regression_indicators(self, sessions: List[GameSession]) -> List[str]:
+        """Identify behavioral regression indicators"""
+        return []
+    
+    # Scenario-specific analysis methods (placeholders)
+    def _analyze_skill_development_trend(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze skill development trends"""
+        return {"trend": "improving", "note": "placeholder_implementation"}
+    
+    def _analyze_scenario_performance(self, sessions: List[GameSession], scenario_type: str) -> Dict[str, Any]:
+        """Analyze performance in specific scenario"""
+        return {"performance": "improving", "note": "placeholder_implementation"}
+    
+    def _analyze_scenario_emotional_journey(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze emotional journey in scenario"""
+        return {"journey": "positive", "note": "placeholder_implementation"}
+    
+    def _analyze_scenario_learning_outcomes(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze learning outcomes in scenario"""
+        return {"outcomes": "positive", "note": "placeholder_implementation"}
+    
+    def _analyze_scenario_adaptation(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze adaptation patterns in scenario"""
+        return {"adaptation": "good", "note": "placeholder_implementation"}
+    
+    def _generate_scenario_recommendations(self, sessions: List[GameSession], scenario_type: str) -> List[str]:
+        """Generate scenario-specific recommendations"""
+        return ["placeholder_recommendation"]
+    
+    # Additional emotional analysis methods (placeholders)
+    def _analyze_emotional_stability_trends(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze emotional stability trends"""
+        return {"stability": "improving", "note": "placeholder_implementation"}
+    
+    def _analyze_seasonal_emotional_patterns(self, sessions: List[GameSession]) -> Dict[str, Any]:
+        """Analyze seasonal emotional patterns"""
+        return {"pattern": "stable", "note": "placeholder_implementation"}
+    
+    def _identify_emotional_concerns(self, sessions: List[GameSession]) -> List[str]:
+        """Identify emotional areas of concern"""
+        return []
+    
+    def _identify_positive_emotional_indicators(self, sessions: List[GameSession]) -> List[str]:
+        """Identify positive emotional indicators"""
+        return ["improved_regulation"]
+    
+    def _recommend_emotional_interventions(self, sessions: List[GameSession]) -> List[str]:
+        """Recommend emotional interventions"""
+        return ["placeholder_intervention"]

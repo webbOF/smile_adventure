@@ -227,10 +227,10 @@ class Settings(BaseSettings):
             "pool_size": self.DATABASE_POOL_SIZE,
             "max_overflow": self.DATABASE_MAX_OVERFLOW,
             "pool_timeout": self.DATABASE_POOL_TIMEOUT,
-            "pool_recycle": self.DATABASE_POOL_RECYCLE,
-            "pool_pre_ping": True,
+            "pool_recycle": self.DATABASE_POOL_RECYCLE,        "pool_pre_ping": True,
             "echo": self.DEBUG,
-        }    
+        }
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

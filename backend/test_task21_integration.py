@@ -20,7 +20,6 @@ from app.reports.schemas import GameSessionCreate, GameSessionComplete
 
 class TestTask21Integration:
     """Test suite for Task 21 Game Session Services & Analytics"""
-    
     @pytest.fixture(scope="class")
     def db_session(self):
         """Create test database session"""
@@ -28,20 +27,26 @@ class TestTask21Integration:
         db = next(get_db())
         yield db
         db.close()
-    
     @pytest.fixture(scope="class")
     def test_child(self, db_session):
         """Create a test child for session testing"""
         child = Child(
-            first_name="Test",
-            last_name="Child",
+            name="Test Child",
+            age=10,
             date_of_birth=datetime(2015, 1, 1),
-            gender="male",
-            autism_diagnosis=True,
+            diagnosis="Autism Spectrum Disorder",
             diagnosis_date=datetime(2018, 6, 1),
-            is_active=True
+            is_active=True,
+            parent_id=1,  # Using existing parent from seed data
+            points=0,
+            level=1,
+            achievements=[],
+            current_therapies=[],
+            emergency_contacts=[],
+            safety_protocols={},
+            progress_notes=[]
         )
-          db_session.add(child)
+        db_session.add(child)
         db_session.commit()
         db_session.refresh(child)
         
@@ -84,8 +89,8 @@ class TestTask21Integration:
         
         print("✅ Task 21 Requirement 1: GameSessionService.create_session - PASSED")
         return session
-    
-    def test_task21_requirement_2_end_session(self, game_session_service, test_child):        """
+    def test_task21_requirement_2_end_session(self, game_session_service, test_child):
+        """
         Test GameSessionService.end_session functionality
         Verifies session completion with comprehensive analysis
         """
@@ -106,8 +111,7 @@ class TestTask21Integration:
         session.interactions_count = 15
         session.correct_responses = 12
         session.incorrect_responses = 3
-        
-        # End the session
+          # End the session
         completion_data = GameSessionComplete(
             exit_reason="completed",
             session_summary_notes="Great progress on social interactions"
@@ -120,7 +124,7 @@ class TestTask21Integration:
         assert completed_session.exit_reason == "completed"
         assert completed_session.ended_at is not None
         assert completed_session.duration_seconds is not None
-        assert completed_session.ai_analysis is not None
+        assert completed_session.interaction_patterns is not None
         
         print("✅ Task 21 Requirement 2: GameSessionService.end_session - PASSED")
         return completed_session
@@ -414,14 +418,12 @@ def test_task21_complete_verification():
         # Setup
         Base.metadata.create_all(bind=engine)
         db = next(get_db())
-        
-        # Create test child
+          # Create test child
         child = Child(
-            first_name="Verification",
-            last_name="Test",
+            name="Verification Test",
+            age=8,
             date_of_birth=datetime(2015, 6, 15),
-            gender="female",
-            autism_diagnosis=True,
+            diagnosis="Autism Spectrum Disorder",
             is_active=True
         )
         

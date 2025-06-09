@@ -127,13 +127,14 @@ class Child(Base):
     baseline_assessment = Column(JSON, nullable=True, doc="Initial assessment data")
     last_assessment_date = Column(DateTime(timezone=True), nullable=True)
     progress_notes = Column(JSON, default=list, nullable=False)
-    
-    # Status and metadata
+      # Status and metadata
     is_active = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
-      # Relationships    parent = relationship("User", back_populates="children")
-    activities = relationship("Activity", back_populates="child", 
+    
+    # Relationships
+    parent = relationship("User", back_populates="children")
+    activities = relationship("Activity", back_populates="child",
                             cascade=CASCADE_DELETE_ORPHAN, lazy="dynamic")
     game_sessions = relationship("GameSession", back_populates="child", 
                                cascade=CASCADE_DELETE_ORPHAN, lazy="dynamic")
