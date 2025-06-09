@@ -1686,6 +1686,43 @@ class SystemHealthResponse(BaseModel):
     version: str
 
 # =============================================================================
+# CLINICAL ANALYTICS SCHEMAS (TASK 16)
+# =============================================================================
+
+class ClinicalInsightResponse(BaseModel):
+    """Clinical insight response schema"""
+    insight_type: str = Field(..., description="Type of insight")
+    title: str = Field(..., description="Insight title")
+    description: str = Field(..., description="Insight description")
+    confidence_score: float = Field(..., ge=0.0, le=1.0, description="Confidence score")
+    supporting_data: Dict[str, Any] = Field(default_factory=dict, description="Supporting data")
+    recommendations: List[str] = Field(default_factory=list, description="Recommendations")
+    priority: str = Field(..., pattern="^(high|medium|low)$", description="Priority level")
+
+class PopulationAnalyticsRequest(BaseModel):
+    """Population analytics request schema"""
+    date_from: Optional[datetime] = Field(None, description="Start date for analysis")
+    date_to: Optional[datetime] = Field(None, description="End date for analysis")
+    age_min: Optional[int] = Field(None, ge=0, le=25, description="Minimum age filter")
+    age_max: Optional[int] = Field(None, ge=0, le=25, description="Maximum age filter")
+    support_level: Optional[int] = Field(None, ge=1, le=3, description="Support level filter")
+
+class CohortComparisonRequest(BaseModel):
+    """Cohort comparison request schema"""
+    cohorts: List[Dict[str, Any]] = Field(..., min_length=2, max_length=5)
+    metrics: List[str] = Field(default_factory=lambda: ["engagement", "progress", "completion_rate"])
+
+class ClinicalMetricsResponse(BaseModel):
+    """Clinical metrics response schema"""
+    patient_count: int = Field(..., description="Total patient count")
+    total_sessions: int = Field(..., description="Total sessions")
+    average_engagement: float = Field(..., description="Average engagement score")
+    improvement_rate: float = Field(..., description="Improvement rate percentage")
+    completion_rate: float = Field(..., description="Completion rate percentage")
+    assessment_scores: Dict[str, float] = Field(default_factory=dict)
+    behavioral_trends: Dict[str, Any] = Field(default_factory=dict)
+
+# =============================================================================
 # FORWARD REFERENCES RESOLUTION (Updated)
 # =============================================================================
 
