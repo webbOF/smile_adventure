@@ -172,12 +172,21 @@ async def get_child_detail(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=CHILD_NOT_FOUND
-            )
-          # Check permissions
-        if (current_user.role == UserRole.PARENT and child.parent_id != current_user.id):
+            )        # Check permissions - only child's parent or admin can access
+        if not (
+            (current_user.role == UserRole.PARENT and child.parent_id == current_user.id) or
+            current_user.role in [UserRole.ADMIN, UserRole.SUPER_ADMIN]
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                                detail=ACCESS_DENIED_CHILD_PROFILE
+                detail=ACCESS_DENIED_CHILD_PROFILE
+            )
+        
+        # Check if child is active (soft delete check)
+        if not child.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=CHILD_NOT_FOUND
             )
         
         # Get additional metrics for detailed response

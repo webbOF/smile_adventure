@@ -3,7 +3,7 @@ Professional Routes for Task 16 - Clinical Analytics Integration
 Direct professional profile routes as expected by Task 16 tests
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -20,7 +20,7 @@ from app.users.profile_routes import (
 
 router = APIRouter()
 
-@router.post("/professional-profile", response_model=ProfessionalProfileResponse)
+@router.post("/professional-profile", response_model=ProfessionalProfileResponse, status_code=status.HTTP_201_CREATED)
 async def create_professional_profile(
     profile_data: ProfessionalProfileCreate,
     current_user: User = Depends(require_professional),

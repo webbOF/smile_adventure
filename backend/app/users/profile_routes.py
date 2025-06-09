@@ -50,8 +50,7 @@ async def get_detailed_user_profile(
     - Profile completion status
     - Recent activity summary
     """
-    try:
-        # Base user data
+    try:        # Base user data
         profile_data = {
             "id": current_user.id,
             "email": current_user.email,
@@ -63,6 +62,7 @@ async def get_detailed_user_profile(
             "status": current_user.status.value,
             "is_active": current_user.is_active,
             "is_verified": current_user.is_verified,
+            "failed_login_attempts": current_user.failed_login_attempts,
             "email_verified_at": current_user.email_verified_at,
             "last_login_at": current_user.last_login_at,
             "created_at": current_user.created_at,
@@ -269,7 +269,7 @@ async def remove_avatar(
 # PROFESSIONAL PROFILE ROUTES
 # =============================================================================
 
-@router.post("/professional-profile", response_model=ProfessionalProfileResponse)
+@router.post("/professional-profile", response_model=ProfessionalProfileResponse, status_code=status.HTTP_201_CREATED)
 async def create_professional_profile(
     profile_data: ProfessionalProfileCreate,
     current_user: User = Depends(require_professional),
@@ -417,17 +417,62 @@ async def update_user_preferences(
         
         current_user.updated_at = datetime.now(timezone.utc)
         db.commit()
+        db.refresh(current_user)
         
-        # In production, store additional preferences in separate table
+        # Return updated preferences (similar to GET endpoint but with updated values)
         logger.info(f"Preferences updated for user {current_user.id}")
-        return {"message": "Preferences updated successfully"}
+        return {
+            "user_id": current_user.id,
+            "timezone": current_user.timezone,
+            "language": current_user.language,
+            "notification_preferences": {
+                "email_notifications": preferences.get("notifications_enabled", True),
+                "push_notifications": True,
+                "activity_reminders": True,
+                "progress_reports": True
+            },
+            "privacy_settings": {
+                "profile_visibility": preferences.get("privacy_level", "private"),
+                "data_sharing": False
+            },
+            "accessibility_settings": {
+                "high_contrast": False,
+                "large_text": False,
+                "screen_reader": False
+            },
+            "theme": preferences.get("theme", "light"),
+            "notifications_enabled": preferences.get("notifications_enabled", True)
+        }
         
     except Exception as e:
         db.rollback()
         logger.error(f"Error updating preferences for user {current_user.id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update preferences"
+            detail="Failed to update preferences")
+
+@router.get("/profile/completion")
+async def get_profile_completion(
+    current_user: User = Depends(get_current_verified_user),
+    db: Session = Depends(get_db)
+):
+    """Get user profile completion status and score"""
+    try:
+        completion_data = _calculate_profile_completion(current_user, db)
+        return {
+            "user_id": current_user.id,
+            "completion_percentage": completion_data.get("percentage", 0),
+            "completion_score": completion_data.get("score", 0),
+            "total_sections": completion_data.get("total_sections", 10),
+            "missing_fields": completion_data.get("missing_sections", []),
+            "is_complete": completion_data.get("is_complete", False),
+            "recommendations": completion_data.get("recommendations", [])
+        }
+    except Exception as e:
+        logger.error(f"Error getting profile completion for user {current_user.id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve profile completion"
         )
 
 # =============================================================================
@@ -580,6 +625,114 @@ async def search_professionals(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to search professionals"
+        )
+
+# =============================================================================
+# SEARCH AND DISCOVERY ENDPOINTS
+# =============================================================================
+
+@router.post("/profile/search/professionals")
+async def search_professionals_with_filters(
+    search_data: Dict[str, Any],
+    current_user: User = Depends(get_current_verified_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Search for professionals with advanced filters (POST version)
+    
+    Supports complex search criteria including specializations,
+    location, experience, and other professional attributes
+    """
+    try:
+        prof_service = get_professional_service(db)
+        
+        # Extract search parameters
+        specialty = search_data.get("specializations", [None])[0] if search_data.get("specializations") else None
+        location = search_data.get("location")
+        accepts_new_patients = search_data.get("accepts_insurance", True)
+        limit = search_data.get("limit", 20)
+        
+        professionals = prof_service.search_professionals(
+            specialty=specialty,
+            location=location,
+            accepts_new_patients=accepts_new_patients,
+            limit=limit
+        )
+        
+        # Convert to response format
+        professionals_response = [
+            ProfessionalProfileResponse.model_validate(prof)
+            for prof in professionals
+        ]
+        
+        return professionals_response
+        
+    except Exception as e:
+        logger.error(f"Error searching professionals with filters: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to search professionals"
+        )
+
+@router.get("/profile/professional/{professional_id}")
+async def get_professional_public_profile(
+    professional_id: int,
+    current_user: User = Depends(get_current_verified_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get public professional profile by ID
+    
+    Returns professional profile information that is safe
+    to share publicly (excluding sensitive data)
+    """
+    try:
+        prof_service = get_professional_service(db)
+        
+        # Get the professional user
+        professional_user = db.query(User).filter(
+            and_(
+                User.id == professional_id,
+                User.role == UserRole.PROFESSIONAL,
+                User.is_active == True
+            )
+        ).first()
+        
+        if not professional_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Professional not found"
+            )
+        
+        # Get professional profile
+        profile = prof_service.get_profile_by_user(professional_id)
+        
+        if not profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Professional profile not found"
+            )
+        
+        # Return public profile information
+        return {
+            "id": professional_user.id,
+            "role": professional_user.role,
+            "first_name": professional_user.first_name,
+            "last_name": professional_user.last_name,
+            "bio": professional_user.bio,
+            "specialization": professional_user.specialization,
+            "clinic_name": professional_user.clinic_name,
+            "clinic_address": professional_user.clinic_address,
+            "professional_profile": ProfessionalProfileResponse.model_validate(profile).__dict__
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting professional public profile: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve professional profile"
         )
 
 # =============================================================================

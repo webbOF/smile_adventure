@@ -72,13 +72,12 @@ class ChildService:
                 # Communication
                 communication_style=child_data.communication_style.value if child_data.communication_style else None,
                 communication_notes=child_data.communication_notes,
-                
-                # Complex JSON data
-                sensory_profile=child_data.sensory_profile.model_dump() if child_data.sensory_profile else None,
+                  # Complex JSON data
+                sensory_profile=child_data.sensory_profile.model_dump(mode="json") if child_data.sensory_profile else None,
                 behavioral_notes=child_data.behavioral_notes,
-                current_therapies=[therapy.model_dump() for therapy in child_data.current_therapies],
+                current_therapies=[therapy.model_dump(mode="json") for therapy in child_data.current_therapies],
                 emergency_contacts=child_data.emergency_contacts,
-                safety_protocols=child_data.safety_protocols.model_dump() if child_data.safety_protocols else {},
+                safety_protocols=child_data.safety_protocols.model_dump(mode="json") if child_data.safety_protocols else {},
                 
                 # Initialize defaults
                 points=0,
@@ -121,13 +120,8 @@ class ChildService:
             query = self.db.query(Child).filter(Child.parent_id == parent_id)
             
             if not include_inactive:
-                query = query.filter(Child.is_active == True)
-            
-            # Optimize with eager loading for related data
-            children = query.options(
-                selectinload(Child.activities),
-                selectinload(Child.game_sessions)
-            ).order_by(desc(Child.created_at)).all()
+                query = query.filter(Child.is_active == True)            # Query children without eager loading for dynamic relationships
+            children = query.order_by(desc(Child.created_at)).all()
             
             return children
             
@@ -144,17 +138,12 @@ class ChildService:
             include_relationships: Whether to load activities and sessions
             
         Returns:
-            Child object or None
-        """
+            Child object or None        """
         try:
             query = self.db.query(Child).filter(Child.id == child_id)
             
-            if include_relationships:
-                query = query.options(
-                    selectinload(Child.activities),
-                    selectinload(Child.game_sessions),
-                    selectinload(Child.assessments)
-                )
+            # Note: activities, game_sessions, assessments use lazy="dynamic" 
+            # so they can't be used with selectinload. They will be loaded on demand.
             
             return query.first()
             

@@ -28,10 +28,9 @@ WEEK_FORMAT = "%Y-W%U"
 # Create router
 router = APIRouter()
 
-# Include profile routes
+# Include profile routes without additional prefix since they already define their paths
 router.include_router(
     profile_router,
-    prefix="/profile",
     tags=["profile"]
 )
 
