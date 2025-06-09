@@ -13,7 +13,8 @@ from dataclasses import dataclass
 import statistics
 import logging
 
-from app.users.models import Child, Activity, GameSession, Assessment, ProfessionalProfile
+from app.users.models import Child, Activity, Assessment, ProfessionalProfile
+from app.reports.models import GameSession
 from app.auth.models import User, UserRole
 from app.users.crud import get_analytics_service
 

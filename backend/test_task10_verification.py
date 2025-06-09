@@ -13,7 +13,8 @@ def test_imports():
     print("🔍 Testing imports...")
     try:
         # Test model imports
-        from app.users.models import Child, Activity, GameSession, Assessment, ProfessionalProfile
+        from app.users.models import Child, Activity, Assessment, ProfessionalProfile
+        from app.reports.models import GameSession
         from app.auth.models import User, UserRole, UserStatus
         from app.users.schemas import (
             ChildCreate, ChildUpdate, ChildResponse,
@@ -213,7 +214,7 @@ def test_game_session_model():
     """Test GameSession model functionality"""
     print("\n🔍 Testing GameSession model...")
     try:
-        from app.users.models import GameSession
+        from app.reports.models import GameSession
         
         # Create game session instance
         session = GameSession(

@@ -1,6 +1,5 @@
 """
-Users Models - Enhanced for ASD Children and Healthcare Pr    # Parent relationship - references existing auth User
-    parent_id = Column(Integer, ForeignKey(USERS_TABLE_ID), nullable=False, index=True)essionals
+Users Models - Enhanced for ASD Children and Healthcare Professionals
 Extends the existing auth system with specialized models for comprehensive autism support
 """
 
@@ -21,7 +20,7 @@ from app.auth.models import User, UserRole  # Import existing User model
 
 CASCADE_DELETE_ORPHAN = "all, delete-orphan"
 CHILDREN_TABLE_ID = "children.id"
-USERS_TABLE_ID = "users.id"
+USERS_TABLE_ID = "auth_users.id"
 
 # =============================================================================
 # ENUMS FOR ASD-SPECIFIC DATA
@@ -127,12 +126,13 @@ class Child(Base):
     baseline_assessment = Column(JSON, nullable=True, doc="Initial assessment data")
     last_assessment_date = Column(DateTime(timezone=True), nullable=True)
     progress_notes = Column(JSON, default=list, nullable=False)
-    
-    # Status and metadata
+      # Status and metadata
     is_active = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
-      # Relationships    parent = relationship("User", back_populates="children")
+    
+    # Relationships
+    parent = relationship("User", back_populates="children")
     activities = relationship("Activity", back_populates="child", 
                             cascade=CASCADE_DELETE_ORPHAN, lazy="dynamic")
     game_sessions = relationship("GameSession", back_populates="child", 
@@ -389,93 +389,8 @@ class Activity(Base):
 # GAME SESSION MODEL
 # =============================================================================
 
-class GameSession(Base):
-    """
-    Game session tracking for Smile Adventure interactions
-    """
-    __tablename__ = "game_sessions"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    child_id = Column(Integer, ForeignKey("children.id"), nullable=False, index=True)
-    
-    # Session identification
-    session_type = Column(String(50), nullable=False, index=True)  # dental_visit, therapy_session
-    scenario_name = Column(String(200), nullable=False)
-    scenario_id = Column(String(100), nullable=True, index=True)
-    
-    # Timing
-    started_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    ended_at = Column(DateTime(timezone=True), nullable=True)
-    duration_seconds = Column(Integer, nullable=True)
-    
-    # Game progress and performance
-    levels_completed = Column(Integer, default=0, nullable=False)
-    max_level_reached = Column(Integer, default=0, nullable=False)
-    score = Column(Integer, default=0, nullable=False)
-    interactions_count = Column(Integer, default=0, nullable=False)
-    correct_responses = Column(Integer, default=0, nullable=False)
-    help_requests = Column(Integer, default=0, nullable=False)
-    
-    # ASD-specific interaction data
-    emotional_data = Column(JSON, nullable=True, doc="""
-    {
-        "initial_state": "calm|anxious|excited",
-        "transitions": [{"time": "00:01:30", "from": "anxious", "to": "calm"}],
-        "final_state": "calm",
-        "stress_indicators": ["fidgeting", "vocal_stims"],
-        "positive_indicators": ["engagement", "spontaneous_communication"]
-    }
-    """)
-    
-    interaction_patterns = Column(JSON, nullable=True, doc="""
-    {
-        "response_times": [1.2, 0.8, 1.5],
-        "error_patterns": ["impulsivity", "attention_drift"],
-        "success_patterns": ["visual_cues_helpful", "repetition_beneficial"],
-        "communication_attempts": 5,
-        "self_regulation_instances": 3
-    }
-    """)
-    
-    # Completion and outcome
-    completion_status = Column(String(20), default="in_progress", nullable=False)
-    exit_reason = Column(String(100), nullable=True)  # completed, overwhelmed, technical
-    achievement_unlocked = Column(JSON, default=list, nullable=False)
-    
-    # Parent/caregiver input
-    parent_notes = Column(Text, nullable=True)
-    parent_rating = Column(Integer, nullable=True)  # 1-5 scale
-    parent_observed_behavior = Column(JSON, nullable=True)
-    
-    # Technical metadata
-    device_type = Column(String(50), nullable=True)  # tablet, desktop, mobile
-    app_version = Column(String(20), nullable=True)
-    session_data_quality = Column(String(20), default="good", nullable=False)
-    
-    # Relationships
-    child = relationship("Child", back_populates="game_sessions")
-    
-    def mark_completed(self, exit_reason: str = "completed") -> None:
-        """Mark session as completed and calculate duration"""
-        self.ended_at = datetime.now(timezone.utc)
-        self.exit_reason = exit_reason
-        
-        if self.started_at:
-            delta = self.ended_at - self.started_at
-            self.duration_seconds = int(delta.total_seconds())
-        
-        self.completion_status = "completed"
-    
-    def calculate_engagement_score(self) -> float:
-        """Calculate engagement score based on interaction patterns"""
-        if self.duration_seconds and self.interactions_count:
-            interactions_per_minute = (self.interactions_count / self.duration_seconds) * 60
-            # Normalize to 0-1 scale (assuming 5 interactions per minute is optimal)
-            return min(interactions_per_minute / 5.0, 1.0)
-        return 0.0
-    
-    def __repr__(self):
-        return f"<GameSession {self.scenario_name} for child {self.child_id}>"
+# NOTE: GameSession model moved to app.reports.models for comprehensive analytics
+# Import from there when needed: from app.reports.models import GameSession
 
 # =============================================================================
 # ASSESSMENT MODEL

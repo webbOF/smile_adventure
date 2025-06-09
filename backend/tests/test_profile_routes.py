@@ -10,17 +10,22 @@ import tempfile
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from unittest.mock import patch, MagicMock
 
 from app.main import app
 from app.core.database import get_db, Base
-from app.models.user import User
+from app.users.models import User
 from app.auth.utils import create_access_token
 
 
 # Test database setup
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_profile.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, 
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base.metadata.create_all(bind=engine)
@@ -39,75 +44,110 @@ app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 
-class TestProfileRoutes:
-    """Test class for profile enhancement routes"""
-    
-    @pytest.fixture(autouse=True)
-    def setup_test_data(self):
-        """Set up test data before each test"""
-        db = TestingSessionLocal()
-        
-        # Create test user
-        self.test_user = User(
-            email="test@example.com",
-            hashed_password="$2b$12$test_hash",
-            first_name="Test",
-            last_name="User",
-            role="user",
-            is_active=True,
-            is_verified=True
-        )
-        db.add(self.test_user)
-        db.commit()
-        db.refresh(self.test_user)
-        
-        # Create test professional
-        self.test_professional = User(
-            email="professional@example.com",
-            hashed_password="$2b$12$test_hash",
-            first_name="Dr. Test",
-            last_name="Professional",
-            role="professional",
-            is_active=True,
-            is_verified=True
-        )
-        db.add(self.test_professional)
-        db.commit()
-        db.refresh(self.test_professional)
-        
-        # Create test admin
-        self.test_admin = User(
-            email="admin@example.com",
-            hashed_password="$2b$12$test_hash",
-            first_name="Admin",
-            last_name="User",
-            role="admin",
-            is_active=True,
-            is_verified=True
-        )
-        db.add(self.test_admin)
-        db.commit()
-        db.refresh(self.test_admin)
-        
-        db.close()
-        
-        # Create access tokens
-        self.user_token = create_access_token(data={"sub": str(self.test_user.id)})
-        self.professional_token = create_access_token(data={"sub": str(self.test_professional.id)})
-        self.admin_token = create_access_token(data={"sub": str(self.test_admin.id)})
-        
-        yield
-        
-        # Cleanup
-        db = TestingSessionLocal()
-        db.query(User).delete()
-        db.commit()
+# Test fixtures
+@pytest.fixture
+def db_session():
+    """Provide a clean database session for each test"""
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
         db.close()
 
-    def test_get_profile_completion(self):
+
+@pytest.fixture
+def clean_db():
+    """Clean database before each test"""
+    # Clear all tables
+    with engine.begin() as conn:
+        for table in reversed(Base.metadata.sorted_tables):
+            conn.execute(table.delete())
+    
+    yield
+    # Clean up after test
+    with engine.begin() as conn:
+        for table in reversed(Base.metadata.sorted_tables):
+            conn.execute(table.delete())
+
+
+@pytest.fixture
+def test_user(db_session, clean_db):
+    """Create a test parent user"""
+    user = User(
+        email="test@example.com",
+        hashed_password="$2b$12$test_hash",
+        first_name="Test",
+        last_name="User",
+        role="parent",
+        is_active=True,
+        is_verified=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def test_professional(db_session, clean_db):
+    """Create a test professional user"""
+    user = User(
+        email="professional@example.com",
+        hashed_password="$2b$12$test_hash",
+        first_name="Dr. Test",
+        last_name="Professional",
+        role="professional",
+        is_active=True,
+        is_verified=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def test_admin(db_session, clean_db):
+    """Create a test admin user"""
+    user = User(
+        email="admin@example.com",
+        hashed_password="$2b$12$test_hash",
+        first_name="Admin",
+        last_name="User",
+        role="admin",
+        is_active=True,
+        is_verified=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def user_token(test_user):
+    """Create access token for test user"""
+    return create_access_token(data={"sub": str(test_user.id)})
+
+
+@pytest.fixture
+def professional_token(test_professional):
+    """Create access token for test professional"""
+    return create_access_token(data={"sub": str(test_professional.id)})
+
+
+@pytest.fixture
+def admin_token(test_admin):
+    """Create access token for test admin"""
+    return create_access_token(data={"sub": str(test_admin.id)})
+
+
+class TestProfileRoutes:
+    """Test class for profile enhancement routes"""
+      def test_get_profile_completion(self, user_token):
         """Test profile completion endpoint"""
-        headers = {"Authorization": f"Bearer {self.user_token}"}
-        response = client.get("/users/profile/completion", headers=headers)
+        headers = {"Authorization": f"Bearer {user_token}"}
+        response = client.get("/api/v1/users/profile/completion", headers=headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -115,18 +155,16 @@ class TestProfileRoutes:
         assert "missing_fields" in data
         assert "recommendations" in data
         assert isinstance(data["completion_percentage"], int)
-        assert 0 <= data["completion_percentage"] <= 100
-
-    def test_update_profile(self):
+        assert 0 <= data["completion_percentage"] <= 100    def test_update_profile(self, user_token):
         """Test profile update endpoint"""
-        headers = {"Authorization": f"Bearer {self.user_token}"}
+        headers = {"Authorization": f"Bearer {user_token}"}
         update_data = {
             "bio": "Updated bio",
             "location": "New Location",
             "phone_number": "+1234567890"
         }
         
-        response = client.put("/users/profile/update", json=update_data, headers=headers)
+        response = client.put("/api/v1/users/profile/update", json=update_data, headers=headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -134,9 +172,9 @@ class TestProfileRoutes:
         assert data["location"] == "New Location"
         assert data["phone_number"] == "+1234567890"
 
-    def test_update_profile_invalid_phone(self):
+    def test_update_profile_invalid_phone(self, user_token):
         """Test profile update with invalid phone number"""
-        headers = {"Authorization": f"Bearer {self.user_token}"}
+        headers = {"Authorization": f"Bearer {user_token}"}
         update_data = {
             "phone_number": "invalid_phone"
         }
@@ -145,19 +183,19 @@ class TestProfileRoutes:
         
         assert response.status_code == 422
 
-    def test_avatar_upload_no_file(self):
+    def test_avatar_upload_no_file(self, user_token):
         """Test avatar upload without file"""
-        headers = {"Authorization": f"Bearer {self.user_token}"}
+        headers = {"Authorization": f"Bearer {user_token}"}
         response = client.post("/users/profile/avatar", headers=headers)
         
         assert response.status_code == 422
 
     @patch('app.users.profile_routes.save_uploaded_file')
-    def test_avatar_upload_success(self, mock_save_file):
+    def test_avatar_upload_success(self, mock_save_file, user_token):
         """Test successful avatar upload"""
         mock_save_file.return_value = "/uploads/avatars/test_avatar.jpg"
         
-        headers = {"Authorization": f"Bearer {self.user_token}"}
+        headers = {"Authorization": f"Bearer {user_token}"}
         
         # Create a temporary test image file
         with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp_file:
@@ -177,9 +215,9 @@ class TestProfileRoutes:
         finally:
             os.unlink(tmp_file_path)
 
-    def test_get_user_preferences(self):
+    def test_get_user_preferences(self, user_token):
         """Test get user preferences endpoint"""
-        headers = {"Authorization": f"Bearer {self.user_token}"}
+        headers = {"Authorization": f"Bearer {user_token}"}
         response = client.get("/users/profile/preferences", headers=headers)
         
         assert response.status_code == 200
@@ -190,9 +228,9 @@ class TestProfileRoutes:
         assert "privacy_level" in data
         assert "theme" in data
 
-    def test_update_user_preferences(self):
+    def test_update_user_preferences(self, user_token):
         """Test update user preferences endpoint"""
-        headers = {"Authorization": f"Bearer {self.user_token}"}
+        headers = {"Authorization": f"Bearer {user_token}"}
         preferences_data = {
             "language": "es",
             "theme": "dark",
@@ -207,9 +245,9 @@ class TestProfileRoutes:
         assert data["theme"] == "dark"
         assert data["notifications_enabled"] is False
 
-    def test_search_professionals(self):
+    def test_search_professionals(self, user_token):
         """Test professional search endpoint"""
-        headers = {"Authorization": f"Bearer {self.user_token}"}
+        headers = {"Authorization": f"Bearer {user_token}"}
         search_data = {
             "specializations": ["behavioral_therapy"],
             "location": "New York",
@@ -222,26 +260,26 @@ class TestProfileRoutes:
         data = response.json()
         assert isinstance(data, list)
 
-    def test_get_professional_profile(self):
+    def test_get_professional_profile(self, user_token, test_professional):
         """Test get professional profile endpoint"""
-        headers = {"Authorization": f"Bearer {self.user_token}"}
-        response = client.get(f"/users/profile/professional/{self.test_professional.id}", headers=headers)
+        headers = {"Authorization": f"Bearer {user_token}"}
+        response = client.get(f"/users/profile/professional/{test_professional.id}", headers=headers)
         
         assert response.status_code == 200
         data = response.json()
-        assert data["id"] == self.test_professional.id
+        assert data["id"] == test_professional.id
         assert data["role"] == "professional"
 
-    def test_admin_get_all_users_unauthorized(self):
+    def test_admin_get_all_users_unauthorized(self, user_token):
         """Test admin endpoint with unauthorized user"""
-        headers = {"Authorization": f"Bearer {self.user_token}"}
+        headers = {"Authorization": f"Bearer {user_token}"}
         response = client.get("/users/profile/admin/users", headers=headers)
         
         assert response.status_code == 403
 
-    def test_admin_get_all_users_authorized(self):
+    def test_admin_get_all_users_authorized(self, admin_token):
         """Test admin endpoint with authorized admin"""
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        headers = {"Authorization": f"Bearer {admin_token}"}
         response = client.get("/users/profile/admin/users", headers=headers)
         
         assert response.status_code == 200
@@ -249,16 +287,16 @@ class TestProfileRoutes:
         assert isinstance(data, list)
         assert len(data) >= 3  # At least our test users
 
-    def test_admin_update_user_status(self):
+    def test_admin_update_user_status(self, admin_token, test_user):
         """Test admin user status update"""
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        headers = {"Authorization": f"Bearer {admin_token}"}
         update_data = {
             "is_active": False,
             "is_verified": False
         }
         
         response = client.put(
-            f"/users/profile/admin/users/{self.test_user.id}/status",
+            f"/users/profile/admin/users/{test_user.id}/status",
             json=update_data,
             headers=headers
         )
@@ -268,11 +306,11 @@ class TestProfileRoutes:
         assert data["is_active"] is False
         assert data["is_verified"] is False
 
-    def test_admin_delete_user(self):
+    def test_admin_delete_user(self, admin_token, test_user):
         """Test admin user deletion"""
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        headers = {"Authorization": f"Bearer {admin_token}"}
         
-        response = client.delete(f"/users/profile/admin/users/{self.test_user.id}", headers=headers)
+        response = client.delete(f"/users/profile/admin/users/{test_user.id}", headers=headers)
         
         assert response.status_code == 200
         data = response.json()

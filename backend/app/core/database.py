@@ -6,7 +6,7 @@ Enhanced SQLAlchemy setup with PostgreSQL, connection pooling, and session manag
 import logging
 from typing import Generator
 from sqlalchemy import create_engine, event, MetaData
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import QueuePool
 from sqlalchemy.engine import Engine

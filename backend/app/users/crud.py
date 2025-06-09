@@ -10,11 +10,13 @@ from sqlalchemy import and_, or_, desc, asc, func, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.auth.models import User, UserRole
-from app.users.models import Child, Activity, GameSession, Assessment, ProfessionalProfile
+from app.users.models import Child, Activity, Assessment, ProfessionalProfile
+from app.reports.models import GameSession
 from app.users.schemas import (
-    ChildCreate, ChildUpdate, ActivityCreate, GameSessionCreate, 
-    GameSessionUpdate, AssessmentCreate, ProfessionalProfileCreate, ProfessionalProfileUpdate
+    ChildCreate, ChildUpdate, ActivityCreate, 
+    AssessmentCreate, ProfessionalProfileCreate, ProfessionalProfileUpdate
 )
+from app.reports.schemas import GameSessionCreate, GameSessionUpdate
 
 import logging
 

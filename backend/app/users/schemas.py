@@ -691,8 +691,7 @@ class ActivityResponse(ActivityBase):
     challenges_encountered: List[str] = Field(default_factory=list)
     strategies_used: List[str] = Field(default_factory=list)
     notes: Optional[str] = None
-    
-    # Verification
+      # Verification
     verified_by_parent: bool = False
     verified_by_professional: bool = False
     
@@ -703,69 +702,11 @@ class ActivityResponse(ActivityBase):
     model_config = {"from_attributes": True}
 
 # =============================================================================
-# GAME SESSION SCHEMAS
+# GAME SESSION SCHEMAS - MOVED TO app.reports.schemas
 # =============================================================================
-
-class GameSessionCreate(BaseModel):
-    """Schema for creating a game session"""
-    child_id: int
-    session_type: str = Field(..., max_length=50)
-    scenario_name: str = Field(..., max_length=200)
-    scenario_id: Optional[str] = Field(None, max_length=100)
-    device_type: Optional[str] = Field(None, max_length=50)
-
-class GameSessionUpdate(BaseModel):
-    """Schema for updating game session progress"""
-    levels_completed: Optional[int] = Field(None, ge=0)
-    max_level_reached: Optional[int] = Field(None, ge=0)
-    score: Optional[int] = Field(None, ge=0)
-    interactions_count: Optional[int] = Field(None, ge=0)
-    correct_responses: Optional[int] = Field(None, ge=0)
-    help_requests: Optional[int] = Field(None, ge=0)
-    
-    # ASD-specific data
-    emotional_data: Optional[Dict[str, Any]] = None
-    interaction_patterns: Optional[Dict[str, Any]] = None
-    
-    # Parent feedback
-    parent_notes: Optional[str] = Field(None, max_length=1000)
-    parent_rating: Optional[int] = Field(None, ge=1, le=5)
-    parent_observed_behavior: Optional[Dict[str, Any]] = None
-
-class GameSessionResponse(BaseModel):
-    """Game session response schema"""
-    id: int
-    child_id: int
-    session_type: str
-    scenario_name: str
-    scenario_id: Optional[str] = None
-    
-    # Timing
-    started_at: datetime
-    ended_at: Optional[datetime] = None
-    duration_seconds: Optional[int] = None
-    
-    # Game metrics
-    levels_completed: int = 0
-    max_level_reached: int = 0
-    score: int = 0
-    interactions_count: int = 0
-    correct_responses: int = 0
-    help_requests: int = 0
-    
-    # Status
-    completion_status: str
-    exit_reason: Optional[str] = None
-    achievement_unlocked: List[str] = Field(default_factory=list)
-    
-    # Parent feedback
-    parent_rating: Optional[int] = None
-    parent_notes: Optional[str] = None
-    
-    # Computed metrics
-    engagement_score: Optional[float] = None
-    
-    model_config = {"from_attributes": True}
+# Note: GameSession schemas (GameSessionCreate, GameSessionUpdate, GameSessionResponse) 
+# have been moved to app.reports.schemas for consistency with the analytics system.
+# Import them from app.reports.schemas instead.
 
 # =============================================================================
 # PROFESSIONAL SCHEMAS
@@ -1730,7 +1671,6 @@ class ClinicalMetricsResponse(BaseModel):
 ChildResponse.model_rebuild()
 ChildDetailResponse.model_rebuild()
 ActivityResponse.model_rebuild()
-GameSessionResponse.model_rebuild()
 ProfessionalProfileResponse.model_rebuild()
 AssessmentResponse.model_rebuild()
 EnhancedChildResponse.model_rebuild()

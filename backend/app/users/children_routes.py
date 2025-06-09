@@ -18,13 +18,15 @@ from app.auth.dependencies import (
     require_parent, require_professional, require_admin,
     PermissionChecker
 )
-from app.users.models import Child, Activity, GameSession
+from app.users.models import Child, Activity
+from app.reports.models import GameSession
 from app.users.schemas import (
     ChildCreate, ChildUpdate, ChildResponse, ChildDetailResponse,
     ChildSearchFilters, PaginationParams, EnhancedChildResponse,
-    ActivityResponse, GameSessionResponse, BulkChildUpdateSchema,
+    ActivityResponse, BulkChildUpdateSchema,
     SuccessResponse, BulkOperationResponse
 )
+from app.reports.schemas import GameSessionResponse
 from app.users.crud import (
     get_child_service, get_activity_service, get_session_service,
     get_analytics_service, ChildService, ActivityService
@@ -1343,7 +1345,7 @@ async def get_sensory_profile(
 @router.get("/children/{child_id}/export")
 async def export_child_data(
     child_id: int,
-    format: str = Query(default="json", regex="^(json|csv|pdf)$"),
+    format: str = Query(default="json", pattern="^(json|csv|pdf)$"),
     include_activities: bool = Query(default=True),
     include_sessions: bool = Query(default=True),
     include_notes: bool = Query(default=True),

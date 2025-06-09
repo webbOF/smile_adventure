@@ -14,7 +14,8 @@ from app.users.models import User, Child, Activity
 from app.users import crud
 from app.core.config import settings
 from app.reports.clinical_analytics import ClinicalAnalyticsService
-from app.reports.crud import GameSessionService, ReportService
+from app.reports.services import GameSessionService, AnalyticsService
+from app.reports.crud import ReportService
 from app.reports.schemas import (
     # Game Session schemas
     GameSessionCreate, GameSessionUpdate, GameSessionComplete, GameSessionResponse,
@@ -472,7 +473,7 @@ async def analyze_treatment_effectiveness(
 
 @router.get("/analytics/export", response_model=Any)
 async def export_clinical_analytics(
-    format: str = Query(default="json", regex="^(json|csv)$"),    include_patient_details: bool = Query(default=False, description="Include patient details"),
+    format: str = Query(default="json", pattern="^(json|csv)$"),    include_patient_details: bool = Query(default=False, description="Include patient details"),
     analysis_period: int = Query(default=90, ge=7, le=365, description=ANALYSIS_PERIOD_DESC),
     current_user: User = Depends(require_professional),
     db: Session = Depends(get_db)
@@ -778,10 +779,9 @@ async def create_game_session(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Access denied: Child not assigned to current professional"
                 )
-        
-        # Create the session
+          # Create the session
         session_service = GameSessionService(db)
-        session = session_service.create_session(session_data)
+        session = session_service.create_session(session_data.child_id, session_data)
         
         return GameSessionResponse.model_validate(session)
         
@@ -886,8 +886,7 @@ async def update_game_session(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot update completed session"
             )
-        
-        # Update the session
+          # Update the session
         updated_session = session_service.update_session_progress(session_id, session_update)
         return GameSessionResponse.model_validate(updated_session)
         

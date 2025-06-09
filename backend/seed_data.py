@@ -18,7 +18,8 @@ from passlib.context import CryptContext
 
 # Import models
 from app.auth.models import User, UserRole, UserStatus
-from app.users.models import Child, Activity, GameSession, Assessment, ProfessionalProfile
+from app.users.models import Child, Activity, Assessment, ProfessionalProfile
+from app.reports.models import GameSession
 
 # Database configuration
 DATABASE_URL = "postgresql://smileuser:smilepass123@localhost:5434/smile_adventure"

@@ -15,7 +15,8 @@ from app.auth.dependencies import (
     get_current_user, get_current_verified_user,
     require_parent, require_professional, require_admin
 )
-from app.users.models import Child, Activity, GameSession
+from app.users.models import Child, Activity
+from app.reports.models import GameSession
 from app.users import crud
 
 # Import profile router and children router
@@ -1053,7 +1054,7 @@ def _generate_csv_response(activities, child_id, include_sensitive):
 @router.get("/export/child/{child_id}")
 async def export_child_data(
     child_id: int,
-    format: str = Query(default="json", regex="^(json|csv)$"),
+    format: str = Query(default="json", pattern="^(json|csv)$"),
     include_sensitive: bool = Query(default=False),
     current_user: User = Depends(get_current_verified_user),
     db: Session = Depends(get_db)

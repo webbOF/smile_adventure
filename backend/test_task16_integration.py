@@ -15,7 +15,8 @@ import json
 from main import app
 from app.core.database import get_db, Base, engine
 from app.auth.models import User
-from app.users.models import Child, Activity, GameSession
+from app.users.models import Child, Activity
+from app.reports.models import GameSession
 from app.auth.services import AuthService
 
 class TestTask16Integration:

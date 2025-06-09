@@ -152,10 +152,9 @@ def upgrade() -> None:
         sa.Column('auto_generated', sa.Boolean(), default=False, nullable=False),
         sa.Column('validation_notes', sa.Text(), nullable=True),
         sa.Column('peer_reviewed', sa.Boolean(), default=False, nullable=False),
-        
-        # Foreign key constraints
+          # Foreign key constraints
         sa.ForeignKeyConstraint(['child_id'], ['children.id'], ),
-        sa.ForeignKeyConstraint(['professional_id'], ['users.id'], ),
+        sa.ForeignKeyConstraint(['professional_id'], ['auth_users.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     

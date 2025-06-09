@@ -46,9 +46,9 @@ def test_task12_completion():
             from app.users.schemas import (
                 ChildCreate, ChildUpdate, ActivityCreate, GameSessionCreate,
                 ProfessionalProfileCreate, ProfessionalProfileUpdate,
-                AssessmentCreate
-            )
-            from app.users.models import Child, Activity, GameSession, ProfessionalProfile, Assessment
+                AssessmentCreate            )
+            from app.users.models import Child, Activity, ProfessionalProfile, Assessment
+            from app.reports.models import GameSession
             from sqlalchemy.orm import Session
             print("   ✅ All required imports successful")
             test_results['imports'] = True

@@ -2,7 +2,7 @@
 """Add profile enhancements for Task 14
 
 Revision ID: 003_add_profile_enhancements
-Revises: 002_initial_schema
+Revises: 002
 Create Date: 2024-01-15 10:30:00.000000
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '003_add_profile_enhancements'
-down_revision = '002_initial_schema'
+down_revision = '002'
 branch_labels = None
 depends_on = None
 
