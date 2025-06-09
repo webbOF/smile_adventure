@@ -14,6 +14,19 @@ from app.users.models import User, Child, Activity
 from app.users import crud
 from app.core.config import settings
 from app.reports.clinical_analytics import ClinicalAnalyticsService
+from app.reports.crud import GameSessionService, ReportService
+from app.reports.schemas import (
+    # Game Session schemas
+    GameSessionCreate, GameSessionUpdate, GameSessionComplete, GameSessionResponse,
+    GameSessionAnalytics, GameSessionFilters,
+    # Report schemas
+    ReportCreate, ReportUpdate, ReportStatusUpdate, ReportResponse,
+    ReportSummary, ReportPermissions, ReportFilters,
+    # Analytics schemas
+    ChildProgressAnalytics, ProgramEffectivenessReport,
+    # Utility schemas
+    PaginationParams, ExportRequest, ShareRequest, ValidationResult
+)
 from app.users.schemas import (
     ClinicalInsightResponse, PopulationAnalyticsRequest, 
     CohortComparisonRequest, ClinicalMetricsResponse
@@ -22,6 +35,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# Constants for error messages
+CHILD_NOT_FOUND = "Child not found"
+SESSION_NOT_FOUND = "Game session not found"
+REPORT_NOT_FOUND = "Report not found"
+ACCESS_DENIED = "Access denied"
+START_DATE_DESC = "Start date for analysis"
+END_DATE_DESC = "End date for analysis"
+ANALYSIS_PERIOD_DESC = "Analysis period in days"
 
 @router.get("/dashboard")
 async def get_dashboard_stats(
@@ -290,7 +312,7 @@ async def compare_patient_cohorts(
 
 @router.get("/analytics/insights", response_model=Dict[str, Any])
 async def get_clinical_insights(
-    analysis_period: int = Query(default=90, ge=7, le=365, description="Analysis period in days"),
+    analysis_period: int = Query(default=90, ge=7, le=365, description=ANALYSIS_PERIOD_DESC),
     focus_areas: Optional[str] = Query(None, description="Comma-separated focus areas"),
     current_user: User = Depends(require_professional),
     db: Session = Depends(get_db)
@@ -450,9 +472,8 @@ async def analyze_treatment_effectiveness(
 
 @router.get("/analytics/export", response_model=Any)
 async def export_clinical_analytics(
-    format: str = Query(default="json", regex="^(json|csv)$"),
-    include_patient_details: bool = Query(default=False, description="Include patient details"),
-    analysis_period: int = Query(default=90, ge=7, le=365, description="Analysis period in days"),
+    format: str = Query(default="json", regex="^(json|csv)$"),    include_patient_details: bool = Query(default=False, description="Include patient details"),
+    analysis_period: int = Query(default=90, ge=7, le=365, description=ANALYSIS_PERIOD_DESC),
     current_user: User = Depends(require_professional),
     db: Session = Depends(get_db)
 ):
@@ -628,7 +649,7 @@ async def clinical_analytics_population(
 
 @router.get("/clinical-analytics/insights", response_model=Dict[str, Any])
 async def clinical_analytics_insights(
-    analysis_period: int = Query(default=90, ge=7, le=365, description="Analysis period in days"),
+    analysis_period: int = Query(default=90, ge=7, le=365, description=ANALYSIS_PERIOD_DESC),
     focus_areas: Optional[str] = Query(None, description="Comma-separated focus areas"),
     current_user: User = Depends(require_professional),
     db: Session = Depends(get_db)
@@ -717,3 +738,1110 @@ async def generate_test_analytics_data(
     }
     
     return mock_data
+
+# =============================================================================
+# GAME SESSION ENDPOINTS
+# =============================================================================
+
+@router.post("/sessions", response_model=GameSessionResponse)
+async def create_game_session(
+    session_data: GameSessionCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new game session for a child.
+    
+    This endpoint starts a new game session tracking for the specified child
+    and scenario type. The session will be created with initial timing data
+    and can be updated with progress as the child plays.
+    """
+    try:        # Verify that the child belongs to the current user or professional
+        child = crud.get_child_by_id(db, child_id=session_data.child_id)
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=CHILD_NOT_FOUND
+            )
+        
+        # Check permissions
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: Child does not belong to current user"
+            )
+        elif current_user.role == "professional":
+            # Check if professional has access to this child
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied: Child not assigned to current professional"
+                )
+        
+        # Create the session
+        session_service = GameSessionService(db)
+        session = session_service.create_session(session_data)
+        
+        return GameSessionResponse.model_validate(session)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating game session: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create game session"
+        )
+
+@router.get("/sessions/{session_id}", response_model=GameSessionResponse)
+async def get_game_session(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get details of a specific game session.
+    
+    Returns comprehensive session data including game metrics, timing,
+    emotional tracking, and parent feedback.
+    """
+    try:
+        session_service = GameSessionService(db)
+        session = session_service.get_session_by_id(session_id)
+        
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Game session not found"
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=session.child_id)
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied"
+                )
+        
+        return GameSessionResponse.model_validate(session)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving game session: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve game session"
+        )
+
+@router.put("/sessions/{session_id}", response_model=GameSessionResponse)
+async def update_game_session(
+    session_id: int,
+    session_update: GameSessionUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update game session progress and metrics.
+    
+    This endpoint allows updating session progress as the child plays,
+    including game metrics, emotional states, and behavioral observations.
+    """
+    try:
+        session_service = GameSessionService(db)
+        session = session_service.get_session_by_id(session_id)
+        
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Game session not found"
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=session.child_id)
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied"
+                )
+        
+        # Check if session is still active
+        if session.completion_status == "completed":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot update completed session"
+            )
+        
+        # Update the session
+        updated_session = session_service.update_session_progress(session_id, session_update)
+        return GameSessionResponse.model_validate(updated_session)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating game session: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update game session"
+        )
+
+@router.post("/sessions/{session_id}/complete", response_model=GameSessionResponse)
+async def complete_game_session(
+    session_id: int,
+    completion_data: GameSessionComplete,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Mark a game session as completed.
+    
+    This endpoint finalizes the session, calculates final metrics,
+    and triggers any post-session analytics or recommendations.
+    """
+    try:
+        session_service = GameSessionService(db)
+        session = session_service.get_session_by_id(session_id)
+        
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Game session not found"
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=session.child_id)
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied"
+                )
+        
+        # Check if session is already completed
+        if session.completion_status == "completed":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Session is already completed"
+            )
+        
+        # Complete the session
+        completed_session = session_service.complete_session(session_id, completion_data)
+        return GameSessionResponse.model_validate(completed_session)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error completing game session: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to complete game session"
+        )
+
+@router.get("/sessions", response_model=List[GameSessionResponse])
+async def list_game_sessions(
+    child_id: Optional[int] = Query(None, description="Filter by child ID"),
+    session_type: Optional[str] = Query(None, description="Filter by session type"),
+    date_from: Optional[datetime] = Query(None, description="Start date filter"),
+    date_to: Optional[datetime] = Query(None, description="End date filter"),
+    completion_status: Optional[str] = Query(None, description="Filter by completion status"),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    List game sessions with filtering and pagination.
+    
+    Returns a list of game sessions based on the provided filters.
+    Results are paginated and include basic session information.
+    """
+    try:
+        # Build filters
+        filters = GameSessionFilters(
+            child_id=child_id,
+            session_type=session_type,
+            date_from=date_from,
+            date_to=date_to,
+            completion_status=completion_status
+        )
+        
+        pagination = PaginationParams(
+            page=page,
+            page_size=page_size
+        )
+        
+        # Get accessible children for the user
+        if current_user.role == "parent":
+            accessible_children = crud.get_children_by_parent(db, parent_id=current_user.id)
+        elif current_user.role == "professional":
+            accessible_children = crud.get_assigned_children(db, professional_id=current_user.id)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        
+        accessible_child_ids = [child.id for child in accessible_children]
+        
+        # Apply child access filter
+        if filters.child_id and filters.child_id not in accessible_child_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied to specified child"
+            )
+        
+        # Get sessions
+        session_service = GameSessionService(db)
+        sessions = session_service.list_sessions(
+            filters=filters,
+            pagination=pagination,
+            accessible_child_ids=accessible_child_ids
+        )
+        
+        return [GameSessionResponse.model_validate(session) for session in sessions]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing game sessions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list game sessions"
+        )
+
+@router.get("/sessions/{session_id}/analytics", response_model=GameSessionAnalytics)
+async def get_session_analytics(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get comprehensive analytics for a specific game session.
+    
+    Returns detailed behavioral insights, learning indicators,
+    emotional journey analysis, and recommendations.
+    """
+    try:
+        session_service = GameSessionService(db)
+        session = session_service.get_session_by_id(session_id)
+        
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Game session not found"
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=session.child_id)
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied"
+                )
+        
+        # Generate analytics
+        analytics = session_service.generate_session_analytics(session_id)
+        return analytics
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating session analytics: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate session analytics"
+        )
+
+@router.get("/children/{child_id}/sessions/trends", response_model=Dict[str, Any])
+async def get_child_session_trends(
+    child_id: int,
+    days: int = Query(30, ge=7, le=365, description="Number of days to analyze"),
+    session_type: Optional[str] = Query(None, description="Filter by session type"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get session trends and progress analysis for a specific child.
+    
+    Returns trend analysis showing progress over time, pattern recognition,
+    and recommendations for future sessions.
+    """
+    try:
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=child_id)
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Child not found"
+            )
+        
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied"
+                )
+        
+        # Generate trends
+        session_service = GameSessionService(db)
+        trends = session_service.analyze_child_session_trends(
+            child_id=child_id,
+            days=days,
+            session_type=session_type
+        )
+        
+        return trends
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error analyzing session trends: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to analyze session trends"
+        )
+
+@router.delete("/sessions/{session_id}")
+async def delete_game_session(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a game session.
+    
+    Note: This is typically only allowed for incomplete sessions
+    or by administrators for data cleanup purposes.
+    """
+    try:
+        session_service = GameSessionService(db)
+        session = session_service.get_session_by_id(session_id)
+        
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Game session not found"
+            )
+        
+        # Check permissions - only parents/professionals can delete their sessions
+        child = crud.get_child_by_id(db, child_id=session.child_id)
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied"
+                )
+        
+        # Additional restrictions
+        if session.completion_status == "completed" and current_user.role != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot delete completed sessions"
+            )
+        
+        # Delete the session
+        session_service.delete_session(session_id)
+        
+        return {"message": "Game session deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting game session: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete game session"
+        )
+
+# =============================================================================
+# REPORT ENDPOINTS
+# =============================================================================
+
+@router.post("/reports", response_model=ReportResponse)
+async def create_report(
+    report_data: ReportCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new clinical report for a child.
+    
+    This endpoint creates a comprehensive report with flexible content structure,
+    metrics tracking, and workflow management capabilities.
+    """
+    try:
+        # Verify that the child exists and user has access
+        child = crud.get_child_by_id(db, child_id=report_data.child_id)
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=CHILD_NOT_FOUND
+            )
+        
+        # Check permissions
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=ACCESS_DENIED
+                )
+        
+        # Set professional_id if not provided and user is professional
+        if not report_data.professional_id and current_user.role == "professional":
+            report_data.professional_id = current_user.id        # Create the report
+        report_service = ReportService(db)
+        report = report_service.create_report(report_data, current_user.id)
+        
+        return ReportResponse.model_validate(report)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating report: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create report"
+        )
+
+@router.get("/reports/{report_id}", response_model=ReportResponse)
+async def get_report(
+    report_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get details of a specific report.
+    
+    Returns comprehensive report data including content, metrics,
+    and workflow information based on user permissions.
+    """
+    try:
+        report_service = ReportService(db)
+        report = report_service.get_report_by_id(report_id, current_user.id, current_user.role)
+        
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=REPORT_NOT_FOUND
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=report.child_id)
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=ACCESS_DENIED
+                )
+        
+        # Apply content filtering based on permissions and sharing settings
+        filtered_report = report_service.apply_permission_filters(report, current_user)
+        
+        return ReportResponse.model_validate(filtered_report)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving report: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve report"
+        )
+
+@router.put("/reports/{report_id}", response_model=ReportResponse)
+async def update_report(
+    report_id: int,
+    report_update: ReportUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update an existing report.
+    
+    This endpoint allows updating report content, metrics, and metadata.
+    Workflow rules are enforced based on report status.
+    """
+    try:
+        report_service = ReportService(db)
+        report = report_service.get_report_by_id(report_id, current_user.id, current_user.role)
+        
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=REPORT_NOT_FOUND
+            )
+        
+        # Check edit permissions
+        if not report_service.can_edit_report(report, current_user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Cannot edit report: insufficient permissions or report status"
+            )
+          # Update the report
+        updated_report = report_service.update_report(report_id, report_update, current_user.id)
+        return ReportResponse.model_validate(updated_report)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating report: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update report"
+        )
+
+@router.patch("/reports/{report_id}/status", response_model=ReportResponse)
+async def update_report_status(
+    report_id: int,
+    status_update: ReportStatusUpdate,
+    current_user: User = Depends(require_professional),
+    db: Session = Depends(get_db)
+):
+    """
+    Update report status (workflow management).
+    
+    This endpoint manages the report workflow: draft → review → approved → published.
+    Only professionals can update report status.
+    """
+    try:
+        report_service = ReportService(db)
+        report = report_service.get_report_by_id(report_id, current_user.id, current_user.role)
+        
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=REPORT_NOT_FOUND
+            )
+        
+        # Check if professional has access to this report
+        child = crud.get_child_by_id(db, child_id=report.child_id)
+        professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+        if child.id not in [c.id for c in professional_children]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        
+        # Update status with workflow validation
+        updated_report = report_service.update_report_status(
+            report_id, 
+            status_update.status, 
+            current_user.id,
+            status_update.reviewer_notes
+        )
+        
+        return ReportResponse.model_validate(updated_report)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating report status: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update report status"
+        )
+
+@router.get("/reports", response_model=List[ReportSummary])
+async def list_reports(
+    child_id: Optional[int] = Query(None, description="Filter by child ID"),
+    report_type: Optional[str] = Query(None, description="Filter by report type"),
+    status: Optional[str] = Query(None, description="Filter by status"),
+    date_from: Optional[datetime] = Query(None, description=START_DATE_DESC),
+    date_to: Optional[datetime] = Query(None, description=END_DATE_DESC),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    List reports with filtering and pagination.
+    
+    Returns a list of report summaries based on the provided filters.
+    Results are filtered by user access permissions.
+    """
+    try:
+        # Build filters
+        filters = ReportFilters(
+            child_id=child_id,
+            report_type=report_type,
+            status=status,
+            date_from=date_from,
+            date_to=date_to
+        )
+        
+        if current_user.role == "professional":
+            filters.professional_id = current_user.id
+        
+        pagination = PaginationParams(
+            page=page,
+            page_size=page_size
+        )
+        
+        # Get accessible children for the user
+        if current_user.role == "parent":
+            accessible_children = crud.get_children_by_parent(db, parent_id=current_user.id)
+        elif current_user.role == "professional":
+            accessible_children = crud.get_assigned_children(db, professional_id=current_user.id)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        
+        accessible_child_ids = [child.id for child in accessible_children]
+        
+        # Apply child access filter
+        if filters.child_id and filters.child_id not in accessible_child_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied to specified child"
+            )
+        
+        # Get reports
+        report_service = ReportService(db)
+        reports = report_service.list_reports(
+            filters=filters,
+            pagination=pagination,
+            accessible_child_ids=accessible_child_ids
+        )
+        
+        return [ReportSummary.model_validate(report) for report in reports]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing reports: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list reports"
+        )
+
+@router.post("/reports/{report_id}/generate", response_model=ReportResponse)
+async def auto_generate_report_content(
+    report_id: int,
+    generation_params: Optional[Dict[str, Any]] = None,
+    current_user: User = Depends(require_professional),
+    db: Session = Depends(get_db)
+):
+    """
+    Auto-generate report content based on child's session data.
+    
+    This endpoint uses AI analysis to generate comprehensive report content
+    from the child's game sessions and activities.
+    """
+    try:
+        report_service = ReportService(db)
+        report = report_service.get_report_by_id(report_id, current_user.id, current_user.role)
+        
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=REPORT_NOT_FOUND
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=report.child_id)
+        professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+        if child.id not in [c.id for c in professional_children]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        
+        # Check if report can be auto-generated
+        if report.status not in ["draft", "pending_review"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot auto-generate content for reports with current status"
+            )
+        
+        # Generate content
+        generated_report = report_service.auto_generate_content(
+            report_id, 
+            current_user.id,
+            generation_params or {}
+        )
+        
+        return ReportResponse.model_validate(generated_report)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error auto-generating report content: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to auto-generate report content"
+        )
+
+@router.get("/reports/{report_id}/export")
+async def export_report(
+    report_id: int,
+    export_request: ExportRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Export report in various formats (PDF, Excel, CSV, JSON).
+    
+    This endpoint generates downloadable report exports with
+    customizable content and formatting options.
+    """
+    try:
+        report_service = ReportService(db)
+        report = report_service.get_report_by_id(report_id, current_user.id, current_user.role)
+        
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=REPORT_NOT_FOUND
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=report.child_id)
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=ACCESS_DENIED
+                )
+        
+        # Check export permissions
+        if not report_service.can_export_report(report, current_user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Export not allowed for this report"
+            )
+        
+        # Generate export
+        export_result = report_service.export_report(report_id, export_request, current_user)
+        
+        return export_result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error exporting report: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to export report"
+        )
+
+@router.post("/reports/{report_id}/share")
+async def share_report(
+    report_id: int,
+    share_request: ShareRequest,
+    current_user: User = Depends(require_professional),
+    db: Session = Depends(get_db)
+):
+    """
+    Share report with external parties.
+    
+    This endpoint manages secure report sharing with controlled access
+    and expiration settings.
+    """
+    try:
+        report_service = ReportService(db)
+        report = report_service.get_report_by_id(report_id, current_user.id, current_user.role)
+        
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=REPORT_NOT_FOUND
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=report.child_id)
+        professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+        if child.id not in [c.id for c in professional_children]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        
+        # Check sharing permissions
+        if not report_service.can_share_report(report, current_user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Sharing not allowed for this report"
+            )
+        
+        # Create share
+        share_result = report_service.create_share_link(
+            report_id, 
+            share_request, 
+            current_user.id
+        )
+        
+        return share_result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sharing report: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to share report"
+        )
+
+@router.get("/reports/{report_id}/permissions", response_model=ReportPermissions)
+async def get_report_permissions(
+    report_id: int,
+    current_user: User = Depends(require_professional),
+    db: Session = Depends(get_db)
+):
+    """
+    Get report sharing permissions and access settings.
+    
+    Returns current permission configuration for the report.
+    """
+    try:
+        report_service = ReportService(db)
+        report = report_service.get_report_by_id(report_id, current_user.id, current_user.role)
+        
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=REPORT_NOT_FOUND
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=report.child_id)
+        professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+        if child.id not in [c.id for c in professional_children]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        
+        # Get permissions
+        permissions = report_service.get_report_permissions(report_id)
+        return permissions
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving report permissions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve report permissions"
+        )
+
+@router.put("/reports/{report_id}/permissions", response_model=ReportPermissions)
+async def update_report_permissions(
+    report_id: int,
+    permissions: ReportPermissions,
+    current_user: User = Depends(require_professional),
+    db: Session = Depends(get_db)
+):
+    """
+    Update report sharing permissions.
+    
+    This endpoint manages access control for reports including
+    parent access, school sharing, and external professional access.
+    """
+    try:
+        report_service = ReportService(db)
+        report = report_service.get_report_by_id(report_id, current_user.id, current_user.role)
+        
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=REPORT_NOT_FOUND
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=report.child_id)
+        professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+        if child.id not in [c.id for c in professional_children]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        
+        # Update permissions
+        updated_permissions = report_service.update_report_permissions(
+            report_id, 
+            permissions, 
+            current_user.id
+        )
+        
+        return updated_permissions
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating report permissions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update report permissions"
+        )
+
+@router.delete("/reports/{report_id}")
+async def delete_report(
+    report_id: int,
+    current_user: User = Depends(require_professional),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a report.
+    
+    Note: Only draft reports can typically be deleted.
+    Published reports may be archived instead.
+    """
+    try:
+        report_service = ReportService(db)
+        report = report_service.get_report_by_id(report_id, current_user.id, current_user.role)
+        
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=REPORT_NOT_FOUND
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=report.child_id)
+        professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+        if child.id not in [c.id for c in professional_children]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        
+        # Check if report can be deleted
+        if not report_service.can_delete_report(report, current_user):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot delete report: invalid status or insufficient permissions"
+            )
+        
+        # Delete the report
+        report_service.delete_report(report_id)
+        
+        return {"message": "Report deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting report: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete report"
+        )
+
+# =============================================================================
+# ANALYTICS AND PROGRESS ENDPOINTS
+# =============================================================================
+
+@router.get("/children/{child_id}/progress", response_model=ChildProgressAnalytics)
+async def get_child_progress_analytics(
+    child_id: int,    period_days: int = Query(30, ge=7, le=365, description=ANALYSIS_PERIOD_DESC),
+    include_recommendations: bool = Query(True, description="Include AI recommendations"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get comprehensive progress analytics for a child.
+    
+    Returns detailed analysis of session performance, behavioral trends,
+    skill development, and actionable recommendations.
+    """
+    try:
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=child_id)
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=CHILD_NOT_FOUND
+            )
+        
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=ACCESS_DENIED
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=ACCESS_DENIED
+                )
+        
+        # Generate progress analytics
+        session_service = GameSessionService(db)
+        progress_analytics = session_service.generate_child_progress_analytics(
+            child_id=child_id,
+            period_days=period_days,
+            include_recommendations=include_recommendations
+        )
+        
+        return progress_analytics
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating progress analytics: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate progress analytics"
+        )
+
+# ...existing analytics endpoints...

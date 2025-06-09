@@ -1,5 +1,6 @@
 """
-Users Models - Enhanced for ASD Children and Healthcare Professionals
+Users Models - Enhanced for ASD Children and Healthcare Pr    # Parent relationship - references existing auth User
+    parent_id = Column(Integer, ForeignKey(USERS_TABLE_ID), nullable=False, index=True)essionals
 Extends the existing auth system with specialized models for comprehensive autism support
 """
 
@@ -13,6 +14,14 @@ import enum
 
 from app.core.database import Base
 from app.auth.models import User, UserRole  # Import existing User model
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
+CASCADE_DELETE_ORPHAN = "all, delete-orphan"
+CHILDREN_TABLE_ID = "children.id"
+USERS_TABLE_ID = "users.id"
 
 # =============================================================================
 # ENUMS FOR ASD-SPECIFIC DATA
@@ -34,17 +43,6 @@ class ActivityType(enum.Enum):
     SENSORY_BREAK = "sensory_break"
     EDUCATIONAL = "educational"
     FREE_PLAY = "free_play"
-
-class EmotionalState(enum.Enum):
-    """Emotional states for tracking"""
-    CALM = "calm"
-    HAPPY = "happy"
-    EXCITED = "excited"
-    ANXIOUS = "anxious"
-    FRUSTRATED = "frustrated"
-    OVERWHELMED = "overwhelmed"
-    FOCUSED = "focused"
-    TIRED = "tired"
 
 # =============================================================================
 # CHILD MODEL - ASD-FOCUSED
@@ -134,15 +132,15 @@ class Child(Base):
     is_active = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
-    
-    # Relationships
-    parent = relationship("User", back_populates="children")
+      # Relationships    parent = relationship("User", back_populates="children")
     activities = relationship("Activity", back_populates="child", 
-                            cascade="all, delete-orphan", lazy="dynamic")
+                            cascade=CASCADE_DELETE_ORPHAN, lazy="dynamic")
     game_sessions = relationship("GameSession", back_populates="child", 
-                               cascade="all, delete-orphan", lazy="dynamic")
+                               cascade=CASCADE_DELETE_ORPHAN, lazy="dynamic")
     assessments = relationship("Assessment", back_populates="child",
-                             cascade="all, delete-orphan", lazy="dynamic")
+                             cascade=CASCADE_DELETE_ORPHAN, lazy="dynamic")
+    reports = relationship("Report", back_populates="child",
+                          cascade=CASCADE_DELETE_ORPHAN, lazy="dynamic")
     
     # ==========================================================================
     # VALIDATION METHODS
@@ -332,7 +330,7 @@ class Activity(Base):
     __tablename__ = "activities"
     
     id = Column(Integer, primary_key=True, index=True)
-    child_id = Column(Integer, ForeignKey("children.id"), nullable=False, index=True)
+    child_id = Column(Integer, ForeignKey(CHILDREN_TABLE_ID), nullable=False, index=True)
     
     # Activity identification
     activity_type = Column(String(50), nullable=False, index=True)
