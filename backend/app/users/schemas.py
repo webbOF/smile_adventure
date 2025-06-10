@@ -718,11 +718,10 @@ class ProfessionalProfileCreate(BaseModel):
     license_number: Optional[str] = Field(None, max_length=100)
     license_state: Optional[str] = Field(None, max_length=50)
     license_expiry: Optional[date] = None
-    
     primary_specialty: Optional[str] = Field(None, max_length=200)
     subspecialties: List[str] = Field(default_factory=list, max_length=10)
     certifications: List[str] = Field(default_factory=list, max_length=15)
-    years_experience: Optional[int] = Field(None, ge=0, le=50)
+    experience_years: Optional[int] = Field(None, ge=0, le=50)
     
     clinic_name: Optional[str] = Field(None, max_length=200)
     clinic_address: Optional[str] = Field(None, max_length=500)
@@ -800,8 +799,7 @@ class ProfessionalProfileCreate(BaseModel):
         if v > max_expiry:
             raise ValueError('License expiry date cannot be more than 10 years in the future')
         return v
-    
-    @field_validator('years_experience', 'asd_experience_years')
+    @field_validator('experience_years', 'asd_experience_years')
     @classmethod
     def validate_experience_years(cls, v):
         if v is None:
@@ -857,11 +855,10 @@ class ProfessionalProfileCreate(BaseModel):
         license_fields = [self.license_type, self.license_number, self.license_state]
         if any(license_fields) and not all(license_fields):
             raise ValueError('If license information is provided, type, number, and state are all required')
-        
-        # ASD experience cannot exceed total experience
+          # ASD experience cannot exceed total experience
         if (self.asd_experience_years is not None and 
-            self.years_experience is not None and 
-            self.asd_experience_years > self.years_experience):
+            self.experience_years is not None and 
+            self.asd_experience_years > self.experience_years):
             raise ValueError('ASD experience years cannot exceed total experience years')
         
         # Validate clinic information consistency
@@ -877,11 +874,10 @@ class ProfessionalProfileUpdate(BaseModel):
     license_number: Optional[str] = Field(None, max_length=100)
     license_state: Optional[str] = Field(None, max_length=50)
     license_expiry: Optional[date] = None
-    
     primary_specialty: Optional[str] = Field(None, max_length=200)
     subspecialties: Optional[List[str]] = None
     certifications: Optional[List[str]] = None
-    years_experience: Optional[int] = Field(None, ge=0, le=50)
+    experience_years: Optional[int] = Field(None, ge=0, le=50)
     
     clinic_name: Optional[str] = Field(None, max_length=200)
     clinic_address: Optional[str] = Field(None, max_length=500)
@@ -904,7 +900,7 @@ class ProfessionalProfileUpdate(BaseModel):
     validate_license_number = field_validator('license_number')(ProfessionalProfileCreate.validate_license_number)
     validate_license_state = field_validator('license_state')(ProfessionalProfileCreate.validate_license_state)
     validate_license_expiry = field_validator('license_expiry')(ProfessionalProfileCreate.validate_license_expiry)
-    validate_experience_years = field_validator('years_experience', 'asd_experience_years')(ProfessionalProfileCreate.validate_experience_years)
+    validate_experience_years = field_validator('experience_years', 'asd_experience_years')(ProfessionalProfileCreate.validate_experience_years)
     validate_clinic_phone = field_validator('clinic_phone')(ProfessionalProfileCreate.validate_clinic_phone)
 
 class ProfessionalProfileResponse(BaseModel):
@@ -915,7 +911,7 @@ class ProfessionalProfileResponse(BaseModel):
     license_number: Optional[str] = None
     primary_specialty: Optional[str] = None
     subspecialties: List[str] = Field(default_factory=list)
-    years_experience: Optional[int] = None
+    experience_years: Optional[int] = None
     
     clinic_name: Optional[str] = None
     clinic_address: Optional[str] = None

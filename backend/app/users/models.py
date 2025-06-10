@@ -462,12 +462,11 @@ class ProfessionalProfile(Base):
     license_number = Column(String(100), nullable=True, index=True)
     license_state = Column(String(50), nullable=True)
     license_expiry = Column(DateTime(timezone=True), nullable=True)
-    
-    # Specialization and expertise
+      # Specialization and expertise
     primary_specialty = Column(String(200), nullable=True)
     subspecialties = Column(JSON, default=list, nullable=False)
     certifications = Column(JSON, default=list, nullable=False)
-    years_experience = Column(Integer, nullable=True)
+    experience_years = Column(Integer, nullable=True)
     
     # Practice information
     clinic_name = Column(String(200), nullable=True)
@@ -504,11 +503,10 @@ class ProfessionalProfile(Base):
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
-    
-    # Relationships
+      # Relationships
     user = relationship("User", backref="professional_profile")
     
-    @validates('years_experience', 'asd_experience_years')
+    @validates('experience_years', 'asd_experience_years')
     def validate_experience(self, key, years):
         """Validate experience years are reasonable"""
         if years is not None and (years < 0 or years > 50):

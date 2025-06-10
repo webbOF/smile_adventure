@@ -675,11 +675,10 @@ class ProfessionalService:
                 license_number=profile_data.license_number,
                 license_state=profile_data.license_state,
                 license_expiry=profile_data.license_expiry,
-                
-                primary_specialty=profile_data.primary_specialty,
+                  primary_specialty=profile_data.primary_specialty,
                 subspecialties=profile_data.subspecialties,
                 certifications=profile_data.certifications,
-                years_experience=profile_data.years_experience,
+                experience_years=profile_data.experience_years,
                 
                 clinic_name=profile_data.clinic_name,
                 clinic_address=profile_data.clinic_address,
@@ -1244,22 +1243,8 @@ def get_session_service(db: Session):
     return GameSessionService(db)
 
 def get_professional_service(db: Session):
-    """Get professional service instance - placeholder"""
-    # Placeholder implementation until proper ProfessionalService is implemented
-    class ProfessionalServicePlaceholder:
-        def __init__(self, db: Session):
-            self.db = db
-        
-        def get_profile(self, user_id: int):
-            return None
-        
-        def create_profile(self, user_id: int, data: dict):
-            return {}
-        
-        def update_profile(self, user_id: int, data: dict):
-            return {}
-    
-    return ProfessionalServicePlaceholder(db)
+    """Get professional service instance"""
+    return ProfessionalService(db)
 
 # =============================================================================
 # CONVENIENCE CRUD FUNCTIONS (for backward compatibility)
@@ -1349,24 +1334,6 @@ def get_session_service(db: Session):
     """Get session service instance - placeholder"""
     from app.reports.services import GameSessionService
     return GameSessionService(db)
-
-def get_professional_service(db: Session):
-    """Get professional service instance - placeholder"""
-    # Placeholder implementation until proper ProfessionalService is implemented
-    class ProfessionalServicePlaceholder:
-        def __init__(self, db: Session):
-            self.db = db
-        
-        def get_profile(self, user_id: int):
-            return None
-        
-        def create_profile(self, user_id: int, data: dict):
-            return {}
-        
-        def update_profile(self, user_id: int, data: dict):
-            return {}
-    
-    return ProfessionalServicePlaceholder(db)
 
 # =============================================================================
 # ADDITIONAL CONVENIENCE FUNCTIONS  
