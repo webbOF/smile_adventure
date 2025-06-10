@@ -20,7 +20,7 @@ from .schemas import (
     # Utility schemas
     PaginationParams, ExportRequest, ShareRequest, ValidationResult
 )
-from .services import GameSessionService, AnalyticsService
+from .services import GameSessionService, AnalyticsService, ReportService
 
 __all__ = [
     # Models
@@ -41,5 +41,5 @@ __all__ = [
     "PaginationParams", "ExportRequest", "ShareRequest", "ValidationResult",
     
     # Services
-    "GameSessionService", "AnalyticsService"
+    "GameSessionService", "AnalyticsService", "ReportService"
 ]

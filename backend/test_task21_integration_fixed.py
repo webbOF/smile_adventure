@@ -27,15 +27,15 @@ class TestTask21Integration:
         db = next(get_db())
         yield db
         db.close()
+    
     @pytest.fixture(scope="class")
     def test_child(self, db_session):
         """Create a test child for session testing"""
         child = Child(
-            first_name="Test",
-            last_name="Child",
+            name="Test Child",
+            age=9,
             date_of_birth=datetime(2015, 1, 1),
-            gender="male",
-            autism_diagnosis=True,
+            diagnosis="Autism Spectrum Disorder",
             diagnosis_date=datetime(2018, 6, 1),
             is_active=True,
             parent_id=1,  # Using existing parent from seed data
@@ -44,7 +44,7 @@ class TestTask21Integration:
             achievements=[],
             current_therapies=[],
             emergency_contacts=[],
-            safety_protocols=[],
+            safety_protocols={},
             progress_notes=[]
         )
         
@@ -157,11 +157,14 @@ class TestTask21Integration:
             session_type="therapy_session"
         )
         assert len(therapy_sessions) >= 2
-        
-        # Test date range filtering
+          # Test date range filtering - use filters parameter with GameSessionFilters
+        from app.reports.schemas import GameSessionFilters
+        filters = GameSessionFilters(
+            start_date=datetime.now() - timedelta(days=1)
+        )
         recent_sessions = game_session_service.get_child_sessions(
             test_child.id,
-            start_date=datetime.now() - timedelta(days=1)
+            filters=filters
         )
         assert len(recent_sessions) >= 3
         
