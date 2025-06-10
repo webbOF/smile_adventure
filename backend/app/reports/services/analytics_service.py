@@ -14,8 +14,8 @@ from sqlalchemy import and_, func
 from collections import defaultdict, Counter
 import numpy as np
 
-from app.users.models import Child, GameSession
-from app.reports.models import EmotionalState
+from app.users.models import Child
+from app.reports.models import GameSession, EmotionalState
 
 logger = logging.getLogger(__name__)
 

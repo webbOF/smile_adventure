@@ -15,8 +15,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
 from app.auth.models import User, UserRole
-from app.users.models import Child, GameSession
-from app.reports.models import Report, ReportType
+from app.users.models import Child
+from app.reports.models import GameSession, Report, ReportType
 from .game_session_service import GameSessionService
 from .analytics_service import AnalyticsService
 

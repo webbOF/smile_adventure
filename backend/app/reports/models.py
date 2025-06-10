@@ -12,8 +12,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 import enum
 
 from app.core.database import Base
-# Import GameSession from users module to avoid duplication
-from app.users.models import GameSession
 
 # =============================================================================
 # ENUMS FOR REPORTS AND SESSIONS
@@ -57,6 +55,134 @@ class ReportStatus(enum.Enum):
     APPROVED = "approved"
     PUBLISHED = "published"
     ARCHIVED = "archived"
+
+# =============================================================================
+# GAME SESSION MODEL
+# =============================================================================
+
+class GameSession(Base):
+    """
+    Enhanced Game Session model for comprehensive ASD tracking and analytics
+    Supports detailed behavioral observation and progress monitoring
+    """
+    __tablename__ = "game_sessions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    child_id = Column(Integer, ForeignKey("children.id"), nullable=False, index=True)
+    
+    # Session identification and type
+    session_type = Column(Enum(SessionType), nullable=False, index=True)
+    scenario_name = Column(String(200), nullable=False)
+    scenario_id = Column(String(100), nullable=True, index=True)
+    scenario_version = Column(String(20), nullable=True)
+    
+    # Timing information
+    started_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+    ended_at = Column(DateTime(timezone=True), nullable=True)
+    duration_seconds = Column(Integer, nullable=True)
+    pause_count = Column(Integer, default=0, nullable=False)
+    total_pause_duration = Column(Integer, default=0, nullable=False)
+    
+    # Game progress and performance metrics
+    levels_completed = Column(Integer, default=0, nullable=False)
+    max_level_reached = Column(Integer, default=0, nullable=False)
+    score = Column(Integer, default=0, nullable=False)
+    interactions_count = Column(Integer, default=0, nullable=False)
+    correct_responses = Column(Integer, default=0, nullable=False)
+    incorrect_responses = Column(Integer, default=0, nullable=False)
+    help_requests = Column(Integer, default=0, nullable=False)
+    hint_usage_count = Column(Integer, default=0, nullable=False)
+    
+    # ASD-specific emotional and behavioral tracking
+    emotional_data = Column(JSON, nullable=True)
+    interaction_patterns = Column(JSON, nullable=True)
+    
+    # Completion and outcome tracking
+    completion_status = Column(String(20), default='in_progress', nullable=False, index=True)
+    exit_reason = Column(String(100), nullable=True)
+    achievements_unlocked = Column(JSON, default=list, nullable=False)
+    progress_markers_hit = Column(JSON, default=list, nullable=False)
+    
+    # Parent/caregiver observations and input
+    parent_notes = Column(Text, nullable=True)
+    parent_rating = Column(Integer, nullable=True)
+    parent_observed_behavior = Column(JSON, nullable=True)
+    
+    # Technical and environmental context
+    device_type = Column(String(50), nullable=True)
+    device_model = Column(String(100), nullable=True)
+    app_version = Column(String(20), nullable=True)
+    environment_type = Column(String(50), nullable=True)
+    support_person_present = Column(Boolean, default=False, nullable=False)
+    session_data_quality = Column(String(20), default='good', nullable=False)
+    
+    # AI analysis and insights
+    ai_analysis = Column(JSON, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+      # Relationships
+    child = relationship("Child", back_populates="game_sessions")
+    
+    # =========================================================================
+    # CALCULATED PROPERTIES AND METHODS
+    # =========================================================================
+    
+    @hybrid_property
+    def success_rate(self) -> float:
+        """Calculate success rate based on correct vs total responses"""
+        total_responses = self.correct_responses + self.incorrect_responses
+        if total_responses == 0:
+            return 0.0
+        return round((self.correct_responses / total_responses) * 100, 2)
+    
+    @hybrid_property
+    def engagement_score(self) -> float:
+        """Calculate engagement score based on interactions and session duration"""
+        if not self.duration_seconds or self.duration_seconds == 0:
+            return 0.0
+        
+        # Base engagement on interactions per minute
+        interactions_per_minute = (self.interactions_count / self.duration_seconds) * 60
+        
+        # Normalize to 0-100 scale (assuming 5 interactions per minute is optimal)
+        base_score = min(interactions_per_minute / 5, 1.0) * 50
+        
+        # Add bonus for completion and achievements
+        completion_bonus = 30 if self.completion_status == "completed" else 0
+        achievement_bonus = min(len(self.achievements_unlocked or []) * 5, 20)
+        
+        return round(min(base_score + completion_bonus + achievement_bonus, 100), 2)
+    
+    def calculate_engagement_score(self) -> float:
+        """Legacy method for backward compatibility"""
+        return self.engagement_score
+    
+    def mark_completed(self, exit_reason: str = "completed"):
+        """Mark session as completed and calculate final metrics"""
+        self.completion_status = "completed"
+        self.exit_reason = exit_reason
+        self.ended_at = datetime.now(timezone.utc)
+        
+        if self.started_at:
+            duration = self.ended_at - self.started_at
+            self.duration_seconds = int(duration.total_seconds())
+    
+    @validates('parent_rating')
+    def validate_parent_rating(self, key, value):
+        """Validate parent rating is between 1 and 5"""
+        if value is not None and (value < 1 or value > 5):
+            raise ValueError("Parent rating must be between 1 and 5")
+        return value
+    
+    @validates('completion_status')
+    def validate_completion_status(self, key, value):
+        """Validate completion status"""
+        valid_statuses = ['in_progress', 'completed', 'abandoned', 'interrupted']
+        if value not in valid_statuses:
+            raise ValueError(f"Completion status must be one of: {valid_statuses}")
+        return value
 
 # =============================================================================
 # CLINICAL REPORTS MODEL

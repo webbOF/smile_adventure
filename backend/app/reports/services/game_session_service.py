@@ -13,8 +13,8 @@ from sqlalchemy import and_, or_, func, desc, asc, case
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.auth.models import User, UserRole
-from app.users.models import Child, Activity, GameSession
-from app.reports.models import Report, SessionType, EmotionalState, ReportType
+from app.users.models import Child, Activity
+from app.reports.models import GameSession, Report, SessionType, EmotionalState, ReportType
 from app.reports.schemas import (
     GameSessionCreate, GameSessionUpdate, GameSessionComplete, GameSessionResponse,
     GameSessionFilters, PaginationParams, GameSessionAnalytics

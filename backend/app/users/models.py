@@ -130,8 +130,7 @@ class Child(Base):
     is_active = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
-    
-    # Relationships
+      # Relationships
     parent = relationship("User", back_populates="children")
     activities = relationship("Activity", back_populates="child", 
                             cascade=CASCADE_DELETE_ORPHAN, lazy="dynamic")
@@ -389,8 +388,8 @@ class Activity(Base):
 # GAME SESSION MODEL
 # =============================================================================
 
-# NOTE: GameSession model moved to app.reports.models for comprehensive analytics
-# Import from there when needed: from app.reports.models import GameSession
+# NOTE: GameSession model is now defined in app.reports.models for comprehensive analytics
+# The relationship is maintained here using string reference
 
 # =============================================================================
 # ASSESSMENT MODEL
