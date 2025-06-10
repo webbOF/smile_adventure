@@ -198,26 +198,28 @@ class GameSessionService:
         Returns:
             Dictionary with detailed session metrics and insights
         """
-        try:
-            # Handle both session object and session ID
+        try:            # Handle both session object and session ID
             if isinstance(session_or_id, int):
                 session_id = session_or_id
                 logger.info(f"Calculating metrics for session {session_id}")
                 session = self.db.query(GameSession).filter(GameSession.id == session_id).first()
                 if not session:
                     logger.error(f"Session {session_id} not found")
-                    return {"error": "Session not found"}
+                    return {"error": "Session not found"}            
             else:
                 # Assume it's a session object
                 session = session_or_id
                 session_id = session.id
                 logger.info(f"Calculating metrics for session {session_id}")
-            
-            # Calculate comprehensive metrics
+              # Calculate comprehensive metrics
+            basic_metrics = self._calculate_basic_metrics(session)
+            engagement_metrics = self._calculate_engagement_metrics(session)
             metrics = {
                 "session_id": session.id,
-                "basic_metrics": self._calculate_basic_metrics(session),
-                "engagement_metrics": self._calculate_engagement_metrics(session),
+                "success_rate": basic_metrics.get("success_rate", 0.0),  # Test expects this at top level
+                "engagement_score": engagement_metrics.get("engagement_score", 0.0),  # Test expects this at top level
+                "basic_metrics": basic_metrics,
+                "engagement_metrics": engagement_metrics,
                 "emotional_analysis": self._analyze_emotional_journey(session),
                 "interaction_analysis": self._analyze_interaction_patterns(session),
                 "learning_indicators": self._extract_learning_indicators(session),
@@ -504,7 +506,7 @@ class GameSessionService:
             return "decrease"
         else:
             return "maintain"
-      def _recommend_session_length(self, session: GameSession) -> str:
+    def _recommend_session_length(self, session: GameSession) -> str:
         """Recommend optimal session length"""
         duration_minutes = (session.duration_seconds / 60.0) if session.duration_seconds else 0.0
         if duration_minutes == 0:
