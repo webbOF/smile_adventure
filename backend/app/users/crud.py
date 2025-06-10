@@ -253,12 +253,12 @@ class ChildService:
         """
         try:
             start_date = datetime.now(timezone.utc) - timedelta(days=days)
-            
-            # Get basic child info
+              # Get basic child info
             child = self.get_child_by_id(child_id, include_relationships=False)
             if not child:
                 return {}
-              # Activity statistics
+                
+            # Activity statistics
             activity_stats = self.db.query(
                 func.count(Activity.id).label('total_activities'),
                 func.sum(Activity.points_earned).label('total_points'),
@@ -1217,29 +1217,85 @@ class AnalyticsService:
         }
 
 # =============================================================================
-# UTILITY FUNCTIONS
+# CONVENIENCE CRUD FUNCTIONS (for backward compatibility)
 # =============================================================================
 
-def get_child_service(db: Session) -> ChildService:
-    """Get ChildService instance"""
-    return ChildService(db)
+def get_child_by_id(db: Session, child_id: int) -> Optional[Child]:
+    """
+    Get child by ID - convenience function for backward compatibility
+    
+    Args:
+        db: Database session
+        child_id: Child ID
+        
+    Returns:
+        Child object or None
+    """
+    child_service = ChildService(db)
+    return child_service.get_child_by_id(child_id, include_relationships=False)
 
-def get_activity_service(db: Session) -> ActivityService:
-    """Get ActivityService instance"""
-    return ActivityService(db)
+def get_children_by_parent(db: Session, parent_id: int) -> List[Child]:
+    """
+    Get children by parent ID - convenience function for backward compatibility
+    
+    Args:
+        db: Database session  
+        parent_id: Parent user ID
+        
+    Returns:
+        List of Child objects
+    """
+    child_service = ChildService(db)
+    return child_service.get_children_by_parent(parent_id, include_inactive=False)
 
-def get_session_service(db: Session) -> GameSessionService:
-    """Get GameSessionService instance"""
-    return GameSessionService(db)
+def get_assigned_children(db: Session, professional_id: int) -> List[Child]:
+    """
+    Get children assigned to a professional - placeholder implementation
+    
+    Args:
+        db: Database session
+        professional_id: Professional user ID
+        
+    Returns:
+        List of assigned Child objects (currently empty as feature not implemented)
+    """
+    # TODO: Implement professional-child assignment feature
+    # For now, return empty list as this feature is not yet implemented
+    logger.info(f"Professional assignment feature not yet implemented for professional {professional_id}")
+    return []
 
-def get_professional_service(db: Session) -> ProfessionalService:
-    """Get ProfessionalService instance"""
-    return ProfessionalService(db)
-
-def get_assessment_service(db: Session) -> AssessmentService:
-    """Get AssessmentService instance"""
-    return AssessmentService(db)
+# =============================================================================
+# ANALYTICS SERVICE FACTORY
+# =============================================================================
 
 def get_analytics_service(db: Session) -> AnalyticsService:
-    """Get AnalyticsService instance"""
+    """
+    Get analytics service instance
+    
+    Args:
+        db: Database session
+        
+    Returns:
+        AnalyticsService instance
+    """
     return AnalyticsService(db)
+
+# =============================================================================
+# ADDITIONAL CONVENIENCE FUNCTIONS
+# =============================================================================
+
+def create_child_service(db: Session) -> ChildService:
+    """Create child service instance"""
+    return ChildService(db)
+
+def create_activity_service(db: Session) -> ActivityService:
+    """Create activity service instance"""
+    return ActivityService(db)
+
+def create_professional_service(db: Session) -> ProfessionalService:
+    """Create professional service instance"""
+    return ProfessionalService(db)
+
+def create_assessment_service(db: Session) -> AssessmentService:
+    """Create assessment service instance"""
+    return AssessmentService(db)

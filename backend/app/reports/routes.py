@@ -1843,4 +1843,255 @@ async def get_child_progress_analytics(
             detail="Failed to generate progress analytics"
         )
 
-# ...existing analytics endpoints...
+# =============================================================================
+# TASK 23: GAME SESSION ROUTES (SPECIFIC ENDPOINTS)
+# =============================================================================
+
+@router.post("/game-sessions", response_model=GameSessionResponse)
+async def create_game_session_task23(
+    session_data: GameSessionCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Task 23: Create a new game session for a child.
+    
+    This endpoint creates a new game session tracking for the specified child
+    and scenario type. Authorization: parents can access their children's data,
+    professionals can access assigned children.
+    """
+    try:
+        # Verify that the child belongs to the current user or professional
+        child = crud.get_child_by_id(db, child_id=session_data.child_id)
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=CHILD_NOT_FOUND
+            )
+        
+        # Check permissions
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: Child does not belong to current user"
+            )
+        elif current_user.role == "professional":
+            # Check if professional has access to this child
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied: Child not assigned to current professional"
+                )
+        
+        # Create the session
+        session_service = GameSessionService(db)
+        session = session_service.create_session(session_data.child_id, session_data)
+        
+        logger.info(f"Task 23: Game session created {session.id} for child {session_data.child_id}")
+        return GameSessionResponse.model_validate(session)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Task 23: Error creating game session: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create game session"
+        )
+
+@router.put("/game-sessions/{session_id}/end", response_model=GameSessionResponse)
+async def end_game_session_task23(
+    session_id: int,
+    completion_data: GameSessionComplete,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Task 23: End a game session by marking it as completed.
+    
+    This endpoint finalizes the session, calculates final metrics,
+    and triggers any post-session analytics. Authorization: parents can access
+    their children's data, professionals can access assigned children.
+    """
+    try:
+        session_service = GameSessionService(db)
+        session = session_service.get_session_by_id(session_id)
+        
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=SESSION_NOT_FOUND
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=session.child_id)
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: Child does not belong to current user"
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied: Child not assigned to current professional"
+                )
+        
+        # Check if session is already completed
+        if session.completion_status == "completed":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Session is already completed"
+            )
+        
+        # Complete/End the session
+        completed_session = session_service.complete_session(session_id, completion_data)
+        
+        logger.info(f"Task 23: Game session {session_id} ended successfully")
+        return GameSessionResponse.model_validate(completed_session)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Task 23: Error ending game session: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to end game session"
+        )
+
+@router.get("/game-sessions/child/{child_id}", response_model=List[GameSessionResponse])
+async def get_child_game_sessions_task23(
+    child_id: int,
+    limit: int = Query(default=20, ge=1, le=100, description="Maximum number of sessions"),
+    session_type: Optional[str] = Query(default=None, description="Filter by session type"),
+    date_from: Optional[datetime] = Query(None, description="Start date filter"),
+    date_to: Optional[datetime] = Query(None, description="End date filter"),
+    completion_status: Optional[str] = Query(None, description="Filter by completion status"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Task 23: Get all game sessions for a specific child.
+    
+    Returns a list of game sessions for the specified child with optional filtering.
+    Authorization: parents can access their children's data,
+    professionals can access assigned children.
+    """
+    try:
+        # Verify child exists and check permissions
+        child = crud.get_child_by_id(db, child_id=child_id)
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=CHILD_NOT_FOUND
+            )
+        
+        # Check permissions
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: Child does not belong to current user"
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied: Child not assigned to current professional"
+                )
+        
+        # Build filters for session queries
+        filters = GameSessionFilters(
+            child_id=child_id,
+            session_type=session_type,
+            date_from=date_from,
+            date_to=date_to,
+            completion_status=completion_status
+        )
+        
+        pagination = PaginationParams(
+            page=1,
+            page_size=limit
+        )
+        
+        # Get sessions using the service
+        session_service = GameSessionService(db)
+        sessions = session_service.list_sessions(
+            filters=filters,
+            pagination=pagination,
+            accessible_child_ids=[child_id]
+        )
+        
+        # Convert to response format
+        sessions_response = []
+        for session in sessions:
+            session_response = GameSessionResponse.model_validate(session)
+            sessions_response.append(session_response)
+        
+        logger.info(f"Task 23: Retrieved {len(sessions_response)} sessions for child {child_id}")
+        return sessions_response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Task 23: Error retrieving sessions for child {child_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve child game sessions"
+        )
+
+@router.get("/game-sessions/{session_id}", response_model=GameSessionResponse)
+async def get_game_session_task23(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Task 23: Get details of a specific game session.
+    
+    Returns comprehensive session data including game metrics, timing,
+    emotional tracking, and parent feedback. Authorization: parents can access
+    their children's data, professionals can access assigned children.
+    """
+    try:
+        session_service = GameSessionService(db)
+        session = session_service.get_session_by_id(session_id)
+        
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=SESSION_NOT_FOUND
+            )
+        
+        # Check permissions
+        child = crud.get_child_by_id(db, child_id=session.child_id)
+        if current_user.role == "parent" and child.parent_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: Child does not belong to current user"
+            )
+        elif current_user.role == "professional":
+            professional_children = crud.get_assigned_children(db, professional_id=current_user.id)
+            if child.id not in [c.id for c in professional_children]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied: Child not assigned to current professional"
+                )
+        
+        logger.info(f"Task 23: Retrieved game session {session_id}")
+        return GameSessionResponse.model_validate(session)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Task 23: Error retrieving game session {session_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve game session"
+        )
+
+# =============================================================================
+# EXISTING GAME SESSION ENDPOINTS (PRESERVED)
+# =============================================================================

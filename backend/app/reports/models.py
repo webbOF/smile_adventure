@@ -64,6 +64,9 @@ class GameSession(Base):
     """
     Enhanced Game Session model for comprehensive ASD tracking and analytics
     Supports detailed behavioral observation and progress monitoring
+    
+    NOTE: This model includes both current database fields and future fields.
+    Fields not yet in the database will be handled as properties with defaults.
     """
     __tablename__ = "game_sessions"
     
@@ -71,17 +74,14 @@ class GameSession(Base):
     child_id = Column(Integer, ForeignKey("children.id"), nullable=False, index=True)
     
     # Session identification and type
-    session_type = Column(Enum(SessionType), nullable=False, index=True)
+    session_type = Column(String, nullable=False, index=True)  # Changed from Enum to String for compatibility
     scenario_name = Column(String(200), nullable=False)
     scenario_id = Column(String(100), nullable=True, index=True)
-    scenario_version = Column(String(20), nullable=True)
     
     # Timing information
     started_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
     ended_at = Column(DateTime(timezone=True), nullable=True)
     duration_seconds = Column(Integer, nullable=True)
-    pause_count = Column(Integer, default=0, nullable=False)
-    total_pause_duration = Column(Integer, default=0, nullable=False)
     
     # Game progress and performance metrics
     levels_completed = Column(Integer, default=0, nullable=False)
@@ -89,9 +89,7 @@ class GameSession(Base):
     score = Column(Integer, default=0, nullable=False)
     interactions_count = Column(Integer, default=0, nullable=False)
     correct_responses = Column(Integer, default=0, nullable=False)
-    incorrect_responses = Column(Integer, default=0, nullable=False)
     help_requests = Column(Integer, default=0, nullable=False)
-    hint_usage_count = Column(Integer, default=0, nullable=False)
     
     # ASD-specific emotional and behavioral tracking
     emotional_data = Column(JSON, nullable=True)
@@ -99,6 +97,140 @@ class GameSession(Base):
     
     # Completion and outcome tracking
     completion_status = Column(String(20), default='in_progress', nullable=False, index=True)
+    exit_reason = Column(String(100), nullable=True)
+    achievement_unlocked = Column(JSON, default=list, nullable=False)  # Current DB field name
+    
+    # Parent/caregiver observations and input
+    parent_notes = Column(Text, nullable=True)
+    parent_rating = Column(Integer, nullable=True)
+    parent_observed_behavior = Column(JSON, nullable=True)
+    
+    # Technical and environmental context
+    device_type = Column(String(50), nullable=True)
+    app_version = Column(String(20), nullable=True)
+    session_data_quality = Column(String(20), default='good', nullable=False)
+    
+    # =========================================================================
+    # COMPATIBILITY PROPERTIES FOR MISSING DATABASE FIELDS
+    # These properties provide default values for fields not yet in the database
+    # =========================================================================
+    
+    @property
+    def scenario_version(self):
+        """Compatibility property for scenario_version"""
+        return getattr(self, '_scenario_version', "1.0")
+    
+    @scenario_version.setter
+    def scenario_version(self, value):
+        self._scenario_version = value
+    
+    @property
+    def pause_count(self):
+        """Compatibility property for pause_count"""
+        return getattr(self, '_pause_count', 0)
+    
+    @pause_count.setter
+    def pause_count(self, value):
+        self._pause_count = value
+    
+    @property
+    def total_pause_duration(self):
+        """Compatibility property for total_pause_duration"""
+        return getattr(self, '_total_pause_duration', 0)
+    
+    @total_pause_duration.setter
+    def total_pause_duration(self, value):
+        self._total_pause_duration = value
+    
+    @property
+    def incorrect_responses(self):
+        """Compatibility property for incorrect_responses"""
+        return getattr(self, '_incorrect_responses', max(0, self.interactions_count - self.correct_responses))
+    
+    @incorrect_responses.setter
+    def incorrect_responses(self, value):
+        self._incorrect_responses = value
+    
+    @property
+    def hint_usage_count(self):
+        """Compatibility property for hint_usage_count"""
+        return getattr(self, '_hint_usage_count', 0)
+    
+    @hint_usage_count.setter
+    def hint_usage_count(self, value):
+        self._hint_usage_count = value
+    
+    @property
+    def achievements_unlocked(self):
+        """Compatibility property that maps to achievement_unlocked"""
+        return self.achievement_unlocked or []
+    
+    @achievements_unlocked.setter
+    def achievements_unlocked(self, value):
+        self.achievement_unlocked = value
+    
+    @property
+    def progress_markers_hit(self):
+        """Compatibility property for progress_markers_hit"""
+        return getattr(self, '_progress_markers_hit', [])
+    
+    @progress_markers_hit.setter
+    def progress_markers_hit(self, value):
+        self._progress_markers_hit = value
+    
+    @property
+    def device_model(self):
+        """Compatibility property for device_model"""
+        return getattr(self, '_device_model', None)
+    
+    @device_model.setter
+    def device_model(self, value):
+        self._device_model = value
+    
+    @property
+    def environment_type(self):
+        """Compatibility property for environment_type"""
+        return getattr(self, '_environment_type', "home")
+    
+    @environment_type.setter
+    def environment_type(self, value):
+        self._environment_type = value
+    
+    @property
+    def support_person_present(self):
+        """Compatibility property for support_person_present"""
+        return getattr(self, '_support_person_present', False)
+    
+    @support_person_present.setter
+    def support_person_present(self, value):
+        self._support_person_present = value
+    
+    @property
+    def ai_analysis(self):
+        """Compatibility property for ai_analysis"""
+        return getattr(self, '_ai_analysis', None)
+    
+    @ai_analysis.setter
+    def ai_analysis(self, value):
+        self._ai_analysis = value
+    
+    @property
+    def created_at(self):
+        """Compatibility property for created_at"""
+        return getattr(self, '_created_at', self.started_at)
+    
+    @created_at.setter
+    def created_at(self, value):
+        self._created_at = value
+    
+    @property
+    def updated_at(self):
+        """Compatibility property for updated_at"""
+        return getattr(self, '_updated_at', self.ended_at or self.started_at)
+    
+    @updated_at.setter
+    def updated_at(self, value):
+        self._updated_at = value
     exit_reason = Column(String(100), nullable=True)
     achievements_unlocked = Column(JSON, default=list, nullable=False)
     progress_markers_hit = Column(JSON, default=list, nullable=False)

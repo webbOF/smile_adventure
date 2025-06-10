@@ -45,19 +45,31 @@ class GameSessionService:
         """
         try:
             logger.info(f"Creating new game session for child {child_id}")
-            
-            # Validate child exists
+              # Validate child exists
             child = self.db.query(Child).filter(Child.id == child_id).first()
             if not child:
                 logger.error(f"Child with ID {child_id} not found")
                 return None
-              # Create new session
+                
+            # Create new session
             game_session = GameSession(
                 child_id=child_id,
                 session_type=getattr(session_data, 'session_type', 'therapy_session'),
                 scenario_name=getattr(session_data, 'scenario_name', 'Default Scenario'),
                 scenario_id=getattr(session_data, 'scenario_id', None),
+                scenario_version=getattr(session_data, 'scenario_version', '1.0'),
                 completion_status="in_progress",
+                # Provide defaults for new required fields
+                pause_count=0,
+                total_pause_duration=0,
+                incorrect_responses=0,
+                hint_usage_count=0,
+                achievements_unlocked=[],
+                progress_markers_hit=[],
+                support_person_present=getattr(session_data, 'support_person_present', False),
+                device_model=getattr(session_data, 'device_model', None),
+                environment_type=getattr(session_data, 'environment_type', None),
+                ai_analysis=None,
                 emotional_data={
                     "initial_state": getattr(session_data, 'initial_emotional_state', 'calm'),
                     "transitions": [],
@@ -550,3 +562,123 @@ class GameSessionService:
             recommendations.append("Implement calm-down strategies")
         
         return recommendations
+    
+    def get_session_by_id(self, session_id: int) -> Optional[GameSession]:
+        """
+        Get a game session by ID
+        
+        Args:
+            session_id: ID of the session to retrieve
+            
+        Returns:
+            GameSession object if found, or None if not found
+        """
+        try:
+            session = self.db.query(GameSession).filter(GameSession.id == session_id).first()
+            if session:
+                logger.info(f"Retrieved game session {session_id}")
+            else:
+                logger.warning(f"Game session {session_id} not found")
+            return session
+        except SQLAlchemyError as e:
+            logger.error(f"Database error retrieving session {session_id}: {str(e)}")
+            return None
+        except Exception as e:
+            logger.error(f"Error retrieving session {session_id}: {str(e)}")
+            return None
+    
+    def complete_session(self, session_id: int, completion_data: GameSessionComplete) -> Optional[GameSession]:
+        """
+        Complete a game session with final data
+        
+        Args:
+            session_id: ID of the session to complete
+            completion_data: Completion data with final metrics
+            
+        Returns:
+            Updated GameSession object with completion data, or None if failed
+        """
+        try:
+            logger.info(f"Completing game session {session_id}")
+            
+            # Get the session
+            session = self.db.query(GameSession).filter(GameSession.id == session_id).first()
+            if not session:
+                logger.error(f"Session {session_id} not found")
+                return None
+            
+            # Check if already completed
+            if session.completion_status == "completed":
+                logger.warning(f"Session {session_id} is already completed")
+                return session
+                
+            # Update session with completion data
+            if hasattr(completion_data, 'exit_reason') and completion_data.exit_reason:
+                session.exit_reason = completion_data.exit_reason
+            
+            if hasattr(completion_data, 'final_emotional_state') and completion_data.final_emotional_state:
+                if session.emotional_data:
+                    session.emotional_data["final_state"] = completion_data.final_emotional_state
+                else:
+                    session.emotional_data = {"final_state": completion_data.final_emotional_state}
+                    
+            if hasattr(completion_data, 'session_summary_notes') and completion_data.session_summary_notes:
+                session.parent_notes = completion_data.session_summary_notes
+            
+            # Mark as completed
+            session.completion_status = "completed"
+            session.ended_at = datetime.now(timezone.utc)
+            
+            # Calculate duration if started_at exists
+            if session.started_at:
+                duration = session.ended_at - session.started_at
+                session.duration_seconds = int(duration.total_seconds())
+            
+            self.db.commit()
+            self.db.refresh(session)
+            
+            logger.info(f"Game session {session_id} completed successfully")
+            return session
+            
+        except SQLAlchemyError as e:
+            logger.error(f"Database error completing session {session_id}: {str(e)}")
+            self.db.rollback()
+            return None
+        except Exception as e:
+            logger.error(f"Error completing session {session_id}: {str(e)}")
+            self.db.rollback()
+            return None
+    
+    def get_child_sessions_legacy(self, child_id: int, session_type: Optional[str] = None) -> List[GameSession]:
+        """
+        Get sessions for a child (legacy method)
+        
+        Args:
+            child_id: ID of the child
+            session_type: Optional session type filter
+            
+        Returns:
+            List of GameSession objects
+        """
+        try:
+            logger.info(f"Retrieving sessions (legacy) for child {child_id}")
+            
+            # Base query
+            query = self.db.query(GameSession).filter(GameSession.child_id == child_id)
+            
+            # Apply session_type filter if provided
+            if session_type:
+                query = query.filter(GameSession.session_type == session_type)
+            
+            # Order by creation date (newest first)
+            sessions = query.order_by(desc(GameSession.started_at)).all()
+            
+            logger.info(f"Retrieved {len(sessions)} sessions (legacy) for child {child_id}")
+            return sessions
+            
+        except SQLAlchemyError as e:
+            logger.error(f"Database error retrieving sessions (legacy) for child {child_id}: {str(e)}")
+            return []
+        except Exception as e:
+            logger.error(f"Error retrieving sessions (legacy) for child {child_id}: {str(e)}")
+            return []
