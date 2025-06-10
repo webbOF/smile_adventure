@@ -17,6 +17,9 @@ from .schemas import (
     # Analytics schemas
     ChildProgressAnalytics, ProgramEffectivenessReport,
     
+    # Task 24 schemas
+    ProgressReport, SummaryReport, AnalyticsData, ReportGenerationRequest,
+    
     # Utility schemas
     PaginationParams, ExportRequest, ShareRequest, ValidationResult
 )
@@ -33,9 +36,11 @@ __all__ = [
     # Report schemas
     "ReportCreate", "ReportUpdate", "ReportResponse", "ReportSummary", 
     "ReportStatusUpdate", "ReportPermissions",
-    
-    # Analytics schemas
+      # Analytics schemas
     "ChildProgressAnalytics", "ProgramEffectivenessReport",
+    
+    # Task 24 schemas
+    "ProgressReport", "SummaryReport", "AnalyticsData", "ReportGenerationRequest",
     
     # Utility schemas
     "PaginationParams", "ExportRequest", "ShareRequest", "ValidationResult",

@@ -655,6 +655,61 @@ class LongitudinalProgressMetrics(BaseModel):
     family_feedback_trends: Dict[str, Any] = Field(..., description="Family feedback over time")
     clinical_recommendations: List[str] = Field(..., description="Clinical recommendations based on trends")
 
+# =============================================================================
+# TASK 24: REPORTS & ANALYTICS SCHEMAS
+# =============================================================================
+
+class ProgressReport(BaseModel):
+    """Schema for progress reports"""
+    child_id: int
+    report_period: Dict[str, Any] = Field(..., description="Report period information")
+    progress_summary: Dict[str, Any] = Field(..., description="Overall progress summary")
+    session_metrics: Dict[str, Any] = Field(..., description="Game session performance metrics")
+    behavioral_insights: Dict[str, Any] = Field(..., description="Behavioral insights analysis")
+    emotional_development: Dict[str, Any] = Field(..., description="Emotional development tracking")
+    skill_progression: Dict[str, Any] = Field(..., description="Skill development analysis")
+    recommendations: List[str] = Field(..., description="Professional recommendations")
+    next_goals: List[str] = Field(..., description="Next therapeutic goals")
+    parent_feedback: Optional[Dict[str, Any]] = Field(None, description="Parent observations and feedback")
+    generated_at: datetime = Field(..., description="Report generation timestamp")
+
+class SummaryReport(BaseModel):
+    """Schema for summary reports"""
+    child_id: int
+    child_name: str
+    report_metadata: Dict[str, Any] = Field(..., description="Report metadata and overview")
+    key_highlights: Dict[str, Any] = Field(..., description="Key achievements and highlights")
+    performance_snapshot: Dict[str, Any] = Field(..., description="Current performance snapshot")
+    behavioral_summary: Dict[str, Any] = Field(..., description="Behavioral patterns summary")
+    overall_trajectory: str = Field(..., description="Overall development trajectory")
+    areas_of_strength: List[str] = Field(..., description="Child's areas of strength")
+    areas_for_growth: List[str] = Field(..., description="Areas needing development")
+    family_involvement: Optional[Dict[str, Any]] = Field(None, description="Family engagement summary")
+    generated_at: datetime = Field(..., description="Report generation timestamp")
+
+class AnalyticsData(BaseModel):
+    """Schema for analytics data response"""
+    child_id: int
+    analysis_period: Dict[str, Any] = Field(..., description="Analysis period details")
+    engagement_analytics: Dict[str, Any] = Field(..., description="Engagement analysis results")
+    progress_trends: Dict[str, Any] = Field(..., description="Progress trend analysis")
+    behavioral_patterns: Dict[str, Any] = Field(..., description="Behavioral pattern insights")
+    emotional_patterns: Dict[str, Any] = Field(..., description="Emotional pattern analysis")
+    predictive_insights: Optional[Dict[str, Any]] = Field(None, description="Predictive analytics insights")
+    comparative_analysis: Optional[Dict[str, Any]] = Field(None, description="Comparative analysis data")
+    recommendations: List[str] = Field(..., description="Data-driven recommendations")
+    confidence_scores: Dict[str, float] = Field(..., description="Analysis confidence scores")
+    generated_at: datetime = Field(..., description="Analytics generation timestamp")
+
+class ReportGenerationRequest(BaseModel):
+    """Schema for report generation requests"""
+    report_type: str = Field(..., pattern="^(progress|summary|comprehensive|clinical)$", description="Type of report to generate")
+    period_days: int = Field(30, ge=7, le=365, description="Report period in days")
+    include_recommendations: bool = Field(True, description="Include AI recommendations")
+    include_analytics: bool = Field(True, description="Include detailed analytics")
+    include_charts: bool = Field(False, description="Include visual charts and graphs")
+    custom_parameters: Optional[Dict[str, Any]] = Field(None, description="Custom report parameters")
+
 # Apply validators to existing schemas
 GameSessionUpdate.model_validate = validate_engagement_metrics
 GameSessionUpdate.model_validate = validate_progress_markers  
