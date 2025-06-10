@@ -283,6 +283,95 @@ async def database_health_check():
                 "database": "error",
                 "error": str(e),
                 "timestamp": "2025-06-08T12:00:00Z"
+            }        )
+
+# =============================================================================
+# PERFORMANCE MONITORING ENDPOINTS - TASK 27
+# =============================================================================
+
+@app.get("/health/performance", tags=["health", "performance"])
+async def performance_monitoring():
+    """
+    Performance monitoring endpoint with database and cache statistics
+    Task 27: Performance Optimization
+    """
+    try:
+        from datetime import datetime, timezone
+        from app.core.cache import performance_cache
+        
+        # Get database performance stats
+        db_perf_stats = db_manager.get_performance_stats()
+        
+        # Get cache statistics
+        cache_stats = performance_cache.get_stats()
+        
+        # Get connection pool status
+        pool_status = db_manager.get_pool_status()
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "database_performance": db_perf_stats,
+            "cache_performance": cache_stats,
+            "connection_pool": pool_status,
+            "optimization_info": {
+                "task": "Task 27 Performance Optimization",
+                "features": [
+                    "Database connection pool optimization",
+                    "Performance indexes for query optimization", 
+                    "In-memory caching for frequently accessed data",
+                    "Eager loading for relationship queries",
+                    "Query optimization with proper filters"
+                ]
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Performance monitoring failed: {e}")
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "status": "error",
+                "error": str(e),
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+        )
+
+@app.get("/health/cache", tags=["health", "performance"])
+async def cache_health_check():
+    """
+    Cache-specific health check and management
+    Task 27: Performance Optimization
+    """
+    try:
+        from app.core.cache import performance_cache, log_cache_performance, periodic_cache_cleanup
+        
+        # Perform periodic cleanup
+        periodic_cache_cleanup()
+        
+        # Get detailed cache statistics
+        cache_stats = performance_cache.get_stats()
+        
+        return {
+            "status": "healthy",
+            "cache_status": "operational",
+            "statistics": cache_stats,
+            "actions_performed": [
+                "Expired entries cleanup",
+                "Performance statistics calculated"
+            ],
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Cache health check failed: {e}")
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "status": "error",
+                "cache_status": "error",
+                "error": str(e),
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
         )
 

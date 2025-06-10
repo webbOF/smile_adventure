@@ -1,14 +1,14 @@
 """
-Task 21: Game Session Service
+Task 21: Game Session Service - Enhanced for Task 27 Performance Optimization
 File: backend/app/reports/services/game_session_service.py
 
-Game session management service with comprehensive tracking and validation
+Game session management service with comprehensive tracking, validation, caching, and performance optimization
 """
 
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Tuple
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import and_, or_, func, desc, asc, case
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
@@ -18,6 +18,10 @@ from app.reports.models import GameSession, Report, SessionType, EmotionalState,
 from app.reports.schemas import (
     GameSessionCreate, GameSessionUpdate, GameSessionComplete, GameSessionResponse,
     GameSessionFilters, PaginationParams, GameSessionAnalytics
+)
+from app.core.cache import (
+    cached, performance_cache, cache_child_sessions, 
+    invalidate_child_cache, cache_child_analytics
 )
 
 logger = logging.getLogger(__name__)
@@ -154,15 +158,15 @@ class GameSessionService:
             logger.error(f"Error ending session {session_id}: {str(e)}")
             self.db.rollback()
             return None
-    
-    def get_child_sessions(self, child_id: int, filters: Optional[GameSessionFilters] = None, session_type: Optional[str] = None) -> List[GameSession]:
+    def get_child_sessions(self, child_id: int, filters: Optional[GameSessionFilters] = None, session_type: Optional[str] = None, use_cache: bool = True) -> List[GameSession]:
         """
-        Get sessions for a child with filtering
+        Get sessions for a child with filtering and caching (Task 27 Performance Optimization)
         
         Args:
             child_id: ID of the child
             filters: Optional filters for session retrieval
             session_type: Optional session type filter (for backwards compatibility)
+            use_cache: Whether to use caching for performance (default: True)
             
         Returns:
             List of GameSession objects
@@ -170,8 +174,19 @@ class GameSessionService:
         try:
             logger.info(f"Retrieving sessions for child {child_id}")
             
-            # Base query
-            query = self.db.query(GameSession).filter(GameSession.child_id == child_id)
+            # Generate cache key for simple queries without complex filters
+            cache_key = None
+            if use_cache and not filters and not session_type:
+                cache_key = cache_child_sessions(child_id, limit=50)  # Cache basic queries
+                cached_result = performance_cache.get(cache_key)
+                if cached_result is not None:
+                    logger.debug(f"Cache hit for child {child_id} sessions")
+                    return cached_result
+            
+            # Base query with optimized joins and loading
+            query = (self.db.query(GameSession)
+                    .filter(GameSession.child_id == child_id)
+                    .options(selectinload(GameSession.child)))  # Eager load child relationship
             
             # Apply session_type filter (backwards compatibility)
             if session_type:
@@ -187,9 +202,23 @@ class GameSessionService:
                 
                 if hasattr(filters, 'end_date') and filters.end_date:
                     query = query.filter(GameSession.started_at <= filters.end_date)
+                
+                if hasattr(filters, 'completion_status') and filters.completion_status:
+                    query = query.filter(GameSession.completion_status == filters.completion_status)
+                
+                if hasattr(filters, 'min_score') and filters.min_score is not None:
+                    query = query.filter(GameSession.score >= filters.min_score)
+                
+                if hasattr(filters, 'parent_rating') and filters.parent_rating is not None:
+                    query = query.filter(GameSession.parent_rating == filters.parent_rating)
             
-            # Order by creation date (newest first)
+            # Order by creation date (newest first) with optimized index usage
             sessions = query.order_by(desc(GameSession.started_at)).all()
+            
+            # Cache the result if it's a simple query
+            if cache_key and use_cache:
+                performance_cache.set(cache_key, sessions, ttl_seconds=300)  # Cache for 5 minutes
+                logger.debug(f"Cached sessions for child {child_id}")
             
             logger.info(f"Retrieved {len(sessions)} sessions for child {child_id}")
             return sessions
@@ -240,13 +269,80 @@ class GameSessionService:
                 "behavioral_insights": self._generate_behavioral_insights(session),
                 "recommendations": self._generate_session_recommendations(session)
             }
-            
             logger.info(f"Metrics calculated successfully for session {session_id}")
             return metrics
             
         except Exception as e:
             logger.error(f"Error calculating metrics for session {session_id}: {str(e)}")
             return {"error": str(e)}
+    
+    @cached(ttl_seconds=900, key_prefix="child_analytics")  # Cache for 15 minutes
+    def get_child_analytics_cached(self, child_id: int, days: int = 30) -> Dict[str, Any]:
+        """
+        Get comprehensive analytics for a child with caching (Task 27 Performance Optimization)
+        
+        Args:
+            child_id: ID of the child
+            days: Number of days to analyze (default: 30)
+            
+        Returns:
+            Dictionary with comprehensive analytics data
+        """
+        try:
+            logger.info(f"Generating cached analytics for child {child_id} over {days} days")
+            
+            # Get sessions from the last N days with optimized query
+            start_date = datetime.now(timezone.utc) - timedelta(days=days)
+            
+            sessions = (self.db.query(GameSession)
+                       .filter(
+                           GameSession.child_id == child_id,
+                           GameSession.started_at >= start_date
+                       )
+                       .options(selectinload(GameSession.child))  # Eager load
+                       .order_by(desc(GameSession.started_at))
+                       .all())
+            
+            if not sessions:
+                return {
+                    "child_id": child_id,
+                    "period_days": days,
+                    "total_sessions": 0,
+                    "message": "No sessions found for this period"
+                }
+            
+            # Calculate comprehensive analytics
+            analytics = {
+                "child_id": child_id,
+                "period_days": days,
+                "period_start": start_date.isoformat(),
+                "period_end": datetime.now(timezone.utc).isoformat(),
+                "total_sessions": len(sessions),
+                "session_summary": self._calculate_session_summary(sessions),
+                "performance_trends": self._calculate_performance_trends(sessions),
+                "engagement_analysis": self._calculate_engagement_analysis(sessions),
+                "progress_indicators": self._calculate_child_progress_indicators(sessions),
+                "behavioral_insights": self._calculate_behavioral_insights(sessions),
+                "session_distribution": self._calculate_session_distribution(sessions),
+                "recommendation_summary": self._generate_child_recommendations(sessions)
+            }
+            
+            logger.info(f"Generated analytics for child {child_id}: {len(sessions)} sessions analyzed")
+            return analytics
+            
+        except Exception as e:
+            logger.error(f"Error generating analytics for child {child_id}: {str(e)}")
+            return {"error": str(e), "child_id": child_id}
+    
+    def invalidate_child_analytics_cache(self, child_id: int) -> None:
+        """
+        Invalidate analytics cache for a specific child
+        
+        Args:
+            child_id: ID of the child
+        """
+        invalidate_child_cache(child_id)
+        logger.info(f"Invalidated analytics cache for child {child_id}")
     
     # Helper Methods
     def _calculate_session_summary(self, sessions: List[GameSession]) -> Dict[str, Any]:

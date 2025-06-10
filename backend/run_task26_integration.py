@@ -311,7 +311,7 @@ def run_task26_full_integration():
             headers=professional_headers
         )
         profile_create_result = assert_response_success(profile_create_response, 201)        
-        print(f"✅ Professional profile created successfully")
+        print(f"    ✅ Professional profile created successfully")
         print(f"   🩺 License: {profile_create_result['license_number']}")
         print(f"   🎯 Specialization: {profile_create_result['primary_specialty']}")
         print(f"   📅 Experience: {profile_create_result['experience_years']} years")

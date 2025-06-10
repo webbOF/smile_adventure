@@ -1,6 +1,6 @@
 """
 CRUD operations for users and children with comprehensive ASD support
-Enhanced with performance optimization and data integrity
+Enhanced with performance optimization, caching, and data integrity for Task 27
 """
 
 from datetime import datetime, timezone, timedelta
@@ -17,6 +17,10 @@ from app.users.schemas import (
     AssessmentCreate, ProfessionalProfileCreate, ProfessionalProfileUpdate
 )
 from app.reports.schemas import GameSessionCreate, GameSessionUpdate
+from app.core.cache import (
+    cached, performance_cache, cache_user_children,
+    invalidate_child_cache, invalidate_user_cache
+)
 
 import logging
 
@@ -101,30 +105,51 @@ class ChildService:
         except IntegrityError as e:
             self.db.rollback()
             logger.error(f"Integrity error creating child: {str(e)}")
-            return None
+            return None        
         except Exception as e:
             self.db.rollback()
             logger.error(f"Error creating child: {str(e)}")
             return None
     
-    def get_children_by_parent(self, parent_id: int, include_inactive: bool = False) -> List[Child]:
+    def get_children_by_parent(self, parent_id: int, include_inactive: bool = False, use_cache: bool = True) -> List[Child]:
         """
-        Get all children for a parent with optimized loading
+        Get all children for a parent with optimized loading and caching (Task 27 Performance Optimization)
         
         Args:
             parent_id: Parent user ID
             include_inactive: Whether to include inactive children
+            use_cache: Whether to use caching for performance
             
         Returns:
             List of Child objects
         """
         try:
-            query = self.db.query(Child).filter(Child.parent_id == parent_id)
+            # Generate cache key for active children queries
+            cache_key = None
+            if use_cache and not include_inactive:
+                cache_key = cache_user_children(parent_id)
+                cached_result = performance_cache.get(cache_key)
+                if cached_result is not None:
+                    logger.debug(f"Cache hit for parent {parent_id} children")
+                    return cached_result
+            
+            # Build optimized query with eager loading for commonly accessed relationships
+            query = (self.db.query(Child)
+                    .filter(Child.parent_id == parent_id)
+                    .options(selectinload(Child.parent)))  # Eager load parent for performance
             
             if not include_inactive:
-                query = query.filter(Child.is_active == True)            # Query children without eager loading for dynamic relationships
+                query = query.filter(Child.is_active == True)
+            
+            # Query children with optimized ordering using index
             children = query.order_by(desc(Child.created_at)).all()
             
+            # Cache the result for active children queries
+            if cache_key and use_cache:
+                performance_cache.set(cache_key, children, ttl_seconds=600)  # Cache for 10 minutes
+                logger.debug(f"Cached children for parent {parent_id}")
+            
+            logger.info(f"Retrieved {len(children)} children for parent {parent_id}")
             return children
             
         except Exception as e:
@@ -196,11 +221,13 @@ class ChildService:
                         setattr(child, field, value.model_dump())
                     else:
                         setattr(child, field, value)
-            
             child.updated_at = datetime.now(timezone.utc)
             
             self.db.commit()
             self.db.refresh(child)
+            
+            # Invalidate cache after successful update
+            self._invalidate_child_caches(child.id, child.parent_id)
             
             logger.info(f"Child updated successfully: {child_id}")
             return child
@@ -209,6 +236,25 @@ class ChildService:
             self.db.rollback()
             logger.error(f"Error updating child {child_id}: {str(e)}")
             return None
+    
+    def _invalidate_child_caches(self, child_id: int, parent_id: int) -> None:
+        """
+        Invalidate caches related to a child after updates
+        
+        Args:
+            child_id: Child ID
+            parent_id: Parent ID
+        """
+        try:
+            # Invalidate child-specific caches
+            invalidate_child_cache(child_id)
+            
+            # Invalidate parent's children cache
+            invalidate_user_cache(parent_id)
+            
+            logger.debug(f"Invalidated caches for child {child_id} and parent {parent_id}")
+        except Exception as e:
+            logger.error(f"Error invalidating caches for child {child_id}: {str(e)}")
     
     def add_points(self, child_id: int, points: int, activity_type: str = None) -> Optional[Dict[str, Any]]:
         """
