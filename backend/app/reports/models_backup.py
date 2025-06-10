@@ -71,7 +71,7 @@ class Report(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     child_id = Column(Integer, ForeignKey("children.id"), nullable=False, index=True)
-    professional_id = Column(Integer, ForeignKey("auth_users.id"), nullable=True, index=True)
+    professional_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     
     # Report identification and metadata
     report_type = Column(Enum(ReportType), nullable=False, index=True)
