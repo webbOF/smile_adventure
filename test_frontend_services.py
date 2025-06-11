@@ -158,6 +158,73 @@ class FrontendServicesValidator:
             return False
         
         return True
+      def find_npm_executable(self) -> tuple:
+        """Find npm executable across different platforms
+        Returns: (executable_path, version, success)
+        """
+        # Common search paths for npm by platform
+        possible_locations = {
+            "win32": [
+                "npm.cmd",                      # Standard Windows PATH 
+                "npm",                          # Alternative PATH
+                "npx.cmd npm",                  # npx fallback
+                "npx npm",                      # Another npx format
+                r"C:\Program Files\nodejs\npm.cmd", 
+                r"C:\Program Files (x86)\nodejs\npm.cmd",
+                # Add user-specific locations
+                os.path.expanduser("~\\AppData\\Roaming\\npm\\npm.cmd"),
+                # Add NVM paths
+                os.path.expanduser("~\\AppData\\Roaming\\nvm\\current\\npm.cmd"),
+            ],
+            "darwin": [  # macOS
+                "npm",
+                "/usr/local/bin/npm",
+                "/opt/homebrew/bin/npm",
+                "/usr/bin/npm",
+                "npx npm",
+                # NVM or Node version managers
+                os.path.expanduser("~/.nvm/current/bin/npm"),
+                os.path.expanduser("~/.nvm/versions/node/*/bin/npm"),
+            ],
+            "linux": [
+                "npm",
+                "/usr/bin/npm",
+                "/usr/local/bin/npm",
+                "npx npm",
+                # NVM or Node version managers
+                os.path.expanduser("~/.nvm/current/bin/npm"),
+                os.path.expanduser("~/.nvm/versions/node/*/bin/npm"),
+                # Add snap location
+                "/snap/bin/npm",
+            ]
+        }
+        
+        # Get locations for current platform
+        platform_options = possible_locations.get(sys.platform, possible_locations["linux"])
+        
+        # Try to find npm
+        for npm_path in platform_options:
+            try:
+                # Split command for complex paths with spaces or arguments
+                npm_parts = npm_path.split() if " " in npm_path else [npm_path]
+                
+                # Check if npm is working
+                proc = subprocess.run(
+                    npm_parts + ["--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                
+                if proc.returncode == 0:
+                    version = proc.stdout.strip()
+                    print(f"   ✅ Found npm {version} at {npm_path}")
+                    return npm_path, version, True
+            except (FileNotFoundError, subprocess.SubprocessError, subprocess.TimeoutExpired):
+                continue
+                
+        # No working npm found
+        return None, None, False
     
     def test_build_compilation(self) -> bool:
         """Test 5: Validate frontend builds successfully"""
@@ -168,9 +235,22 @@ class FrontendServicesValidator:
             original_dir = os.getcwd()
             os.chdir(frontend_dir)
             
+            # Find npm executable cross-platform
+            npm_cmd, npm_version, npm_found = self.find_npm_executable()
+            
+            if not npm_found:
+                print(f"   ❌ npm not available on this system. Please install Node.js and npm.")
+                print(f"   ℹ️  Visit https://nodejs.org/ to download the latest version.")
+                return False
+            
+            # Log found version
+            print(f"   ✅ Using npm version {npm_version}")
+            
             # Run build command
+            print(f"   🔄 Running build with {npm_cmd}...")
+            cmd_parts = npm_cmd.split() if " " in npm_cmd else [npm_cmd]
             result = subprocess.run(
-                ["npm", "run", "build"],
+                cmd_parts + ["run", "build"],
                 capture_output=True,
                 text=True,
                 timeout=120  # 2 minute timeout

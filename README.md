@@ -208,6 +208,44 @@ docker build -t smile-adventure-backend ./backend
 docker run -d -p 8000:8000 --env-file .env.prod smile-adventure-backend
 ```
 
+## 🧪 Testing
+
+The project includes extensive testing for both frontend and backend components with cross-platform compatibility:
+
+### Backend Tests
+- Unit tests for models, schemas, and utilities
+- Integration tests for APIs and workflows
+- Performance tests for database operations
+
+### Frontend Tests
+- Component tests
+- Integration tests with mock API
+- End-to-end tests using Selenium
+
+### Cross-Platform Testing
+- Platform-independent test infrastructure
+- Automatic detection of environment differences
+- Compatible with Windows, macOS, and Linux
+- Unified test runner script
+
+### Running Tests
+```bash
+# Set up the testing environment
+python setup_test_environment.py
+
+# Run all tests
+python run_all_tests.py
+
+# Run specific test categories
+python run_all_tests.py --category frontend
+python run_all_tests.py --category integration
+
+# Run specific tests
+python run_all_tests.py --test selenium_complete_test_suite.py
+```
+
+See [CROSS_PLATFORM_TESTING.md](CROSS_PLATFORM_TESTING.md) for detailed information about the cross-platform testing infrastructure.
+
 ## 🤝 Contributing
 
 1. Fork the repository

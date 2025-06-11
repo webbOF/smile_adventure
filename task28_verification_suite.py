@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
 """
 Test specifico per verificare il completamento del Task 28: React Project Setup
+Cross-platform compatible implementation
 """
 import time
 import requests
 import json
 import os
+import sys
+import subprocess
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+
+# Import portable test helpers (fallback to stub if file doesn't exist)
+try:
+    from portable_test_helpers import (
+        detect_platform, find_npm_executable, find_webdriver, 
+        create_headless_chrome_options
+    )
+    PORTABLE_HELPERS = True
+except ImportError:
+    PORTABLE_HELPERS = False
+    print("⚠️ Portable test helpers not found, using default configuration")
 
 class Task28VerificationSuite:
     def __init__(self):
@@ -24,17 +38,42 @@ class Task28VerificationSuite:
             'failed_tests': []
         }
         self.project_root = r"c:\Users\arman\Desktop\WebSimpl\smile_adventure\frontend"
-    
-    def setup_driver(self):
-        """Setup Chrome driver"""
-        chrome_options = Options()
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--window-size=1920,1080")
-        
-        self.driver = webdriver.Chrome(options=chrome_options)
-        self.wait = WebDriverWait(self.driver, 15)
-        self.driver.maximize_window()
+      def setup_driver(self):
+        """Setup Chrome driver with cross-platform compatibility"""
+        try:
+            # Try using portable helpers first
+            if PORTABLE_HELPERS:
+                print("🔍 Detecting Chrome driver using portable helpers...")
+                driver_path, driver_version, driver_found = find_webdriver('chrome')
+                chrome_options = create_headless_chrome_options()
+                
+                if driver_found:
+                    print(f"✅ Found Chrome driver: {driver_version}")
+                    self.driver = webdriver.Chrome(options=chrome_options)
+                else:
+                    print("⚠️ Chrome driver not found with portable helpers, trying default setup")
+                    chrome_options = Options()  # Fallback to default options
+                    chrome_options.add_argument("--no-sandbox")
+                    chrome_options.add_argument("--disable-dev-shm-usage")
+                    chrome_options.add_argument("--window-size=1920,1080")
+                    self.driver = webdriver.Chrome(options=chrome_options)
+            else:
+                # Fallback to default setup
+                chrome_options = Options()
+                chrome_options.add_argument("--no-sandbox")
+                chrome_options.add_argument("--disable-dev-shm-usage")
+                chrome_options.add_argument("--window-size=1920,1080")
+                self.driver = webdriver.Chrome(options=chrome_options)
+            
+            self.wait = WebDriverWait(self.driver, 15)
+            self.driver.maximize_window()
+            print("✅ Chrome driver initialized successfully")
+            
+        except Exception as e:
+            print(f"❌ Failed to initialize Chrome driver: {str(e)}")
+            print("💡 Make sure Chrome and chromedriver are installed and available")
+            print("💡 You may need to install chromedriver with: pip install webdriver-manager")
+            raise
     
     def run_test(self, test_name, test_func):
         """Execute a test and track results"""
@@ -188,28 +227,82 @@ class Task28VerificationSuite:
         except Exception as e:
             print(f"❌ Errore verificando Tailwind: {e}")
             return False
-    
-    def test_4_react_app_builds(self):
+      def test_4_react_app_builds(self):
         """Test 4: Verificare che l'app React compili senza errori"""
         print("🔍 Verificando build dell'app React...")
         
+        # First try to see if the frontend server is already running
         try:
-            # Check if frontend server is running
             response = requests.get("http://localhost:3000", timeout=5)
             if response.status_code == 200:
                 print("   ✅ Frontend server è in esecuzione")
                 print("   ✅ App React compila e serve correttamente")
                 return True
             else:
-                print(f"   ❌ Frontend server risponde con status: {response.status_code}")
+                print(f"   ⚠️ Frontend server risponde con status: {response.status_code}")
+                # Continue to build test
+        except requests.exceptions.ConnectionError:
+            print("   ⚠️ Frontend server non raggiungibile - eseguirò il build test")
+            # Continue to build test
+        except Exception as e:
+            print(f"   ⚠️ Errore verificando server: {e}")
+            # Continue to build test
+            
+        # Try to build the app
+        try:
+            # Import portable helpers for npm detection
+            try:
+                from portable_test_helpers import find_npm_executable
+                npm_cmd, npm_version, npm_found = find_npm_executable()
+            except ImportError:
+                # Fallback to simpler detection
+                npm_cmd = "npm.cmd" if sys.platform == "win32" else "npm"
+                npm_found = True
+            
+            if not npm_found:
+                print("   ❌ npm non trovato nel sistema")
+                print("   💡 Installa Node.js da https://nodejs.org/")
                 return False
                 
-        except requests.exceptions.ConnectionError:
-            print("   ❌ Frontend server non raggiungibile")
-            print("   💡 Suggerimento: Esegui 'npm start' nella cartella frontend")
+            # Change to frontend directory
+            original_dir = os.getcwd()
+            os.chdir(self.project_root)
+            
+            print(f"   🔄 Esecuzione build con {npm_cmd}...")
+            cmd_parts = npm_cmd.split() if " " in npm_cmd else [npm_cmd]
+            
+            # Run the build command
+            result = subprocess.run(
+                cmd_parts + ["run", "build"],
+                capture_output=True,
+                text=True,
+                timeout=120  # 2 minute timeout
+            )
+            
+            # Return to original directory
+            os.chdir(original_dir)
+            
+            if result.returncode == 0:
+                print("   ✅ Build completato con successo")
+                
+                # Check build directory
+                build_dir = os.path.join(self.project_root, "build")
+                if os.path.exists(build_dir):
+                    print("   ✅ Directory build creata")
+                    return True
+                else:
+                    print("   ❌ Directory build non trovata")
+                    return False
+            else:
+                print(f"   ❌ Errore durante il build:")
+                print(result.stderr[:500] + "..." if len(result.stderr) > 500 else result.stderr)
+                return False
+                
+        except subprocess.TimeoutExpired:
+            print("   ❌ Timeout durante il build (oltre 2 minuti)")
             return False
         except Exception as e:
-            print(f"   ❌ Errore verificando build: {e}")
+            print(f"   ❌ Errore eseguendo build: {e}")
             return False
     
     def test_5_react_routing_setup(self):

@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """
 Test completo Selenium per tutte le funzionalità di Smile Adventure
+Cross-platform compatible implementation
 """
 import time
 import requests
 import json
+import os
+import sys
+import platform
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -12,6 +16,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.support.ui import Select
+
+# Import portable test helpers (fallback to stub if file doesn't exist)
+try:
+    from portable_test_helpers import (
+        detect_platform, find_webdriver, create_headless_chrome_options
+    )
+    PORTABLE_HELPERS = True
+except ImportError:
+    PORTABLE_HELPERS = False
+    print("⚠️ Portable test helpers not found, using default configuration")
 
 class SmileAdventureTestSuite:
     def __init__(self):
@@ -25,19 +39,49 @@ class SmileAdventureTestSuite:
             'tests_failed': 0,
             'failed_tests': []
         }
+        
+        # Platform information
+        self.platform = detect_platform() if PORTABLE_HELPERS else sys.platform
+        print(f"🖥️ Running tests on platform: {self.platform}")
     
     def setup_driver(self):
         """Setup Chrome driver"""
-        chrome_options = Options()
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-web-security")
-        chrome_options.add_argument("--disable-features=VizDisplayCompositor")
-        chrome_options.add_argument("--window-size=1920,1080")
-        
-        self.driver = webdriver.Chrome(options=chrome_options)
-        self.wait = WebDriverWait(self.driver, 15)
-        self.driver.maximize_window()
+        try:
+            # Try using portable helpers first
+            if PORTABLE_HELPERS:
+                print("🔍 Detecting Chrome driver using portable helpers...")
+                driver_path, driver_version, driver_found = find_webdriver('chrome')
+                chrome_options = create_headless_chrome_options()
+                
+                if driver_found:
+                    print(f"✅ Found Chrome driver: {driver_version} at {driver_path}")
+                    self.driver = webdriver.Chrome(options=chrome_options)
+                else:
+                    print("⚠️ Chrome driver not found with portable helpers, trying default setup")
+                    chrome_options = Options()  # Fallback to default options
+                    chrome_options.add_argument("--no-sandbox")
+                    chrome_options.add_argument("--disable-dev-shm-usage")
+                    chrome_options.add_argument("--window-size=1920,1080")
+                    self.driver = webdriver.Chrome(options=chrome_options)
+            else:
+                # Fallback to default setup
+                chrome_options = Options()
+                chrome_options.add_argument("--no-sandbox")
+                chrome_options.add_argument("--disable-dev-shm-usage")
+                chrome_options.add_argument("--disable-web-security")
+                chrome_options.add_argument("--disable-features=VizDisplayCompositor")
+                chrome_options.add_argument("--window-size=1920,1080")
+                self.driver = webdriver.Chrome(options=chrome_options)
+            
+            self.wait = WebDriverWait(self.driver, 15)
+            self.driver.maximize_window()
+            print("✅ Chrome driver initialized successfully")
+            
+        except Exception as e:
+            print(f"❌ Failed to initialize Chrome driver: {str(e)}")
+            print("💡 Make sure Chrome and chromedriver are installed and available")
+            print("💡 You may need to install chromedriver with: pip install webdriver-manager")
+            raise
     
     def check_servers(self):
         """Check if both servers are running"""
