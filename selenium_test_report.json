@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-06-11 16:07:24",
+  "results": {
+    "tests_run": 10,
+    "tests_passed": 8,
+    "tests_failed": 2,
+    "failed_tests": [
+      "User Login",
+      "Dashboard Access"
+    ]
+  },
+  "success_rate": 80.0,
+  "test_email": "selenium.test.1749650806@test.com"
+}

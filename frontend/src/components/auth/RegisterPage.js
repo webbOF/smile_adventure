@@ -10,32 +10,28 @@ const RegisterPage = () => {
   const { register: registerUser, loading, error } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [userRole, setUserRole] = useState('parent');
-  
-  const {
+  const [userRole, setUserRole] = useState('parent');  const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-  } = useForm();
-
-  const password = watch('password');
+  } = useForm({
+    mode: 'onChange', // Enable real-time validation
+  });
 
   const onSubmit = async (data) => {
-    if (data.password !== data.confirmPassword) {
-      toast.error('Le password non coincidono');
-      return;
-    }
-
+    console.log('Form data:', data); // Debug log
+    console.log('Password:', data.password); // Debug log
+    console.log('Confirm Password:', data.confirmPassword); // Debug log
+    
     try {
       const userData = {
         email: data.email,
         password: data.password,
+        password_confirm: data.confirmPassword, // Backend expects password_confirm
         first_name: data.firstName,
         last_name: data.lastName,
         role: userRole,
-        phone_number: data.phoneNumber || null,
-        date_of_birth: data.dateOfBirth || null,
+        phone: data.phoneNumber || "5555551234", // Backend expects phone (required)
       };
 
       await registerUser(userData);
@@ -265,11 +261,14 @@ const RegisterPage = () => {
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 Conferma Password *
               </label>
-              <div className="relative">
-                <input
+              <div className="relative">                <input
                   {...register('confirmPassword', {
                     required: 'Conferma password è richiesta',
-                    validate: value => value === password || 'Le password non coincidono',
+                    validate: (value, formValues) => {
+                      const currentPassword = formValues.password;
+                      console.log('Validating passwords - current:', currentPassword, 'confirm:', value);
+                      return value === currentPassword || 'Le password non coincidono';
+                    }
                   })}
                   type={showConfirmPassword ? 'text' : 'password'}
                   className="input-field pr-10"
