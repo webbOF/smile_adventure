@@ -14,9 +14,6 @@ import ChildProfile from './components/parent/ChildProfile';
 import GameSession from './components/parent/GameSession';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
-// Import hooks and services
-import { useAuthStore } from './hooks/useAuthStore';
-
 // Initialize React Query client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,7 +26,7 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const { user, isAuthenticated } = useAuthStore();
+  // Auth state will be handled by the ProtectedRoute component
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -56,31 +53,15 @@ function App() {
             }}
           />
           
-          <Routes>
-            {/* Public Routes */}
+          <Routes>            {/* Public Routes */}
             <Route path="/" element={<Layout><HomePage /></Layout>} />
-            <Route 
-              path="/login" 
-              element={
-                isAuthenticated ? 
-                  <Navigate to={user?.role === 'parent' ? '/parent' : '/professional'} replace /> :
-                  <Layout><LoginPage /></Layout>
-              } 
-            />
-            <Route 
-              path="/register" 
-              element={
-                isAuthenticated ? 
-                  <Navigate to={user?.role === 'parent' ? '/parent' : '/professional'} replace /> :
-                  <Layout><RegisterPage /></Layout>
-              } 
-            />
-            
-            {/* Protected Parent Routes */}
+            <Route path="/login" element={<Layout><LoginPage /></Layout>} />
+            <Route path="/register" element={<Layout><RegisterPage /></Layout>} />
+              {/* Protected Parent Routes */}
             <Route 
               path="/parent/*" 
               element={
-                <ProtectedRoute allowedRoles={['parent']}>
+                <ProtectedRoute roles={['parent']}>
                   <Layout>
                     <Routes>
                       <Route index element={<ParentDashboard />} />
@@ -96,7 +77,7 @@ function App() {
             <Route 
               path="/professional/*" 
               element={
-                <ProtectedRoute allowedRoles={['professional']}>
+                <ProtectedRoute roles={['professional']}>
                   <Layout>
                     <Routes>
                       <Route index element={<ProfessionalDashboard />} />

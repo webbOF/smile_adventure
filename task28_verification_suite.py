@@ -38,7 +38,7 @@ class Task28VerificationSuite:
             'failed_tests': []
         }
         self.project_root = r"c:\Users\arman\Desktop\WebSimpl\smile_adventure\frontend"
-      def setup_driver(self):
+    def setup_driver(self):
         """Setup Chrome driver with cross-platform compatibility"""
         try:
             # Try using portable helpers first
@@ -227,7 +227,7 @@ class Task28VerificationSuite:
         except Exception as e:
             print(f"❌ Errore verificando Tailwind: {e}")
             return False
-      def test_4_react_app_builds(self):
+    def test_4_react_app_builds(self):
         """Test 4: Verificare che l'app React compili senza errori"""
         print("🔍 Verificando build dell'app React...")
         

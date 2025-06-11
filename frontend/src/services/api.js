@@ -19,18 +19,13 @@ const api = axios.create({
 // Request interceptor - Add auth token to all requests
 api.interceptors.request.use(
   (config) => {
-    // Get token from Zustand store (localStorage)
-    const authData = localStorage.getItem('smile-adventure-auth');
-    if (authData) {
-      try {
-        const parsed = JSON.parse(authData);
-        const token = parsed.state?.token;
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      } catch (error) {
-        console.warn('Failed to parse auth data:', error);
-      }
+    // Import here to avoid circular dependencies
+    const { getToken } = require('../utils/tokenManager');
+    
+    // Get token using our tokenManager
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     
     // Add request timestamp for debugging
@@ -69,8 +64,7 @@ api.interceptors.response.use(
           // Unauthorized - try to refresh token
           if (!originalRequest._retry) {
             originalRequest._retry = true;
-            
-            try {
+              try {
               const refreshToken = localStorage.getItem('refresh_token');
               if (refreshToken) {
                 const response = await axios.post(
@@ -78,14 +72,13 @@ api.interceptors.response.use(
                   { refresh_token: refreshToken }
                 );
                 
-                const { token } = response.data;
+                const { token, user } = response.data;
                 
-                // Update token in localStorage
-                const authData = JSON.parse(localStorage.getItem('smile-adventure-auth') || '{}');
-                if (authData.state) {
-                  authData.state.token = token;
-                  localStorage.setItem('smile-adventure-auth', JSON.stringify(authData));
-                }
+                // Import tokenManager here to avoid circular dependencies
+                const { setToken } = require('../utils/tokenManager');
+                
+                // Update token using tokenManager
+                setToken(token, user);
                 
                 // Retry original request
                 originalRequest.headers.Authorization = `Bearer ${token}`;
@@ -93,7 +86,8 @@ api.interceptors.response.use(
               }
             } catch (refreshError) {
               // Refresh failed - logout user
-              localStorage.removeItem('smile-adventure-auth');
+              const { removeToken } = require('../utils/tokenManager');
+              removeToken();
               localStorage.removeItem('refresh_token');
               window.location.href = '/login';
               return Promise.reject(refreshError);

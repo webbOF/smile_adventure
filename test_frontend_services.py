@@ -158,7 +158,7 @@ class FrontendServicesValidator:
             return False
         
         return True
-      def find_npm_executable(self) -> tuple:
+    def find_npm_executable(self) -> tuple:
         """Find npm executable across different platforms
         Returns: (executable_path, version, success)
         """

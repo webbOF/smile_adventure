@@ -18,13 +18,12 @@ class AuthService {
    * Login user with credentials
    * @param {LoginCredentials} credentials - User credentials
    * @returns {Promise<AuthResponse>} Authentication response
-   */
-  async login(credentials) {
+   */  async login(email, password) {
     try {
       // Create FormData for login request as backend expects form data
       const formData = new FormData();
-      formData.append('username', credentials.email);
-      formData.append('password', credentials.password);
+      formData.append('username', email);
+      formData.append('password', password);
       
       const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, formData, {
         headers: {
@@ -76,7 +75,6 @@ class AuthService {
       throw this.handleError(error, 'Registrazione fallita');
     }
   }
-
   /**
    * Logout current user
    * @returns {Promise<void>}
@@ -89,9 +87,8 @@ class AuthService {
       // Continue with logout even if server request fails
       console.warn('Server logout failed:', error.message);
     } finally {
-      // Always clear local storage
+      // Note: Token removal is handled by tokenManager.removeToken()
       localStorage.removeItem('refresh_token');
-      localStorage.removeItem('smile-adventure-auth');
     }
   }
 
