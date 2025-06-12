@@ -13,8 +13,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
-  
-  // Recupera il percorso da cui l'utente è stato reindirizzato (se disponibile)
+    // Recupera il percorso da cui l'utente è stato reindirizzato (se disponibile)
   const from = location.state?.from || '/';
   
   // Inizializza react-hook-form
@@ -29,6 +28,22 @@ const LoginForm = () => {
     resetError();
   }, [resetError]);
   
+  // Funzione per determinare la dashboard corretta in base al ruolo
+  const getDashboardPath = (user) => {
+    if (!user || !user.role) return '/';
+    
+    switch (user.role.toLowerCase()) {
+      case 'parent':
+        return '/parent';
+      case 'professional':
+        return '/professional';
+      case 'admin':
+        return '/admin';
+      default:
+        return '/';
+    }
+  };
+  
   // Gestisce l'invio del form
   const onSubmit = async (data) => {
     try {
@@ -36,7 +51,19 @@ const LoginForm = () => {
       
       if (result.success) {
         toast.success('Login effettuato con successo!');
-        navigate(from, { replace: true });
+        
+        // Determina dove reindirizzare l'utente
+        let redirectPath;
+        if (from && from !== '/') {
+          // Se l'utente aveva tentato di accedere a una pagina specifica, torna lì
+          redirectPath = from;
+        } else {
+          // Altrimenti, vai alla dashboard appropriata per il ruolo
+          redirectPath = getDashboardPath(result.user);
+        }
+        
+        console.log('🔄 Reindirizzamento a:', redirectPath, 'per utente:', result.user);
+        navigate(redirectPath, { replace: true });
       } else {
         toast.error(result.error || 'Errore durante il login');
       }

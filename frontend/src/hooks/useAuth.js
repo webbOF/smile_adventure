@@ -28,14 +28,14 @@ const useAuthStore = create((set, get) => ({
     try {
       // Imposta stato di loading
       set({ isLoading: true, error: null });
-      
-      // Chiama il servizio di autenticazione
+        // Chiama il servizio di autenticazione
       const response = await authService.login(email, password);
       
       // Gestione della risposta
       const { token, user } = response;
       
       // Salva il token e i dati utente
+      // Il token è già un oggetto con access_token
       setToken(token.access_token, user);
       
       // Aggiorna lo stato
@@ -64,7 +64,6 @@ const useAuthStore = create((set, get) => ({
       return { success: false, error: errorMessage };
     }
   },
-
   /**
    * Registra un nuovo utente
    * @param {object} userData - Dati dell'utente per la registrazione
@@ -77,10 +76,24 @@ const useAuthStore = create((set, get) => ({
       // Chiama il servizio di registrazione
       const response = await authService.register(userData);
       
-      // Aggiorna lo stato (la registrazione non effettua login automatico)
-      set({ isLoading: false });
-      
-      return { success: true, data: response };
+      // Se il backend restituisce un token, effettua login automatico
+      if (response.token && response.user) {
+        // Salva il token e i dati utente
+        setToken(response.token.access_token, response.user);
+        
+        // Aggiorna lo stato con login automatico
+        set({ 
+          user: response.user, 
+          isAuthenticated: true, 
+          isLoading: false 
+        });
+        
+        return { success: true, data: response, autoLogin: true };
+      } else {
+        // Registrazione senza login automatico
+        set({ isLoading: false });
+        return { success: true, data: response, autoLogin: false };
+      }
     } catch (error) {
       console.error('Errore durante la registrazione:', error);
       

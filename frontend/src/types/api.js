@@ -321,14 +321,14 @@
 export const API_ENDPOINTS = {
   // Authentication
   AUTH: {
-    LOGIN: '/v1/auth/login',
-    REGISTER: '/v1/auth/register',
-    LOGOUT: '/v1/auth/logout',
-    REFRESH: '/v1/auth/refresh',
-    PROFILE: '/v1/auth/profile',
-    CHANGE_PASSWORD: '/v1/auth/change-password',
-    FORGOT_PASSWORD: '/v1/auth/forgot-password',
-    RESET_PASSWORD: '/v1/auth/reset-password',
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    LOGOUT: '/auth/logout',
+    REFRESH: '/auth/refresh',
+    PROFILE: '/auth/profile',
+    CHANGE_PASSWORD: '/auth/change-password',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
   },
   
   // Users

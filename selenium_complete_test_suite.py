@@ -237,14 +237,29 @@ class SmileAdventureTestSuite:
             if error.is_displayed() and "password" in error.text.lower():
                 print(f"❌ Errore validazione: {error.text}")
                 return False
-        
-        # Accept terms
+          # Accept terms - prova diversi selettori
         try:
-            terms_checkbox = self.driver.find_element(By.NAME, "acceptTerms")
+            # Prova per ID (corretto)
+            terms_checkbox = self.driver.find_element(By.ID, "terms")
             if not terms_checkbox.is_selected():
                 self.driver.execute_script("arguments[0].click();", terms_checkbox)
-        except:
-            print("⚠️ Checkbox termini non trovato")
+                print("✅ Checkbox termini selezionato (by ID)")
+        except NoSuchElementException:
+            try:
+                # Fallback per name
+                terms_checkbox = self.driver.find_element(By.NAME, "terms")
+                if not terms_checkbox.is_selected():
+                    self.driver.execute_script("arguments[0].click();", terms_checkbox)
+                    print("✅ Checkbox termini selezionato (by name)")
+            except NoSuchElementException:
+                try:
+                    # Fallback per tipo
+                    terms_checkbox = self.driver.find_element(By.CSS_SELECTOR, "input[type='checkbox']")
+                    if not terms_checkbox.is_selected():
+                        self.driver.execute_script("arguments[0].click();", terms_checkbox)
+                        print("✅ Checkbox termini selezionato (by type)")
+                except NoSuchElementException:
+                    print("⚠️ Checkbox termini non trovato con nessun selettore")
         
         # Submit form
         submit_button = self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
@@ -255,10 +270,12 @@ class SmileAdventureTestSuite:
         
         current_url = self.driver.current_url
         self.driver.save_screenshot("test_3_registration_result.png")
-        
-        # Check if redirected to dashboard
+          # Check if redirected to dashboard, login, or other success page
         if "/parent" in current_url or "/professional" in current_url:
             print("✅ Registrazione completata, reindirizzato a dashboard")
+            return True
+        elif "/login" in current_url:
+            print("✅ Registrazione completata, reindirizzato al login")
             return True
         elif current_url == "http://localhost:3000/register":
             print("❌ Ancora sulla pagina di registrazione")

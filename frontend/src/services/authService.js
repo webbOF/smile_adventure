@@ -57,10 +57,18 @@ class AuthService {
           confirmPassword: confirmPassword,
           userData: userData
         });
-        throw new Error('Le password non coincidono');      }
+        throw new Error('Le password non coincidono');
+      }
       
-      // Remove only the confirmPassword field, keep password_confirm for backend
-      const { confirmPassword: removeConfirm, ...registrationData } = userData;
+      // Keep confirmPassword for backend validation
+      const registrationData = {
+        email: userData.email,
+        password: userData.password,
+        confirmPassword: userData.confirmPassword,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: userData.role || 'parent'
+      };
       
       const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, registrationData);
       const { user, token, refresh_token } = response.data;

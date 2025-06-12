@@ -47,10 +47,9 @@ security = HTTPBearer()
 class UserRegister(BaseModel):
     email: str
     password: str
-    password_confirm: str
-    first_name: str
-    last_name: str
-    phone: str
+    confirmPassword: str
+    firstName: str
+    lastName: str
     role: str = "parent"
 
 class UserLogin(BaseModel):
@@ -105,9 +104,16 @@ def create_access_token(data: dict):
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
-        if user_id is None:
+        user_email = payload.get("sub")
+        user_id = payload.get("user_id")
+        
+        if not user_email or not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
+            
+        # Verify user exists
+        if user_id not in mock_users:
+            raise HTTPException(status_code=404, detail="User not found")
+            
         return user_id
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
@@ -149,24 +155,36 @@ async def register_user(user_data: UserRegister):
     if user_data.email in [u["email"] for u in mock_users.values()]:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    # Validate password confirmation
+    if user_data.password != user_data.confirmPassword:
+        raise HTTPException(status_code=400, detail="Le password non coincidono")
+    
     # Create user
     user_id = len(mock_users) + 1
     user = {
         "id": user_id,
         "email": user_data.email,
-        "first_name": user_data.first_name,
-        "last_name": user_data.last_name,
-        "phone": user_data.phone,
+        "firstName": user_data.firstName,
+        "lastName": user_data.lastName,
         "role": user_data.role,
-        "is_verified": False,
+        "is_verified": True,  # Auto-verify for testing
         "created_at": datetime.now().isoformat()
     }
     
     mock_users[user_id] = user
     
+    # Create access token for immediate login
+    token_data = {"sub": user_data.email, "user_id": user_id, "role": user_data.role}
+    access_token = create_access_token(token_data)
+    mock_tokens.add(access_token)
+    
     return {
         "message": "User registered successfully",
-        "user": user
+        "user": user,
+        "token": {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
     }
 
 @app.post("/api/v1/auth/verify-email/{user_id}")

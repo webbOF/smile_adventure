@@ -29,8 +29,7 @@ const RegisterForm = () => {
   useEffect(() => {
     resetError();
   }, [resetError]);
-  
-  // Gestisce l'invio del form
+    // Gestisce l'invio del form
   const onSubmit = async (data) => {
     try {
       // Prepara i dati utente per la registrazione
@@ -46,8 +45,15 @@ const RegisterForm = () => {
       const result = await registerUser(userData);
       
       if (result.success) {
-        toast.success('Registrazione completata! Ora puoi effettuare il login.');
-        navigate('/login');
+        if (result.autoLogin) {
+          // Se il login automatico è avvenuto, vai alla dashboard
+          toast.success('Registrazione completata! Benvenuto in Smile Adventure!');
+          navigate('/dashboard');
+        } else {
+          // Altrimenti vai al login
+          toast.success('Registrazione completata! Ora puoi effettuare il login.');
+          navigate('/login');
+        }
       } else {
         toast.error(result.error || 'Errore durante la registrazione');
       }
