@@ -53,6 +53,26 @@ services:
       - pgadmin_data:/var/lib/pgadmin
     networks:
       - smile_network
+        # React Frontend
+  frontend:
+    build: ./frontend
+    container_name: smile_adventure_frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:8000/api/v1
+      FAST_REFRESH: false
+      WDS_SOCKET_PORT: 0
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/package-lock.json:/app/package-lock.json
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - smile_network
 
 volumes:
   postgres_data:

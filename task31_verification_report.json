@@ -1,18 +1,18 @@
 {
   "task": "Task 31 - App Routing Setup",
-  "verification_date": "2025-06-11T23:51:02.059188",
+  "verification_date": "2025-06-12T12:57:20.605239",
   "total_checks": 16,
-  "passed_checks": 16,
-  "success_rate": 100.0,
-  "status": "COMPLETED",
+  "passed_checks": 0,
+  "success_rate": 0.0,
+  "status": "INCOMPLETE",
   "details": {
-    "enhanced_app_js": true,
-    "error_boundary": true,
-    "loading_system": true,
-    "role_guard": true,
-    "not_found_page": true,
-    "routing_hooks": true,
-    "breadcrumb": true,
-    "enhanced_layout": true
+    "enhanced_app_js": false,
+    "error_boundary": false,
+    "loading_system": false,
+    "role_guard": false,
+    "not_found_page": false,
+    "routing_hooks": false,
+    "breadcrumb": false,
+    "enhanced_layout": false
   }
 }

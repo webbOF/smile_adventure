@@ -15,10 +15,9 @@ const Footer = () => {
               <span className="text-xl font-display font-bold gradient-text">
                 Smile Adventure
               </span>
-            </div>
-            <p className="text-gray-600 text-sm mb-4">
+            </div>            <p className="text-gray-600 text-sm mb-4">
               La piattaforma di gamification che rende l'igiene dentale dei bambini 
-              un'avventura divertente e coinvolgente.
+              un'avventura divertente e coinvolgente. 🦷✨
             </p>
             <div className="flex space-x-4">
               <a 

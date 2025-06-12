@@ -35,20 +35,13 @@ engine = create_engine(
     echo_pool=settings.DEBUG,  # Log pool events in debug mode
     
     # Performance optimizations
-    isolation_level="READ_COMMITTED",  # Optimal isolation level for most operations
-    
-    # Connection arguments for PostgreSQL - Performance Optimized
+    isolation_level="READ_COMMITTED",  # Optimal isolation level for most operations    # Connection arguments for PostgreSQL - Performance Optimized
     connect_args={
         "application_name": f"{settings.APP_NAME}_v{settings.APP_VERSION}",
-        "options": "-c timezone=UTC -c statement_timeout=30s -c idle_in_transaction_session_timeout=60s",
+        "options": "-c timezone=UTC -c statement_timeout=30s -c idle_in_transaction_session_timeout=60s -c jit=off -c lock_timeout=10s",
         "connect_timeout": 10,  # Connection timeout
-        "command_timeout": 30,  # Command timeout
-        "server_settings": {
-            "jit": "off",  # Disable JIT for faster connection times
-            "statement_timeout": "30s",
-            "lock_timeout": "10s",
-            "idle_in_transaction_session_timeout": "60s"
-        }
+        # "command_timeout" removed because not supported by psycopg2
+        # server_settings moved to options string above for compatibility
     },
     
     # Additional engine options

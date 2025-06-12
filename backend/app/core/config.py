@@ -28,13 +28,16 @@ class Settings(BaseSettings):
     DATABASE_POOL_RECYCLE: int = Field(default=1800)  # Reduced from 3600 (30 min instead of 1 hour)
     DATABASE_POOL_PRE_PING: bool = Field(default=True)  # Enable connection validation
     DATABASE_ECHO: bool = Field(default=False)  # Control SQL logging separately from DEBUG
-    
-    # JWT Security Configuration
+      # JWT Security Configuration
     SECRET_KEY: str = Field(
         default="your-super-secret-key-change-this-in-production-please-make-it-longer-than-32-chars"
     )
     ALGORITHM: str = Field(default="HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30)
+    
+    # Development Configuration
+    AUTO_VERIFY_EMAIL: bool = Field(default=True)  # Auto-verify emails in development
+    REQUIRE_EMAIL_VERIFICATION: bool = Field(default=False)  # Bypass verification for testing
       # CORS Configuration
     ALLOWED_HOSTS: List[str] = Field(
         default=[

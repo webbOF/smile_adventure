@@ -40,9 +40,7 @@ const Header = () => {
             <span className="text-2xl font-display font-bold gradient-text">
               Smile Adventure
             </span>
-          </Link>
-
-          {/* Desktop Navigation */}
+          </Link>          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {!isAuthenticated ? (
               <>
@@ -61,6 +59,12 @@ const Header = () => {
               </>
             ) : (
               <>
+                <Link 
+                  to="/" 
+                  className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                >
+                  Home
+                </Link>
                 {user?.role === 'parent' ? (
                   <Link 
                     to="/parent" 
@@ -110,9 +114,7 @@ const Header = () => {
               )}
             </button>
           </div>
-        </div>
-
-        {/* Mobile Navigation */}
+        </div>        {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden pb-4">
             <div className="flex flex-col space-y-4">
@@ -141,6 +143,14 @@ const Header = () => {
                       {user?.first_name} {user?.last_name}
                     </span>
                   </div>
+                  
+                  <Link 
+                    to="/" 
+                    className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Home
+                  </Link>
                   
                   {user?.role === 'parent' ? (
                     <Link 

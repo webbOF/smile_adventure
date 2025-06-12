@@ -123,8 +123,7 @@ class AuthService:
             
             # Hash password
             hashed_password = get_password_hash(user_data.password)
-            
-            # Create user object
+              # Create user object with development auto-verification
             user = User(
                 email=user_data.email,
                 hashed_password=hashed_password,
@@ -132,15 +131,16 @@ class AuthService:
                 last_name=user_data.last_name,
                 phone=user_data.phone,
                 role=UserRole(user_data.role.value),
-                status=UserStatus.PENDING,  # Requires email verification
+                status=UserStatus.ACTIVE if settings.AUTO_VERIFY_EMAIL else UserStatus.PENDING,
                 timezone=user_data.timezone,
                 language=user_data.language,
                 license_number=user_data.license_number,
                 specialization=user_data.specialization,
                 clinic_name=user_data.clinic_name,
                 clinic_address=user_data.clinic_address,
-                is_active=False,  # Activated after email verification
-                is_verified=False,
+                is_active=True if settings.AUTO_VERIFY_EMAIL else False,
+                is_verified=True if settings.AUTO_VERIFY_EMAIL else False,
+                email_verified_at=datetime.now(timezone.utc) if settings.AUTO_VERIFY_EMAIL else None,
                 failed_login_attempts=0,
                 created_at=datetime.now(timezone.utc),
                 updated_at=datetime.now(timezone.utc)            )
