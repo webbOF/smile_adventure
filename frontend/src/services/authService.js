@@ -24,20 +24,25 @@ class AuthService {
       const formData = new FormData();
       formData.append('username', email);
       formData.append('password', password);
-      
-      const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, formData, {
+        const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
-      const { user, token, refresh_token } = response.data;
+      
+      // Backend returns: { user: {...}, token: { access_token: "...", refresh_token: "..." } }
+      const { user, token } = response.data;
+      
+      // Extract tokens from nested structure
+      const access_token = token.access_token;
+      const refresh_token = token.refresh_token;
       
       // Store refresh token separately for security
       if (refresh_token) {
         localStorage.setItem('refresh_token', refresh_token);
       }
       
-      return { user, token, refresh_token };
+      return { user, token: access_token, refresh_token };
     } catch (error) {
       throw this.handleError(error, 'Login fallito');
     }

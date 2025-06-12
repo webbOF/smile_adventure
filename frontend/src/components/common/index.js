@@ -36,33 +36,3 @@ export {
 
 // Utility Components
 export { default as NotFoundPage } from './NotFoundPage';
-
-// Re-export commonly used combinations
-export const CommonComponents = {
-  // Layout
-  Header,
-  Footer,
-  
-  // Modals
-  Modal,
-  ConfirmationModal,
-  FormModal,
-  ImageModal,
-  
-  // Data
-  DataTable,
-  tableActions,
-  
-  // Loading
-  LoadingSpinner,
-  PageLoading,
-  RouteLoading,
-  ComponentLoading,
-  
-  // Error
-  ErrorBoundary,
-  SimpleErrorBoundary,
-  withErrorBoundary
-};
-
-export default CommonComponents;
