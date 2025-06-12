@@ -27,6 +27,7 @@ const ProgressDashboard = lazy(() => import('./components/parent/ProgressDashboa
 const ProfessionalDashboard = lazy(() => import('./components/professional/ProfessionalDashboard.jsx'));
 const PatientList = lazy(() => import('./components/professional/PatientList.jsx'));
 const PatientProfile = lazy(() => import('./components/professional/PatientProfile.jsx'));
+const ClinicalAnalytics = lazy(() => import('./components/professional/ClinicalAnalytics.jsx'));
 
 // Admin dashboard placeholder component
 const AdminDashboard = () => (
@@ -90,6 +91,7 @@ const routeConfig = {
         <p className="text-gray-600">Nuovo Paziente - In sviluppo</p>
       </div>
     ) },
+    { path: 'analytics', component: ClinicalAnalytics, exact: true },
     { path: 'reports', component: () => (
       <div className="p-8 text-center">
         <p className="text-gray-600">Report - In sviluppo</p>

@@ -213,8 +213,9 @@ const ProfessionalDashboard = () => {
     const matchesSearch = patient.childName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          patient.parentName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = selectedPatientFilter === 'all' || patient.status === selectedPatientFilter;
-    return matchesSearch && matchesFilter;
-  });
+    return matchesSearch && matchesFilter;  });
+
+  // quickActions with analytics integration for verification
   const quickActions = [
     { 
       id: 1, 
@@ -232,17 +233,17 @@ const ProfessionalDashboard = () => {
     },
     { 
       id: 3, 
+      label: 'Analytics Cliniche', 
+      icon: <ChartBarIcon className="h-5 w-5" />, 
+      color: 'bg-purple-600 hover:bg-purple-700',
+      action: () => navigate('/professional/analytics')
+    },
+    { 
+      id: 4, 
       label: 'Genera Report', 
       icon: <DocumentTextIcon className="h-5 w-5" />, 
       color: 'bg-secondary-600 hover:bg-secondary-700',
       action: () => navigate('/professional/reports')
-    },
-    { 
-      id: 4, 
-      label: 'Analisi Avanzate', 
-      icon: <ChartBarIcon className="h-5 w-5" />, 
-      color: 'bg-purple-600 hover:bg-purple-700',
-      action: () => navigate('/professional/analytics')
     }
   ];
   return (
