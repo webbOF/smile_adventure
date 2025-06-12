@@ -25,6 +25,8 @@ const ProgressDashboard = lazy(() => import('./components/parent/ProgressDashboa
 
 // Professional components  
 const ProfessionalDashboard = lazy(() => import('./components/professional/ProfessionalDashboard.jsx'));
+const PatientList = lazy(() => import('./components/professional/PatientList.jsx'));
+const PatientProfile = lazy(() => import('./components/professional/PatientProfile.jsx'));
 
 // Admin dashboard placeholder component
 const AdminDashboard = () => (
@@ -79,12 +81,13 @@ const routeConfig = {
         <p className="text-gray-600">Impostazioni - In sviluppo</p>
       </div>
     ) },
-  ],
-  professional: [
+  ],  professional: [
     { path: '', component: ProfessionalDashboard, exact: true },
-    { path: 'patients', component: () => (
+    { path: 'patients', component: PatientList, exact: true },
+    { path: 'patients/:id', component: PatientProfile },
+    { path: 'patients/new', component: () => (
       <div className="p-8 text-center">
-        <p className="text-gray-600">Lista Pazienti - In sviluppo</p>
+        <p className="text-gray-600">Nuovo Paziente - In sviluppo</p>
       </div>
     ) },
     { path: 'reports', component: () => (

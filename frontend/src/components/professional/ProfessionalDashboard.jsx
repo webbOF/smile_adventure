@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../hooks/useAuthStore';
 import { 
   UserGroupIcon, 
   ChartBarIcon,
   StarIcon,
   ArrowTrendingUpIcon,
-  CalendarDaysIcon,
   MagnifyingGlassIcon,
   BellIcon,
   Cog6ToothIcon,
@@ -27,6 +27,7 @@ import {
 
 const ProfessionalDashboard = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatientFilter, setSelectedPatientFilter] = useState('all');
@@ -214,35 +215,34 @@ const ProfessionalDashboard = () => {
     const matchesFilter = selectedPatientFilter === 'all' || patient.status === selectedPatientFilter;
     return matchesSearch && matchesFilter;
   });
-
   const quickActions = [
     { 
       id: 1, 
       label: 'Nuovo Paziente', 
       icon: <UserGroupIcon className="h-5 w-5" />, 
       color: 'bg-primary-600 hover:bg-primary-700',
-      action: () => console.log('Nuovo paziente')
+      action: () => navigate('/professional/patients/new')
     },
     { 
       id: 2, 
-      label: 'Genera Report', 
-      icon: <DocumentTextIcon className="h-5 w-5" />, 
-      color: 'bg-secondary-600 hover:bg-secondary-700',
-      action: () => console.log('Genera report')
+      label: 'Gestione Pazienti', 
+      icon: <EyeIcon className="h-5 w-5" />, 
+      color: 'bg-blue-600 hover:bg-blue-700',
+      action: () => navigate('/professional/patients')
     },
     { 
       id: 3, 
-      label: 'Pianifica Sessione', 
-      icon: <CalendarDaysIcon className="h-5 w-5" />, 
-      color: 'bg-green-600 hover:bg-green-700',
-      action: () => console.log('Pianifica sessione')
+      label: 'Genera Report', 
+      icon: <DocumentTextIcon className="h-5 w-5" />, 
+      color: 'bg-secondary-600 hover:bg-secondary-700',
+      action: () => navigate('/professional/reports')
     },
     { 
       id: 4, 
       label: 'Analisi Avanzate', 
       icon: <ChartBarIcon className="h-5 w-5" />, 
       color: 'bg-purple-600 hover:bg-purple-700',
-      action: () => console.log('Analisi avanzate')
+      action: () => navigate('/professional/analytics')
     }
   ];
   return (
@@ -349,22 +349,35 @@ const ProfessionalDashboard = () => {
                     <span className="text-sm font-bold text-gray-900">{patient.score}%</span>
                     <span className="text-xs text-green-600 font-medium">{patient.improvement}</span>
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-200">
-                  <button className="flex items-center space-x-1 text-xs text-primary-600 hover:text-primary-700">
+                </div>                <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-200">
+                  <button 
+                    onClick={() => navigate(`/professional/patients/${patient.id}`)}
+                    className="flex items-center space-x-1 text-xs text-primary-600 hover:text-primary-700"
+                  >
                     <EyeIcon className="h-3 w-3" />
                     <span>Dettagli</span>
                   </button>
                   <div className="flex items-center space-x-2">
-                    <button className="p-1 text-gray-400 hover:text-primary-600 rounded">
-                      <ChatBubbleLeftRightIcon className="h-3 w-3" />
+                    <button 
+                      onClick={() => window.open(`mailto:${patient.parentEmail}`)}
+                      className="p-1 text-gray-400 hover:text-primary-600 rounded"
+                      title="Invia Email"
+                    >
+                      <EnvelopeIcon className="h-3 w-3" />
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-primary-600 rounded">
+                    <button 
+                      onClick={() => window.open(`tel:${patient.parentPhone}`)}
+                      className="p-1 text-gray-400 hover:text-primary-600 rounded"
+                      title="Chiama"
+                    >
                       <PhoneIcon className="h-3 w-3" />
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-primary-600 rounded">
-                      <EnvelopeIcon className="h-3 w-3" />
+                    <button 
+                      onClick={() => navigate(`/professional/patients/${patient.id}`)}
+                      className="p-1 text-gray-400 hover:text-primary-600 rounded"
+                      title="Chat"
+                    >
+                      <ChatBubbleLeftRightIcon className="h-3 w-3" />
                     </button>
                   </div>
                 </div>
@@ -530,8 +543,10 @@ const ProfessionalDashboard = () => {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Pazienti Recenti</h3>
-                  <button className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center space-x-1">
+                  <h3 className="text-lg font-semibold text-gray-900">Pazienti Recenti</h3>                  <button 
+                    onClick={() => navigate('/professional/patients')}
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center space-x-1"
+                  >
                     <span>Vedi Tutti</span>
                     <ArrowUpRightIcon className="h-4 w-4" />
                   </button>
@@ -540,7 +555,11 @@ const ProfessionalDashboard = () => {
               
               <div className="divide-y divide-gray-200" data-testid="recent-patients-list">
                 {recentPatients.map((patient) => (
-                  <div key={patient.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div 
+                    key={patient.id} 
+                    onClick={() => navigate(`/professional/patients/${patient.id}`)}
+                    className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="text-2xl">{patient.profileImage}</div>
