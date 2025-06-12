@@ -21,6 +21,7 @@ const RegisterPage = lazy(() => import('./components/auth/RegisterPage.jsx'));
 const ParentDashboard = lazy(() => import('./components/parent/ParentDashboard.jsx'));
 const ChildProfile = lazy(() => import('./components/parent/ChildProfile.jsx'));
 const GameSession = lazy(() => import('./components/parent/GameSession.jsx'));
+const ProgressDashboard = lazy(() => import('./components/parent/ProgressDashboard.jsx'));
 
 // Professional components  
 const ProfessionalDashboard = lazy(() => import('./components/professional/ProfessionalDashboard.jsx'));
@@ -63,11 +64,11 @@ const routeConfig = {
     { path: '/', component: HomePage, exact: true },
     { path: '/login', component: LoginPage },
     { path: '/register', component: RegisterPage },
-  ],
-  parent: [
+  ],  parent: [
     { path: '', component: ParentDashboard, exact: true },
     { path: 'child/:childId', component: ChildProfile },
     { path: 'game/:childId', component: GameSession },
+    { path: 'progress', component: ProgressDashboard },
     { path: 'profile', component: () => (
       <div className="p-8 text-center">
         <p className="text-gray-600">Profilo Genitore - In sviluppo</p>
@@ -204,7 +205,7 @@ function App() {
                     element={
                       <ErrorBoundary>
                         <Layout>
-                          <Suspense fallback={route.path === '/login' ? <LoadingSpinner size="lg" /> : <RouteLoading />}>
+                          <Suspense fallback={route.path === '/login' ? <LoadingSpinner size="large" /> : <RouteLoading />}>
                             <route.component />
                           </Suspense>
                         </Layout>

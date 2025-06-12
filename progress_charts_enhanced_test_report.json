@@ -1,0 +1,50 @@
+{
+  "test_start_time": "2025-06-12 16:36:45",
+  "tests": {
+    "app_load": {
+      "status": "\u2705 PASS",
+      "message": "Application loaded successfully"
+    },
+    "progress_dashboard_load": {
+      "status": "\u26a0\ufe0f PARTIAL",
+      "message": "Progress dashboard loaded but main container not found"
+    },
+    "key_metrics_cards": {
+      "status": "\u26a0\ufe0f PARTIAL",
+      "message": "Found 0/4 metric cards: "
+    },
+    "filter_panel": {
+      "status": "\u274c FAIL",
+      "message": "Filter components: {'filter_panel': 0, 'period_selector': 0, 'metric_selector': 0, 'chart_type_selector': 0}"
+    },
+    "charts_grid": {
+      "status": "\u274c FAIL",
+      "message": "Chart components: {'charts_grid': 0, 'main_chart': 0, 'emotional_chart': 0, 'game_performance_chart': 0, 'engagement_chart': 0, 'activity_heatmap': 0, 'insights_panel': 0}"
+    },
+    "filter_interactivity": {
+      "status": "\u274c FAIL",
+      "message": "Successfully tested 0/3 filter interactions"
+    },
+    "recharts_integration": {
+      "status": "\u2705 PASS",
+      "message": "Recharts components: {'recharts_wrappers': 0, 'recharts_surfaces': 0, 'svg_elements': 4}"
+    },
+    "child_profile_integration": {
+      "status": "\u26a0\ufe0f PARTIAL",
+      "message": "Embedded charts: 0, Progress tab: False"
+    },
+    "error_handling": {
+      "status": "\u274c FAIL",
+      "message": "JavaScript errors (excluding prop warnings): 11"
+    }
+  },
+  "summary": {
+    "total_tests": 9,
+    "passed": 2,
+    "partial": 3,
+    "failed": 4,
+    "success_rate": "22.2%",
+    "overall_status": "\u274c NEEDS_WORK"
+  },
+  "test_end_time": "2025-06-12 16:36:54"
+}

@@ -27,6 +27,7 @@ import {
 // Import Services
 import { userService } from '../../services';
 import SessionManager from './SessionManager';
+import ProgressCharts from './ProgressCharts';
 
 const ChildProfile = () => {
   const { childId } = useParams();
@@ -367,11 +368,11 @@ const ChildProfile = () => {
         <LoadingSpinner />
       </div>
     );
-  }
-  // Tab navigation
+  }  // Tab navigation
   const tabs = [
     { id: 'overview', name: 'Panoramica', icon: EyeIcon },
     { id: 'sessions', name: 'Sessioni', icon: PlayIcon },
+    { id: 'progress', name: 'Progressi', icon: ChartBarIcon },
     { id: 'asd', name: 'Info ASD', icon: InformationCircleIcon },
     { id: 'sensory', name: 'Profilo Sensoriale', icon: AdjustmentsHorizontalIcon },
     { id: 'behavioral', name: 'Note Comportamentali', icon: DocumentTextIcon },
@@ -718,6 +719,11 @@ const ChildProfile = () => {
               <SessionManager />
             </div>
           )}
+          {activeTab === 'progress' && (
+            <div className="progress-charts-embedded">
+              <ProgressCharts childId={childId} embedded={false} />
+            </div>
+          )}
           {activeTab === 'asd' && renderASDTab()}
           {activeTab === 'sensory' && renderSensoryTab()}
           {activeTab === 'behavioral' && renderBehavioralTab()}
@@ -753,18 +759,14 @@ const ChildProfile = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* Progress Chart Placeholder */}
+              </div>              {/* Progress Charts Integration */}
               <div className="dental-card p-6 mt-6">
                 <h3 className="text-xl font-semibold text-gray-900 mb-6">Progresso Settimanale</h3>
-                <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-center text-gray-500">
-                    <ChartBarIcon className="h-12 w-12 mx-auto mb-2" />
-                    <p>Grafico dei progressi</p>
-                    <p className="text-sm">(Implementazione in corso)</p>
-                  </div>
-                </div>
+                <ProgressCharts 
+                  childId={childId} 
+                  embedded={true} 
+                  period="7"
+                />
               </div>
             </div>
 
@@ -784,6 +786,12 @@ const ChildProfile = () => {
                     className="w-full btn-outline"
                   >
                     📊 Gestisci Sessioni
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('progress')}
+                    className="w-full btn-outline"
+                  >
+                    📈 Visualizza Progressi
                   </button>
                   <button 
                     onClick={() => setActiveTab('asd')}

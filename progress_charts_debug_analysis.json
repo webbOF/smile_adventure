@@ -1,0 +1,126 @@
+{
+  "timestamp": "2025-06-12 16:33:31",
+  "console_logs": {
+    "errors": [
+      {
+        "level": "SEVERE",
+        "message": "http://localhost:3000/static/js/bundle.js 61538:33 \"Warning: Failed %s type: %s%s\" \"prop\" \"Invalid prop `size` of value `lg` supplied to `LoadingSpinner`, expected one of [\\\"xs\\\",\\\"small\\\",\\\"medium\\\",\\\"large\\\",\\\"xlarge\\\"].\" \"\\n    at LoadingSpinner (http://localhost:3000/static/js/bundle.js:71655:3)\\n    at App\"",
+        "source": "console-api",
+        "timestamp": 1749738811488
+      },
+      {
+        "level": "SEVERE",
+        "message": "http://localhost:3000/favicon.ico - Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "source": "network",
+        "timestamp": 1749738816707
+      },
+      {
+        "level": "SEVERE",
+        "message": "http://localhost:3000/manifest.json - Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "source": "network",
+        "timestamp": 1749738816707
+      },
+      {
+        "level": "SEVERE",
+        "message": "http://localhost:3000/login - Manifest fetch from http://localhost:3000/manifest.json failed, code 500",
+        "source": "other",
+        "timestamp": 1749738816707
+      }
+    ],
+    "warnings": [
+      {
+        "level": "WARNING",
+        "message": "http://localhost:3000/static/js/bundle.js 60886:12 \"\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.\"",
+        "source": "console-api",
+        "timestamp": 1749738811498
+      },
+      {
+        "level": "WARNING",
+        "message": "http://localhost:3000/static/js/bundle.js 60886:12 \"\u26a0\ufe0f React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.\"",
+        "source": "console-api",
+        "timestamp": 1749738811498
+      }
+    ],
+    "info": [
+      {
+        "level": "INFO",
+        "message": "http://localhost:3000/static/js/bundle.js 53592:20 \"%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools\" \"font-weight:bold\"",
+        "source": "console-api",
+        "timestamp": 1749738811464
+      },
+      {
+        "level": "DEBUG",
+        "message": "http://localhost:3000/login - [DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o",
+        "source": "recommendation",
+        "timestamp": 1749738811621
+      }
+    ],
+    "total_errors": 4,
+    "total_warnings": 2
+  },
+  "dom_analysis": {
+    "progress_containers": 0,
+    "recharts_elements": 4,
+    "filter_elements": 0,
+    "page_title": "Smile Adventure - Igiene Dentale per Bambini",
+    "current_url": "http://localhost:3000/login"
+  },
+  "network_errors": [],
+  "recommendations": [
+    "\ud83d\udd27 Fix critical JavaScript errors to improve stability",
+    "\ud83c\udf9b\ufe0f Add data-testid attributes to filter selectors for better testing",
+    "\ud83d\udcca Ensure Recharts components are properly rendered",
+    "\ud83d\udcc8 Verify Recharts library is properly loaded"
+  ],
+  "progress_charts_elements": {
+    "period_selector": 0,
+    "metric_selector": 0,
+    "chart_type_selector": 0,
+    "key_metrics_cards": 0,
+    "charts_containers": 0,
+    "loading_states": 0,
+    "error_states": 0
+  },
+  "interaction_tests": {
+    "period_selector": {
+      "found": false
+    }
+  },
+  "react_analysis": {
+    "react_devtools_detected": false,
+    "react_errors": [
+      {
+        "level": "WARNING",
+        "message": "http://localhost:3000/static/js/bundle.js 60886:12 \"\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.\"",
+        "source": "console-api",
+        "timestamp": 1749738811498
+      },
+      {
+        "level": "WARNING",
+        "message": "http://localhost:3000/static/js/bundle.js 60886:12 \"\u26a0\ufe0f React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.\"",
+        "source": "console-api",
+        "timestamp": 1749738811498
+      }
+    ],
+    "recharts_loaded": false
+  },
+  "testability_improvements": {
+    "data_testids_to_add": [
+      "progress-period-selector",
+      "progress-metric-selector",
+      "progress-chart-type-selector",
+      "progress-key-metrics",
+      "progress-main-chart",
+      "progress-emotional-chart",
+      "progress-game-performance-chart",
+      "progress-engagement-chart",
+      "progress-activity-heatmap",
+      "progress-insights-panel"
+    ],
+    "css_classes_to_add": [
+      "progress-dashboard-container",
+      "progress-filters-panel",
+      "progress-charts-grid"
+    ]
+  }
+}
