@@ -70,6 +70,67 @@ const formatTooltipValue = (name, value) => {
   return value;
 };
 
+// Trend icon helper
+const getTrendIcon = (trend) => {
+  if (trend > 0) return <ArrowTrendingUpIcon className="h-5 w-5 text-green-500" />;
+  if (trend < 0) return <ArrowTrendingDownIcon className="h-5 w-5 text-red-500" />;
+  return <MinusIcon className="h-5 w-5 text-gray-500" />;
+};
+
+// Engagement icon helper
+const getEngagementIcon = (status) => {
+  if (status === 'positive') return <ArrowTrendingUpIcon className="h-4 w-4" />;
+  if (status === 'negative') return <ArrowTrendingDownIcon className="h-4 w-4" />;
+  return <MinusIcon className="h-4 w-4" />;
+};
+
+// Safe calculation helpers
+const calculateAverage = (values, fallback = 0) => {
+  return values.length > 0 ? Math.round(values.reduce((sum, val) => sum + (val || 0), 0) / values.length) : fallback;
+};
+
+const getChildDisplayName = (child) => {
+  return child?.name || 'Bambino';
+};
+
+const getImprovementText = (status) => {
+  return status === 'positive' ? 'migliorato' : 'rimasto stabile';
+};
+
+// Helper for calculating engagement average
+const calculateEngagementAverage = (sessions, totalEngagement) => {
+  return sessions.length ? Math.round((totalEngagement / sessions.length) * 100) : 0;
+};
+
+// Helper for calculating trend
+const calculateTrendValue = (recentAvg, olderAvg) => {
+  return olderAvg ? (recentAvg - olderAvg) / olderAvg : 0;
+};
+
+// Helper for conditional styling
+const getFilterButtonClass = (showFilters) => {
+  return `btn-outline flex items-center space-x-2 ${showFilters ? 'bg-primary-50 border-primary-300' : ''}`;
+};
+
+// Helper for container class
+const getContainerClass = (embedded) => {
+  return `space-y-6 ${!embedded ? 'p-6' : ''}`;
+};
+
+// Helper for game performance text
+const getGamePerformanceText = (gameTypePerformance) => {
+  return gameTypePerformance.length > 0 
+    ? `"${gameTypePerformance[0].gameType}" è il tipo di gioco con le migliori performance.`
+    : 'Nessun pattern di gioco dominante identificato.';
+};
+
+// Helper for emotional state text
+const getEmotionalStateText = (emotionalStateData) => {
+  return emotionalStateData.length > 0 
+    ? `Lo stato emotivo più frequente è "${emotionalStateData[0].label}".`
+    : 'Analisi dello stato emotivo in corso.';
+};
+
 // Custom Tooltip Component
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -187,10 +248,9 @@ const processSessionsToTimeSeriesData = (sessions) => {
       month: 'short', 
       day: 'numeric' 
     }),
-    rawDate: day.date,
-    averageScore: day.sessions.length ? Math.round(day.totalScore / day.sessions.length) : 0,
+    rawDate: day.date,    averageScore: calculateAverage(day.sessions.map(s => s.score)),
     totalDuration: Math.round(day.totalDuration / 60),
-    averageEngagement: day.sessions.length ? Math.round((day.totalEngagement / day.sessions.length) * 100) : 0,
+    averageEngagement: calculateEngagementAverage(day.sessions, day.totalEngagement),
     sessionsCount: day.sessions.length,
     achievements: day.achievements,
     helpRequests: day.helpRequests,
@@ -219,7 +279,7 @@ const calculateEngagementMetrics = (sessions) => {
   const olderAvg = olderSessions.length ? 
     olderSessions.reduce((sum, s) => sum + (s.engagement || 0), 0) / olderSessions.length : 0;
 
-  const trend = olderAvg ? (recentAvg - olderAvg) / olderAvg : 0;
+  const trend = calculateTrendValue(recentAvg, olderAvg);
   const trendPercentage = trend * 100;
   const trendStatus = getTrendStatus(trend);
 
@@ -277,18 +337,11 @@ const renderKeyMetricsCards = (keyMetrics) => (
     </div>
 
     <div className="dental-card p-4" data-testid="metric-trend">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between">        <div>
           <p className="text-sm font-medium text-gray-600">Tendenza</p>
           <div className="flex items-center space-x-1">
             <p className="text-2xl font-bold text-gray-900">{Math.abs(keyMetrics.improvementTrend)}%</p>
-            {keyMetrics.improvementTrend > 0 ? (
-              <ArrowTrendingUpIcon className="h-5 w-5 text-green-500" />
-            ) : keyMetrics.improvementTrend < 0 ? (
-              <ArrowTrendingDownIcon className="h-5 w-5 text-red-500" />
-            ) : (
-              <MinusIcon className="h-5 w-5 text-gray-500" />
-            )}
+            {getTrendIcon(keyMetrics.improvementTrend)}
           </div>
         </div>
         <HeartIcon className="h-8 w-8 text-purple-500" />
@@ -549,23 +602,21 @@ const ProgressCharts = ({ childId: propChildId, embedded = false, period = '30' 
   if (loading) {
     return renderLoadingState();
   }
-
   // Calculate key metrics
   const keyMetrics = {
     totalSessions: sessions.length,
-    averageScore: sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + (s.score || 0), 0) / sessions.length) : 0,
+    averageScore: calculateAverage(sessions.map(s => s.score)),
     totalPlayTime: Math.round(sessions.reduce((sum, s) => sum + (s.duration || 0), 0) / 60), // in minutes
     improvementTrend: engagementMetrics.trend
   };
 
   return (
-    <div className={`space-y-6 ${!embedded ? 'p-6' : ''}`} data-testid="progress-charts-container">
+    <div className={getContainerClass(embedded)} data-testid="progress-charts-container">
       {/* Header */}
       {!embedded && (
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-display font-bold text-gray-900">
-              Progresso di {child?.name || 'Bambino'}
+          <div>            <h1 className="text-3xl font-display font-bold text-gray-900">
+              Progresso di {getChildDisplayName(child)}
             </h1>
             <p className="text-gray-600 mt-1">
               Analisi dettagliata delle performance e dell'engagement
@@ -573,7 +624,7 @@ const ProgressCharts = ({ childId: propChildId, embedded = false, period = '30' 
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`btn-outline flex items-center space-x-2 ${showFilters ? 'bg-primary-50 border-primary-300' : ''}`}
+            className={getFilterButtonClass(showFilters)}
             data-testid="progress-filters-toggle"
           >
             <AdjustmentsHorizontalIcon className="h-4 w-4" />
@@ -764,13 +815,7 @@ const ProgressCharts = ({ childId: propChildId, embedded = false, period = '30' 
             </ResponsiveContainer>
           </div>          <div className="text-center mt-4">
             <div className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${getEngagementStatusColor(engagementMetrics.status)}`}>
-              {engagementMetrics.status === 'positive' ? (
-                <ArrowTrendingUpIcon className="h-4 w-4" />
-              ) : engagementMetrics.status === 'negative' ? (
-                <ArrowTrendingDownIcon className="h-4 w-4" />
-              ) : (
-                <MinusIcon className="h-4 w-4" />
-              )}
+              {getEngagementIcon(engagementMetrics.status)}
               <span>
                 {getEngagementStatusText(engagementMetrics.status)}
               </span>
@@ -812,33 +857,23 @@ const ProgressCharts = ({ childId: propChildId, embedded = false, period = '30' 
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">💡 Modello di Utilizzo</h4>
-            <p className="text-sm text-blue-800">
-              {child?.name || 'Il bambino'} è più attivo nelle sessioni mattutine con punteggi medi del {keyMetrics.averageScore}%.
+            <h4 className="font-medium text-blue-900 mb-2">💡 Modello di Utilizzo</h4>            <p className="text-sm text-blue-800">
+              {getChildDisplayName(child)} è più attivo nelle sessioni mattutine con punteggi medi del {keyMetrics.averageScore}%.
             </p>
           </div>
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-medium text-green-900 mb-2">📈 Progresso</h4>
-            <p className="text-sm text-green-800">
-              Il coinvolgimento è {engagementMetrics.status === 'positive' ? 'migliorato' : 'rimasto stabile'} nell'ultimo periodo analizzato.
+            <h4 className="font-medium text-green-900 mb-2">📈 Progresso</h4>            <p className="text-sm text-green-800">
+              Il coinvolgimento è {getImprovementText(engagementMetrics.status)} nell'ultimo periodo analizzato.
             </p>
           </div>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-900 mb-2">🎮 Gioco Preferito</h4>
-            <p className="text-sm text-yellow-800">
-              {gameTypePerformance.length > 0 
-                ? `"${gameTypePerformance[0].gameType}" è il tipo di gioco con le migliori performance.`
-                : 'Nessun pattern di gioco dominante identificato.'
-              }
+            <h4 className="font-medium text-yellow-900 mb-2">🎮 Gioco Preferito</h4>            <p className="text-sm text-yellow-800">
+              {getGamePerformanceText(gameTypePerformance)}
             </p>
           </div>
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <h4 className="font-medium text-purple-900 mb-2">😊 Stato Emotivo</h4>
-            <p className="text-sm text-purple-800">
-              {emotionalStateData.length > 0 
-                ? `Lo stato emotivo più frequente è "${emotionalStateData[0].label}".`
-                : 'Analisi dello stato emotivo in corso.'
-              }
+            <h4 className="font-medium text-purple-900 mb-2">😊 Stato Emotivo</h4>            <p className="text-sm text-purple-800">
+              {getEmotionalStateText(emotionalStateData)}
             </p>
           </div>
         </div>
