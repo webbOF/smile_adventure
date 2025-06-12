@@ -4,8 +4,7 @@ import {
   ArrowLeftIcon, 
   TrophyIcon, 
   CalendarIcon, 
-  ChartBarIcon,
-  PencilIcon,
+  ChartBarIcon,  PencilIcon,
   CameraIcon,
   DocumentTextIcon,
   EyeIcon,
@@ -13,7 +12,8 @@ import {
   AdjustmentsHorizontalIcon,
   HeartIcon,
   InformationCircleIcon,
-  PlusIcon
+  PlusIcon,
+  PlayIcon
 } from '@heroicons/react/24/outline';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
@@ -26,6 +26,7 @@ import {
 
 // Import Services
 import { userService } from '../../services';
+import SessionManager from './SessionManager';
 
 const ChildProfile = () => {
   const { childId } = useParams();
@@ -367,10 +368,10 @@ const ChildProfile = () => {
       </div>
     );
   }
-
   // Tab navigation
   const tabs = [
     { id: 'overview', name: 'Panoramica', icon: EyeIcon },
+    { id: 'sessions', name: 'Sessioni', icon: PlayIcon },
     { id: 'asd', name: 'Info ASD', icon: InformationCircleIcon },
     { id: 'sensory', name: 'Profilo Sensoriale', icon: AdjustmentsHorizontalIcon },
     { id: 'behavioral', name: 'Note Comportamentali', icon: DocumentTextIcon },
@@ -709,11 +710,14 @@ const ChildProfile = () => {
               })}
             </nav>
           </div>
-        </div>
-
-        {/* Tab Content */}
+        </div>        {/* Tab Content */}
         <div className="space-y-8">
           {activeTab === 'overview' && renderOverviewTab()}
+          {activeTab === 'sessions' && (
+            <div className="session-manager-embedded">
+              <SessionManager />
+            </div>
+          )}
           {activeTab === 'asd' && renderASDTab()}
           {activeTab === 'sensory' && renderSensoryTab()}
           {activeTab === 'behavioral' && renderBehavioralTab()}
@@ -723,10 +727,17 @@ const ChildProfile = () => {
         {/* Sidebar for Overview Tab */}
         {activeTab === 'overview' && (
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              {/* Recent Activities */}
+            <div className="lg:col-span-2">              {/* Recent Activities */}
               <div className="dental-card p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">Attività Recenti</h3>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900">Attività Recenti</h3>
+                  <button 
+                    onClick={() => setActiveTab('sessions')}
+                    className="text-sm text-primary-600 hover:text-primary-800 font-medium"
+                  >
+                    Vedi tutte le sessioni →
+                  </button>
+                </div>
                 <div className="space-y-4">
                   {recentActivities.map((activity) => (
                     <div key={activity.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -758,8 +769,7 @@ const ChildProfile = () => {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Quick Actions */}
+            <div className="lg:col-span-1 space-y-6">              {/* Quick Actions */}
               <div className="dental-card p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Azioni Rapide</h3>
                 <div className="space-y-3">
@@ -769,8 +779,11 @@ const ChildProfile = () => {
                   >
                     🎮 Inizia una Sessione
                   </Link>
-                  <button className="w-full btn-outline">
-                    📊 Vedi Report Completo
+                  <button 
+                    onClick={() => setActiveTab('sessions')}
+                    className="w-full btn-outline"
+                  >
+                    📊 Gestisci Sessioni
                   </button>
                   <button 
                     onClick={() => setActiveTab('asd')}
@@ -950,5 +963,25 @@ const ChildProfile = () => {
     </div>
   );
 };
+
+// Custom styles for embedded SessionManager
+const sessionManagerStyles = `
+  .session-manager-embedded .header-navigation {
+    display: none !important;
+  }
+  .session-manager-embedded .min-h-screen {
+    min-height: auto !important;
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = sessionManagerStyles;
+  if (!document.head.querySelector('style[data-session-manager-embedded]')) {
+    styleElement.setAttribute('data-session-manager-embedded', 'true');
+    document.head.appendChild(styleElement);
+  }
+}
 
 export default ChildProfile;
