@@ -318,82 +318,80 @@
 // EXPORT CONSTANTS
 // ================================
 
-export const API_ENDPOINTS = {
-  // Authentication
+export const API_ENDPOINTS = {  // Authentication
   AUTH: {
-    LOGIN: '/v1/auth/login',
-    REGISTER: '/v1/auth/register',
-    LOGOUT: '/v1/auth/logout',
-    REFRESH: '/v1/auth/refresh',
-    PROFILE: '/v1/auth/profile',
-    CHANGE_PASSWORD: '/v1/auth/change-password',
-    FORGOT_PASSWORD: '/v1/auth/forgot-password',
-    RESET_PASSWORD: '/v1/auth/reset-password',
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    LOGOUT: '/auth/logout',
+    REFRESH: '/auth/refresh',
+    ME: '/auth/me',  // Added for Task 17 compatibility
+    PROFILE: '/auth/profile',
+    CHANGE_PASSWORD: '/auth/change-password',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
   },
-  
-  // Users
+    // Users
   USERS: {
-    PROFILE: '/v1/users/profile',
-    UPDATE_PROFILE: '/v1/users/profile',
-    PREFERENCES: '/v1/users/preferences',
-    AVATAR: '/v1/users/avatar',
+    DASHBOARD: '/users/dashboard',  // Added for Task 17 compatibility
+    PROFILE: '/users/profile',
+    UPDATE_PROFILE: '/users/profile',
+    PREFERENCES: '/users/preferences',
+    AVATAR: '/users/avatar',
   },
   
   // Children
   CHILDREN: {
-    LIST: '/v1/users/children',
-    CREATE: '/v1/users/children',
-    GET: (id) => `/v1/users/children/${id}`,
-    UPDATE: (id) => `/v1/users/children/${id}`,
-    DELETE: (id) => `/v1/users/children/${id}`,
-    STATS: (id) => `/v1/users/children/${id}/stats`,
-  },
-    // Game Sessions
+    LIST: '/users/children',
+    CREATE: '/users/children',
+    GET: (id) => `/users/children/${id}`,
+    UPDATE: (id) => `/users/children/${id}`,
+    DELETE: (id) => `/users/children/${id}`,
+    STATS: (id) => `/users/children/${id}/stats`,
+  },    // Game Sessions
   GAME_SESSIONS: {
-    LIST: '/v1/reports/game-sessions',
-    CREATE: '/v1/reports/game-sessions',
-    GET: (id) => `/v1/reports/game-sessions/${id}`,
-    UPDATE: (id) => `/v1/reports/game-sessions/${id}`,
-    DELETE: (id) => `/v1/reports/game-sessions/${id}`,
-    END: (id) => `/v1/reports/game-sessions/${id}/end`,
-    CHILD_SESSIONS: (childId) => `/v1/reports/child/${childId}/sessions`,
+    LIST: '/reports/game-sessions',
+    CREATE: '/reports/game-sessions',
+    GET: (id) => `/reports/game-sessions/${id}`,
+    UPDATE: (id) => `/reports/game-sessions/${id}`,
+    DELETE: (id) => `/reports/game-sessions/${id}`,
+    END: (id) => `/reports/game-sessions/${id}/end`,
+    CHILD_SESSIONS: (childId) => `/reports/child/${childId}/sessions`,
   },
   
   // Activities
   ACTIVITIES: {
-    LIST: '/v1/activities',
-    CREATE: '/v1/activities',
-    GET: (id) => `/v1/activities/${id}`,
-    UPDATE: (id) => `/v1/activities/${id}`,
-    DELETE: (id) => `/v1/activities/${id}`,
-    CHILD_ACTIVITIES: (childId) => `/v1/children/${childId}/activities`,
-    COMPLETE: (id) => `/v1/activities/${id}/complete`,
+    LIST: '/activities',
+    CREATE: '/activities',
+    GET: (id) => `/activities/${id}`,
+    UPDATE: (id) => `/activities/${id}`,
+    DELETE: (id) => `/activities/${id}`,
+    CHILD_ACTIVITIES: (childId) => `/children/${childId}/activities`,
+    COMPLETE: (id) => `/activities/${id}/complete`,
   },
-  
-  // Assessments
+    // Assessments
   ASSESSMENTS: {
-    LIST: '/v1/assessments',
-    CREATE: '/v1/assessments',
-    GET: (id) => `/v1/assessments/${id}`,
-    UPDATE: (id) => `/v1/assessments/${id}`,
-    DELETE: (id) => `/v1/assessments/${id}`,
-    CHILD_ASSESSMENTS: (childId) => `/v1/children/${childId}/assessments`,
+    LIST: '/assessments',
+    CREATE: '/assessments',
+    GET: (id) => `/assessments/${id}`,
+    UPDATE: (id) => `/assessments/${id}`,
+    DELETE: (id) => `/assessments/${id}`,
+    CHILD_ASSESSMENTS: (childId) => `/children/${childId}/assessments`,
   },
-  
-  // Reports  
+    // Reports  
   REPORTS: {
-    CHILD_PROGRESS: (childId) => `/v1/reports/child/${childId}/progress`,
-    CHILD_ANALYTICS: (childId) => `/v1/reports/child/${childId}/analytics`,
-    GAME_SESSIONS: '/v1/reports/game-sessions',
+    DASHBOARD: '/reports/dashboard',  // Added for Task 17 compatibility
+    CHILD_PROGRESS: (childId) => `/reports/child/${childId}/progress`,
+    CHILD_ANALYTICS: (childId) => `/reports/child/${childId}/analytics`,
+    GAME_SESSIONS: '/reports/game-sessions',
   },
   
   // Professional
   PROFESSIONAL: {
-    PROFILES: '/v1/professional/profiles',
-    PROFILE: (id) => `/v1/professional/profiles/${id}`,
-    REVIEWS: '/v1/professional/reviews',
-    PATIENTS: '/v1/professional/patients',
-    ANALYTICS: '/v1/professional/analytics',
+    PROFILES: '/professional/profiles',
+    PROFILE: (id) => `/professional/profiles/${id}`,
+    REVIEWS: '/professional/reviews',
+    PATIENTS: '/professional/patients',
+    ANALYTICS: '/professional/analytics',
   },};
 
 export const GAME_TYPES = {

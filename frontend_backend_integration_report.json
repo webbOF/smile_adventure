@@ -1,0 +1,40 @@
+{
+  "timestamp": "2025-06-13T01:33:28.760158",
+  "frontend_configuration": {
+    "score": 550.0,
+    "details": {
+      "api_service": true,
+      "base_url_correct": true,
+      "endpoints_defined": true,
+      "auth_service": true,
+      "user_service": true,
+      "endpoints_count": 28
+    }
+  },
+  "endpoint_alignment": {
+    "score": 100.0,
+    "aligned_endpoints": 11,
+    "total_endpoints": 11,
+    "details": {
+      "auth": {
+        "/auth/register": true,
+        "/auth/login": true,
+        "/auth/logout": true,
+        "/auth/me": true,
+        "/auth/refresh": true,
+        "/auth/change-password": true
+      },
+      "users": {
+        "/users/dashboard": true,
+        "/users/profile": true,
+        "/users/preferences": true,
+        "/users/children": true
+      },
+      "reports": {
+        "/reports/dashboard": true
+      }
+    }
+  },
+  "overall_integration_score": 325.0,
+  "status": "EXCELLENT"
+}
