@@ -13,6 +13,7 @@ import NotFoundPage from './pages/NotFoundPage';
 
 // Components
 import { Spinner, Layout } from './components/UI';
+import { HomePage } from './components/common';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Routes constants
@@ -42,9 +43,21 @@ const AppRoutes = () => {
   if (isLoading) {
     return <AppLoading />;
   }
-
   return (
-    <Routes>      {/* Public routes */}
+    <Routes>
+      {/* Homepage route */}
+      <Route 
+        path="/" 
+        element={
+          isAuthenticated ? (
+            <Navigate to={ROUTES.DASHBOARD} replace />
+          ) : (
+            <HomePage />
+          )
+        } 
+      />
+      
+      {/* Public routes */}
       <Route 
         path={ROUTES.LOGIN} 
         element={

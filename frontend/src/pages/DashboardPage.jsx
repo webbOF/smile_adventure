@@ -1,70 +1,94 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useAuth } from '../hooks/useAuth';
-import { Layout, Card, Button, Spinner, Alert } from '../components/UI';
+import { Layout, Button, Spinner, Alert, Header } from '../components/UI';
 import { USER_ROLES } from '../utils/constants';
+import './DashboardPage.css';
 
 // Dashboard components for different roles
 const ParentDashboard = ({ user, dashboardData }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-      <Card title="Bambini Registrati" variant="elevated">
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#3b82f6' }}>
+  <div className="dashboard-content">
+    {/* Stats Grid */}
+    <div className="dashboard-stats-grid">
+      <div className="dashboard-stat-card">
+        <div className="dashboard-stat-header">
+          <div className="dashboard-stat-icon dashboard-stat-icon--children">
+            👶
+          </div>
+        </div>
+        <div className="dashboard-stat-value">
           {dashboardData?.total_children || 0}
         </div>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
+        <div className="dashboard-stat-label">Bambini Registrati</div>
+        <div className="dashboard-stat-description">
           Profili bambino attivi
-        </p>
-      </Card>
+        </div>
+      </div>
 
-      <Card title="Attività Completate" variant="elevated">
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#10b981' }}>
+      <div className="dashboard-stat-card">
+        <div className="dashboard-stat-header">
+          <div className="dashboard-stat-icon dashboard-stat-icon--activities">
+            🎯
+          </div>
+        </div>
+        <div className="dashboard-stat-value">
           {dashboardData?.total_activities || 0}
         </div>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
+        <div className="dashboard-stat-label">Attività Completate</div>
+        <div className="dashboard-stat-description">
           Attività totali
-        </p>
-      </Card>
+        </div>
+      </div>
 
-      <Card title="Punti Guadagnati" variant="elevated">
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f59e0b' }}>
+      <div className="dashboard-stat-card">
+        <div className="dashboard-stat-header">
+          <div className="dashboard-stat-icon dashboard-stat-icon--points">
+            ⭐
+          </div>
+        </div>
+        <div className="dashboard-stat-value">
           {dashboardData?.total_points || 0}
         </div>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
+        <div className="dashboard-stat-label">Punti Guadagnati</div>
+        <div className="dashboard-stat-description">
           Punti complessivi
-        </p>
-      </Card>
+        </div>
+      </div>
 
-      <Card title="Sessioni di Gioco" variant="elevated">
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#8b5cf6' }}>
+      <div className="dashboard-stat-card">
+        <div className="dashboard-stat-header">
+          <div className="dashboard-stat-icon dashboard-stat-icon--sessions">
+            🎮
+          </div>
+        </div>
+        <div className="dashboard-stat-value">
           {dashboardData?.total_sessions || 0}
         </div>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
+        <div className="dashboard-stat-label">Sessioni di Gioco</div>
+        <div className="dashboard-stat-description">
           Sessioni completate
-        </p>
-      </Card>
+        </div>
+      </div>
     </div>
 
-    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-      <Card title="I Miei Bambini" headerAction={
-        <Button variant="primary" size="small">
-          Aggiungi Bambino
-        </Button>
-      }>
+    {/* Main Content Grid */}
+    <div className="dashboard-main-grid">
+      <div className="dashboard-children-card">
+        <div className="dashboard-children-header">
+          <h3 className="dashboard-children-title">I Miei Bambini</h3>
+          <Button variant="primary" size="small">
+            Aggiungi Bambino
+          </Button>
+        </div>
+        
         {dashboardData?.children_stats?.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {dashboardData.children_stats.map((child, index) => (
-              <div key={index} style={{ 
-                padding: '1rem', 
-                borderRadius: '0.5rem', 
-                backgroundColor: '#f9fafb',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <div>
-                  <h4 style={{ margin: 0, fontWeight: '600' }}>{child.name}</h4>
-                  <p style={{ margin: '0.25rem 0 0 0', color: '#6b7280', fontSize: '0.875rem' }}>
-                    Livello {child.level} • {child.points} punti
+          <div className="dashboard-children-list">            {dashboardData.children_stats.map((child, index) => (
+              <div key={child.name || `child-${index}`} className="dashboard-child-item">
+                <div className="dashboard-child-info">
+                  <h4>{child.name}</h4>
+                  <p>
+                    <span className="dashboard-child-level">Livello {child.level}</span>
+                    {child.points} punti • {child.activities_this_week || 0} attività questa settimana
                   </p>
                 </div>
                 <Button variant="outline" size="small">
@@ -74,133 +98,317 @@ const ParentDashboard = ({ user, dashboardData }) => (
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-            <p>Nessun bambino registrato ancora.</p>
-            <Button variant="primary" style={{ marginTop: '1rem' }}>
+          <div className="dashboard-empty-state">
+            <div className="dashboard-empty-icon">👶</div>
+            <div className="dashboard-empty-title">Nessun bambino registrato</div>
+            <div className="dashboard-empty-description">
+              Inizia registrando il profilo del tuo primo bambino per accedere alle funzionalità della piattaforma.
+            </div>
+            <Button variant="primary">
               Registra il Primo Bambino
             </Button>
           </div>
         )}
-      </Card>
+      </div>
 
-      <Card title="Attività Recenti">
+      <div className="dashboard-activities-card">
+        <h3 className="dashboard-activities-title">Attività Recenti</h3>
         {dashboardData?.recent_activities?.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {dashboardData.recent_activities.slice(0, 5).map((activity, index) => (
-              <div key={index} style={{
-                padding: '0.75rem',
-                borderLeft: '3px solid #3b82f6',
-                backgroundColor: '#f8fafc'
-              }}>
-                <div style={{ fontWeight: '500', fontSize: '0.875rem' }}>
+          <div className="dashboard-activities-list">            {dashboardData.recent_activities.slice(0, 5).map((activity, index) => (
+              <div key={activity.type + activity.date || `activity-${index}`} className="dashboard-activity-item">
+                <div className="dashboard-activity-type">
                   {activity.type}
                 </div>
-                <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                <div className="dashboard-activity-date">
                   {activity.date}
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-            Nessuna attività recente
-          </p>
+          <div className="dashboard-empty-state">
+            <div className="dashboard-empty-icon">📊</div>
+            <p className="dashboard-empty-description">
+              Nessuna attività recente
+            </p>
+          </div>
         )}
-      </Card>
+      </div>
     </div>
   </div>
 );
+
+ParentDashboard.propTypes = {
+  user: PropTypes.shape({
+    first_name: PropTypes.string,
+    email: PropTypes.string,
+    role: PropTypes.string
+  }).isRequired,
+  dashboardData: PropTypes.shape({
+    total_children: PropTypes.number,
+    total_activities: PropTypes.number,
+    total_points: PropTypes.number,
+    total_sessions: PropTypes.number,
+    children_stats: PropTypes.arrayOf(PropTypes.object),
+    recent_activities: PropTypes.arrayOf(PropTypes.object)
+  })
+};
 
 const ProfessionalDashboard = ({ user, dashboardData }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-      <Card title="Pazienti Assegnati" variant="elevated">
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#3b82f6' }}>
-          {dashboardData?.assigned_patients || 0}
-        </div>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
-          Bambini in cura
+  <div className="dashboard-container">
+    <div className="dashboard-header">
+      <div className="dashboard-welcome">
+        <h2 className="dashboard-title">
+          Dashboard Professionale
+        </h2>
+        <p className="dashboard-subtitle">
+          Benvenuto/a Dr. {user.name || user.email}, gestisci i tuoi pazienti e monitora i progressi terapeutici.
         </p>
-      </Card>
-
-      <Card title="Sessioni Attive" variant="elevated">
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#10b981' }}>
-          {dashboardData?.active_sessions || 0}
-        </div>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
-          In corso questa settimana
-        </p>
-      </Card>
-
-      <Card title="Assessment Completati" variant="elevated">
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f59e0b' }}>
-          {dashboardData?.completed_assessments || 0}
-        </div>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
-          Questo mese
-        </p>
-      </Card>
+      </div>
     </div>
 
-    <Card title="Accesso Rapido" variant="elevated">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-        <Button variant="primary" size="large">
-          Analytics Clinici
-        </Button>
-        <Button variant="outline" size="large">
-          Cerca Pazienti
-        </Button>
-        <Button variant="outline" size="large">
-          Gestisci Profilo
-        </Button>
-        <Button variant="outline" size="large">
-          Report
-        </Button>
+    <div className="dashboard-stats-grid">
+      <div className="dashboard-stat-card primary">
+        <div className="dashboard-stat-icon">
+          <span>👥</span>
+        </div>
+        <div className="dashboard-stat-content">
+          <div className="dashboard-stat-number">
+            {dashboardData?.assigned_patients || 0}
+          </div>
+          <div className="dashboard-stat-label">Pazienti Assegnati</div>
+          <div className="dashboard-stat-description">Bambini in cura attiva</div>
+        </div>
       </div>
-    </Card>
+
+      <div className="dashboard-stat-card success">
+        <div className="dashboard-stat-icon">
+          <span>🎯</span>
+        </div>
+        <div className="dashboard-stat-content">
+          <div className="dashboard-stat-number">
+            {dashboardData?.active_sessions || 0}
+          </div>
+          <div className="dashboard-stat-label">Sessioni Attive</div>
+          <div className="dashboard-stat-description">In corso questa settimana</div>
+        </div>
+      </div>
+
+      <div className="dashboard-stat-card warning">
+        <div className="dashboard-stat-icon">
+          <span>📋</span>
+        </div>
+        <div className="dashboard-stat-content">
+          <div className="dashboard-stat-number">
+            {dashboardData?.completed_assessments || 0}
+          </div>
+          <div className="dashboard-stat-label">Assessment Completati</div>
+          <div className="dashboard-stat-description">Questo mese</div>
+        </div>
+      </div>
+
+      <div className="dashboard-stat-card info">
+        <div className="dashboard-stat-icon">
+          <span>📈</span>
+        </div>
+        <div className="dashboard-stat-content">
+          <div className="dashboard-stat-number">
+            {dashboardData?.avg_improvement || '94%'}
+          </div>
+          <div className="dashboard-stat-label">Miglioramento Medio</div>
+          <div className="dashboard-stat-description">Dei pazienti seguiti</div>
+        </div>
+      </div>
+    </div>
+
+    <div className="dashboard-main-content">
+      <div className="dashboard-actions-card">
+        <h3 className="dashboard-actions-title">Accesso Rapido</h3>
+        <div className="dashboard-actions-grid">
+          <Button variant="primary" size="large">
+            📊 Analytics Clinici
+          </Button>
+          <Button variant="outline" size="large">
+            🔍 Cerca Pazienti
+          </Button>
+          <Button variant="outline" size="large">
+            👤 Gestisci Profilo
+          </Button>
+          <Button variant="outline" size="large">
+            📄 Report Clinici
+          </Button>
+        </div>
+      </div>
+
+      <div className="dashboard-activities-card">
+        <h3 className="dashboard-activities-title">Prossimi Appuntamenti</h3>
+        {dashboardData?.upcoming_appointments?.length > 0 ? (
+          <div className="dashboard-activities-list">            {dashboardData.upcoming_appointments.slice(0, 5).map((appointment, index) => (
+              <div key={appointment.patient_name + appointment.date || `appointment-${index}`} className="dashboard-activity-item">
+                <div className="dashboard-activity-type">
+                  {appointment.patient_name}
+                </div>
+                <div className="dashboard-activity-date">
+                  {appointment.date} - {appointment.time}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="dashboard-empty-state">
+            <div className="dashboard-empty-icon">📅</div>
+            <p className="dashboard-empty-description">
+              Nessun appuntamento programmato
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   </div>
 );
+
+ProfessionalDashboard.propTypes = {
+  user: PropTypes.shape({
+    name: PropTypes.string,
+    email: PropTypes.string,
+    role: PropTypes.string
+  }).isRequired,
+  dashboardData: PropTypes.shape({
+    assigned_patients: PropTypes.number,
+    active_sessions: PropTypes.number,
+    completed_assessments: PropTypes.number,
+    avg_improvement: PropTypes.string,
+    upcoming_appointments: PropTypes.arrayOf(PropTypes.object)
+  })
+};
 
 const AdminDashboard = ({ user, dashboardData }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-      <Card title="Utenti Totali" variant="elevated">
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#3b82f6' }}>
-          {dashboardData?.total_users || 0}
-        </div>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
-          Registrati sulla piattaforma
+  <div className="dashboard-container">
+    <div className="dashboard-header">
+      <div className="dashboard-welcome">
+        <h2 className="dashboard-title">
+          Dashboard Amministratore
+        </h2>
+        <p className="dashboard-subtitle">
+          Benvenuto/a {user.name || user.email}, gestisci l'intera piattaforma Smile Adventure.
         </p>
-      </Card>
-
-      <Card title="Sessioni Oggi" variant="elevated">
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#10b981' }}>
-          {dashboardData?.sessions_today || 0}
-        </div>
-        <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
-          Attività utenti oggi
-        </p>
-      </Card>
+      </div>
     </div>
 
-    <Card title="Gestione Sistema" variant="elevated">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-        <Button variant="primary" size="large">
-          Gestione Utenti
-        </Button>
-        <Button variant="outline" size="large">
-          Statistiche Sistema
-        </Button>
-        <Button variant="outline" size="large">
-          Configurazioni
-        </Button>
-        <Button variant="outline" size="large">
-          Log Sistema
-        </Button>
+    <div className="dashboard-stats-grid">
+      <div className="dashboard-stat-card primary">
+        <div className="dashboard-stat-icon">
+          <span>👥</span>
+        </div>
+        <div className="dashboard-stat-content">
+          <div className="dashboard-stat-number">
+            {dashboardData?.total_users || 0}
+          </div>
+          <div className="dashboard-stat-label">Utenti Totali</div>
+          <div className="dashboard-stat-description">Registrati sulla piattaforma</div>
+        </div>
       </div>
-    </Card>
+
+      <div className="dashboard-stat-card success">
+        <div className="dashboard-stat-icon">
+          <span>📊</span>
+        </div>
+        <div className="dashboard-stat-content">
+          <div className="dashboard-stat-number">
+            {dashboardData?.sessions_today || 0}
+          </div>
+          <div className="dashboard-stat-label">Sessioni Oggi</div>
+          <div className="dashboard-stat-description">Attività utenti oggi</div>
+        </div>
+      </div>
+
+      <div className="dashboard-stat-card warning">
+        <div className="dashboard-stat-icon">
+          <span>🔧</span>
+        </div>
+        <div className="dashboard-stat-content">
+          <div className="dashboard-stat-number">
+            {dashboardData?.system_status || 'OK'}
+          </div>
+          <div className="dashboard-stat-label">Stato Sistema</div>
+          <div className="dashboard-stat-description">Tutti i servizi operativi</div>
+        </div>
+      </div>
+
+      <div className="dashboard-stat-card info">
+        <div className="dashboard-stat-icon">
+          <span>💾</span>
+        </div>
+        <div className="dashboard-stat-content">
+          <div className="dashboard-stat-number">
+            {dashboardData?.storage_usage || '78%'}
+          </div>
+          <div className="dashboard-stat-label">Utilizzo Storage</div>
+          <div className="dashboard-stat-description">Spazio disco utilizzato</div>
+        </div>
+      </div>
+    </div>
+
+    <div className="dashboard-main-content">
+      <div className="dashboard-actions-card">
+        <h3 className="dashboard-actions-title">Gestione Sistema</h3>
+        <div className="dashboard-actions-grid">
+          <Button variant="primary" size="large">
+            👤 Gestione Utenti
+          </Button>
+          <Button variant="outline" size="large">
+            📈 Statistiche Sistema
+          </Button>
+          <Button variant="outline" size="large">
+            ⚙️ Configurazioni
+          </Button>
+          <Button variant="outline" size="large">
+            📋 Log Sistema
+          </Button>
+        </div>
+      </div>
+
+      <div className="dashboard-activities-card">
+        <h3 className="dashboard-activities-title">Attività Sistema Recenti</h3>
+        {dashboardData?.system_logs?.length > 0 ? (
+          <div className="dashboard-activities-list">            {dashboardData.system_logs.slice(0, 5).map((log, index) => (
+              <div key={log.action + log.timestamp || `log-${index}`} className="dashboard-activity-item">
+                <div className="dashboard-activity-type">
+                  {log.action}
+                </div>
+                <div className="dashboard-activity-date">
+                  {log.timestamp}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="dashboard-empty-state">
+            <div className="dashboard-empty-icon">📊</div>
+            <p className="dashboard-empty-description">
+              Nessuna attività di sistema recente
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   </div>
 );
+
+AdminDashboard.propTypes = {
+  user: PropTypes.shape({
+    name: PropTypes.string,
+    email: PropTypes.string,
+    role: PropTypes.string
+  }).isRequired,
+  dashboardData: PropTypes.shape({
+    total_users: PropTypes.number,
+    sessions_today: PropTypes.number,
+    system_status: PropTypes.string,
+    storage_usage: PropTypes.string,
+    system_logs: PropTypes.arrayOf(PropTypes.object)
+  })
+};
 
 const DashboardPage = () => {
   const { user } = useAuth();
@@ -211,11 +419,9 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        setIsLoading(true);
-        // TODO: Implementare chiamata API per dashboard data
+        setIsLoading(true);        // API integration: dashboardService.getDashboardData() will replace mock data
         // const data = await dashboardService.getDashboardData();
-        
-        // Mock data for development
+          // Mock data for development
         const mockData = {
           [USER_ROLES.PARENT]: {
             total_children: 2,
@@ -223,22 +429,36 @@ const DashboardPage = () => {
             total_points: 1250,
             total_sessions: 28,
             children_stats: [
-              { name: 'Marco', level: 3, points: 650 },
-              { name: 'Sofia', level: 2, points: 600 }
+              { name: 'Marco', level: 3, points: 650, activities_this_week: 5 },
+              { name: 'Sofia', level: 2, points: 600, activities_this_week: 3 }
             ],
             recent_activities: [
               { type: 'Dental Care Session', date: '2025-06-13' },
-              { type: 'Social Interaction', date: '2025-06-12' }
+              { type: 'Social Interaction', date: '2025-06-12' },
+              { type: 'Motor Skills Exercise', date: '2025-06-11' }
             ]
           },
           [USER_ROLES.PROFESSIONAL]: {
             assigned_patients: 15,
             active_sessions: 8,
-            completed_assessments: 12
+            completed_assessments: 12,
+            avg_improvement: '94%',
+            upcoming_appointments: [
+              { patient_name: 'Marco Rossi', date: '2025-06-14', time: '09:00' },
+              { patient_name: 'Sofia Bianchi', date: '2025-06-14', time: '10:30' },
+              { patient_name: 'Luca Verdi', date: '2025-06-15', time: '14:00' }
+            ]
           },
           [USER_ROLES.ADMIN]: {
             total_users: 350,
-            sessions_today: 42
+            sessions_today: 42,
+            system_status: 'OK',
+            storage_usage: '78%',
+            system_logs: [
+              { action: 'User registration', timestamp: '2025-06-13 15:30' },
+              { action: 'Database backup completed', timestamp: '2025-06-13 14:00' },
+              { action: 'System update applied', timestamp: '2025-06-13 09:15' }
+            ]
           }
         };
 
@@ -259,20 +479,12 @@ const DashboardPage = () => {
       fetchDashboardData();
     }
   }, [user]);
-
   if (isLoading) {
     return (
       <Layout>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: '50vh',
-          flexDirection: 'column',
-          gap: '1rem'
-        }}>
+        <div className="dashboard-loading-container">
           <Spinner size="large" />
-          <p>Caricamento dashboard...</p>
+          <p className="dashboard-loading-text">Caricamento dashboard...</p>
         </div>
       </Layout>
     );
@@ -314,32 +526,21 @@ const DashboardPage = () => {
       [USER_ROLES.SUPER_ADMIN]: 'Super Amministratore'
     };
     return roleNames[role] || role;
-  };
-
-  return (
+  };  return (
     <Layout
-      header={
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          padding: '1rem 0'
-        }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>
-              Benvenuto, {user.first_name}!
-            </h1>
-            <p style={{ margin: '0.25rem 0 0 0', color: '#6b7280' }}>
-              Dashboard {getRoleDisplayName(user.role)} • Smile Adventure
-            </p>
-          </div>
-          <Button variant="outline" size="small">
-            Profilo
-          </Button>
-        </div>
-      }
+      header={<Header title="Smile Adventure" showUserInfo={true} showLogout={true} />}
     >
-      {getDashboardComponent()}
+      <div className="dashboard-main-container">
+        <div className="dashboard-welcome-section">
+          <h1 className="dashboard-main-title">
+            Benvenuto, {user.first_name}!
+          </h1>
+          <p className="dashboard-main-subtitle">
+            Dashboard {getRoleDisplayName(user.role)} • Gestisci le tue attività
+          </p>
+        </div>
+        {getDashboardComponent()}
+      </div>
     </Layout>
   );
 };

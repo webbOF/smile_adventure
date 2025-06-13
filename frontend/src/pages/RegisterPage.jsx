@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button, FormField, Card, Alert, Layout, Select } from '../components/UI';
 import { validateForm } from '../utils/validation';
 import { USER_ROLES } from '../utils/constants';
 
-const RegisterPage = () => {  const [formData, setFormData] = useState({
+const RegisterPage = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialRole = queryParams.get('role') === 'professional' ? USER_ROLES.PROFESSIONAL : USER_ROLES.PARENT;
+
+  const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     firstName: '',
     lastName: '',
     phone: '',
-    role: USER_ROLES.PARENT
+    role: initialRole
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);

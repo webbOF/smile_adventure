@@ -9,7 +9,7 @@ import './Button.css';
 /**
  * @typedef {Object} ButtonProps
  * @property {React.ReactNode} children - Contenuto del button
- * @property {'primary'|'secondary'|'danger'|'ghost'|'link'} [variant='primary'] - Variante stilistica
+ * @property {'primary'|'secondary'|'outline'|'outline-light'|'danger'|'ghost'} [variant='primary'] - Variante stilistica
  * @property {'small'|'medium'|'large'} [size='medium'] - Dimensione del button
  * @property {boolean} [loading=false] - Stato di loading
  * @property {boolean} [disabled=false] - Stato disabilitato
@@ -36,15 +36,14 @@ const Button = ({
   className = '',
   onClick,
   ...rest
-}) => {
-  // Costruisci le classi CSS
+}) => {  // Costruisci le classi CSS
   const classes = [
-    'btn',
-    `btn--${variant}`,
-    `btn--${size}`,
-    loading && 'btn--loading',
-    disabled && 'btn--disabled',
-    fullWidth && 'btn--full-width',
+    'button',
+    `button--${variant}`,
+    `button--${size}`,
+    loading && 'button--loading',
+    disabled && 'button--disabled',
+    fullWidth && 'button--fullwidth',
     className
   ].filter(Boolean).join(' ');
 
@@ -65,17 +64,16 @@ const Button = ({
       disabled={disabled || loading}
       aria-disabled={disabled || loading}
       {...rest}
-    >
-      {loading && (
-        <span className="btn__spinner" aria-hidden="true">
+    >      {loading && (
+        <span className="button-spinner" aria-hidden="true">
           <svg
-            className="btn__spinner-icon"
+            className="button-spinner-icon"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <circle
-              className="btn__spinner-circle"
+              className="button-spinner-circle"
               cx="12"
               cy="12"
               r="10"
@@ -83,14 +81,14 @@ const Button = ({
               strokeWidth="4"
             />
             <path
-              className="btn__spinner-path"
+              className="button-spinner-path"
               fill="currentColor"
               d="m12 2a10 10 0 0 1 10 10h-4a6 6 0 0 0-6-6z"
             />
           </svg>
         </span>
       )}
-      <span className={`btn__content ${loading ? 'btn__content--loading' : ''}`}>
+      <span className={`button-content ${loading ? 'button-content--loading' : ''}`}>
         {children}
       </span>
     </button>
