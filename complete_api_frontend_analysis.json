@@ -1,0 +1,1296 @@
+{
+  "timestamp": "2025-06-13T01:41:48.851237",
+  "backend_routes_test": {
+    "routes": {
+      "": {
+        "GET /": {
+          "status_code": 200,
+          "success": true,
+          "name": "api_v1_info",
+          "tags": [
+            "api-info",
+            "v1"
+          ]
+        }
+      },
+      "auth": {
+        "POST /auth/register": {
+          "status_code": 422,
+          "success": true,
+          "name": "register_user",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "POST /auth/login": {
+          "status_code": 422,
+          "success": true,
+          "name": "login_user",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "POST /auth/refresh": {
+          "status_code": 422,
+          "success": true,
+          "name": "refresh_token",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "POST /auth/logout": {
+          "status_code": 401,
+          "success": true,
+          "name": "logout_user",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "GET /auth/me": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_current_user_profile",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "PUT /auth/me": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_current_user_profile",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "POST /auth/change-password": {
+          "status_code": 401,
+          "success": true,
+          "name": "change_password",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "POST /auth/forgot-password": {
+          "status_code": 422,
+          "success": true,
+          "name": "forgot_password",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "POST /auth/reset-password": {
+          "status_code": 422,
+          "success": true,
+          "name": "reset_password",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "POST /auth/verify-email/{user_id}": {
+          "status_code": 422,
+          "success": true,
+          "name": "verify_email",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "GET /auth/users": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_users_list",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "GET /auth/stats": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_user_statistics",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "GET /auth/parent-only": {
+          "status_code": 401,
+          "success": true,
+          "name": "parent_only_endpoint",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        },
+        "GET /auth/professional-only": {
+          "status_code": 401,
+          "success": true,
+          "name": "professional_only_endpoint",
+          "tags": [
+            "authentication",
+            "v1"
+          ]
+        }
+      },
+      "endpoints": {
+        "GET /endpoints": {
+          "status_code": 200,
+          "success": true,
+          "name": "api_v1_endpoints",
+          "tags": [
+            "api-info",
+            "v1"
+          ]
+        }
+      },
+      "health": {
+        "GET /health": {
+          "status_code": 200,
+          "success": true,
+          "name": "api_v1_health_check",
+          "tags": [
+            "health",
+            "v1"
+          ]
+        }
+      },
+      "professional": {
+        "POST /professional/professional-profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "create_professional_profile",
+          "tags": [
+            "professional",
+            "clinical",
+            "v1"
+          ]
+        },
+        "GET /professional/professional-profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_professional_profile",
+          "tags": [
+            "professional",
+            "clinical",
+            "v1"
+          ]
+        },
+        "PUT /professional/professional-profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_professional_profile",
+          "tags": [
+            "professional",
+            "clinical",
+            "v1"
+          ]
+        },
+        "GET /professional/professionals/search": {
+          "status_code": 401,
+          "success": true,
+          "name": "search_professionals",
+          "tags": [
+            "professional",
+            "clinical",
+            "v1"
+          ]
+        }
+      },
+      "reports": {
+        "GET /reports/dashboard": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_dashboard_stats",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/child/{child_id}/progress": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_progress_task24",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/analytics/population": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_population_analytics",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "POST /reports/analytics/cohort-comparison": {
+          "status_code": 401,
+          "success": true,
+          "name": "compare_patient_cohorts",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/analytics/insights": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_clinical_insights",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/analytics/treatment-effectiveness": {
+          "status_code": 401,
+          "success": true,
+          "name": "analyze_treatment_effectiveness",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/analytics/export": {
+          "status_code": 401,
+          "success": true,
+          "name": "export_clinical_analytics",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/clinical-analytics/population": {
+          "status_code": 401,
+          "success": true,
+          "name": "clinical_analytics_population",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/clinical-analytics/insights": {
+          "status_code": 401,
+          "success": true,
+          "name": "clinical_analytics_insights",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/analytics/test-data": {
+          "status_code": 401,
+          "success": true,
+          "name": "generate_test_analytics_data",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "POST /reports/sessions": {
+          "status_code": 401,
+          "success": true,
+          "name": "create_game_session",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/sessions/{session_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_game_session",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "PUT /reports/sessions/{session_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_game_session",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "POST /reports/sessions/{session_id}/complete": {
+          "status_code": 401,
+          "success": true,
+          "name": "complete_game_session",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/sessions": {
+          "status_code": 401,
+          "success": true,
+          "name": "list_game_sessions",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/sessions/{session_id}/analytics": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_session_analytics",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/children/{child_id}/sessions/trends": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_session_trends",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "DELETE /reports/sessions/{session_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "delete_game_session",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "POST /reports/reports": {
+          "status_code": 401,
+          "success": true,
+          "name": "create_report",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/reports/{report_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_report",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "PUT /reports/reports/{report_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_report",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "PATCH /reports/reports/{report_id}/status": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_report_status",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/reports": {
+          "status_code": 401,
+          "success": true,
+          "name": "list_reports",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "POST /reports/reports/{report_id}/generate": {
+          "status_code": 401,
+          "success": true,
+          "name": "auto_generate_report_content",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/reports/{report_id}/export": {
+          "status_code": 401,
+          "success": true,
+          "name": "export_report",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "POST /reports/reports/{report_id}/share": {
+          "status_code": 401,
+          "success": true,
+          "name": "share_report",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/reports/{report_id}/permissions": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_report_permissions",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "PUT /reports/reports/{report_id}/permissions": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_report_permissions",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "DELETE /reports/reports/{report_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "delete_report",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/children/{child_id}/progress": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_progress_analytics",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "POST /reports/game-sessions": {
+          "status_code": 401,
+          "success": true,
+          "name": "create_game_session_task23",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "PUT /reports/game-sessions/{session_id}/end": {
+          "status_code": 401,
+          "success": true,
+          "name": "end_game_session_task23",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/game-sessions/child/{child_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_game_sessions_task23",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/game-sessions/{session_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_game_session_task23",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/child/{child_id}/summary": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_summary_task24",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "POST /reports/child/{child_id}/generate-report": {
+          "status_code": 401,
+          "success": true,
+          "name": "generate_child_report_task24",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/child/{child_id}/analytics": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_analytics_task24",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        },
+        "GET /reports/child/{child_id}/export": {
+          "status_code": 401,
+          "success": true,
+          "name": "export_child_data_task24",
+          "tags": [
+            "reports",
+            "analytics",
+            "v1"
+          ]
+        }
+      },
+      "users": {
+        "GET /users/profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_detailed_user_profile",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "PUT /users/profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_user_profile",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "POST /users/profile/avatar": {
+          "status_code": 401,
+          "success": true,
+          "name": "upload_avatar",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "DELETE /users/profile/avatar": {
+          "status_code": 401,
+          "success": true,
+          "name": "remove_avatar",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "POST /users/professional-profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "create_professional_profile",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "GET /users/professional-profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_professional_profile",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "PUT /users/professional-profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_professional_profile",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "GET /users/preferences": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_user_preferences",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "PUT /users/preferences": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_user_preferences",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "GET /users/profile/completion": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_profile_completion",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "GET /users/users/{user_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_user_by_id",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "PUT /users/users/{user_id}/status": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_user_status",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "GET /users/professionals/search": {
+          "status_code": 401,
+          "success": true,
+          "name": "search_professionals",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "POST /users/profile/search/professionals": {
+          "status_code": 401,
+          "success": true,
+          "name": "search_professionals_with_filters",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "GET /users/profile/professional/{professional_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_professional_public_profile",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "profile"
+          ]
+        },
+        "POST /users/children": {
+          "status_code": 401,
+          "success": true,
+          "name": "create_child",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_children_list",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/{child_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_detail",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "PUT /users/children/{child_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_child",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "DELETE /users/children/{child_id}": {
+          "status_code": 401,
+          "success": true,
+          "name": "delete_child",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/{child_id}/activities": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_activities",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/{child_id}/sessions": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_game_sessions",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/{child_id}/progress": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_progress",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/{child_id}/achievements": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_achievements",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "POST /users/children/{child_id}/points": {
+          "status_code": 401,
+          "success": true,
+          "name": "add_points_to_child",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "PUT /users/children/bulk-update": {
+          "status_code": 401,
+          "success": true,
+          "name": "bulk_update_children",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/search": {
+          "status_code": 401,
+          "success": true,
+          "name": "search_children",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "PUT /users/children/{child_id}/activities/{activity_id}/verify": {
+          "status_code": 401,
+          "success": true,
+          "name": "verify_child_activity",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "POST /users/children/{child_id}/progress-notes": {
+          "status_code": 401,
+          "success": true,
+          "name": "add_progress_note",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/{child_id}/progress-notes": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_progress_notes",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "PUT /users/children/{child_id}/sensory-profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "update_sensory_profile",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/{child_id}/sensory-profile": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_sensory_profile",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/{child_id}/export": {
+          "status_code": 401,
+          "success": true,
+          "name": "export_child_data",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/statistics": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_children_statistics",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/{child_id}/profile-completion": {
+          "status_code": 401,
+          "success": true,
+          "name": "check_profile_completion",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/compare": {
+          "status_code": 401,
+          "success": true,
+          "name": "compare_children_progress",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "POST /users/children/quick-setup": {
+          "status_code": 401,
+          "success": true,
+          "name": "quick_child_setup",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/children/templates": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_child_profile_templates",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "POST /users/children/{child_id}/share": {
+          "status_code": 401,
+          "success": true,
+          "name": "share_child_profile",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1",
+            "children"
+          ]
+        },
+        "GET /users/dashboard": {
+          "status_code": 401,
+          "success": true,
+          "name": "get_dashboard_stats",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1"
+          ]
+        },
+        "GET /users/child/{child_id}/progress": {
+          "status_code": 429,
+          "success": false,
+          "name": "get_child_progress_report",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1"
+          ]
+        },
+        "GET /users/analytics/platform": {
+          "status_code": 429,
+          "success": false,
+          "name": "get_platform_analytics",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1"
+          ]
+        },
+        "GET /users/export/child/{child_id}": {
+          "status_code": 429,
+          "success": false,
+          "name": "export_child_data",
+          "tags": [
+            "users",
+            "profile",
+            "children",
+            "v1"
+          ]
+        }
+      }
+    },
+    "summary": {
+      "total_routes": 103,
+      "success_count": 100,
+      "success_rate": 97.0873786407767
+    }
+  },
+  "frontend_analysis": {
+    "service_files": {
+      "services/api.js": {
+        "endpoints_count": 1,
+        "endpoints": [
+          "/auth/"
+        ]
+      },
+      "services/authService.js": {
+        "endpoints_count": 0,
+        "endpoints": []
+      },
+      "services/userService.js": {
+        "endpoints_count": 0,
+        "endpoints": []
+      },
+      "services/reportService.js": {
+        "endpoints_count": 0,
+        "endpoints": []
+      },
+      "types/api.js": {
+        "endpoints_count": 20,
+        "endpoints": [
+          "/auth/register",
+          "/users/children",
+          "/auth/logout",
+          "/reports/game-sessions",
+          "/users/profile",
+          "/users/avatar",
+          "/auth/profile",
+          "/auth/login",
+          "/reports/dashboard",
+          "/professional/analytics",
+          "/auth/forgot-password",
+          "/users/dashboard",
+          "/auth/reset-password",
+          "/professional/profiles",
+          "/users/preferences",
+          "/professional/patients",
+          "/auth/me",
+          "/auth/refresh",
+          "/auth/change-password",
+          "/professional/reviews"
+        ]
+      }
+    },
+    "endpoint_usage": [
+      "/auth/",
+      "/auth/reset-password",
+      "/auth/register",
+      "/professional/profiles",
+      "/users/children",
+      "/auth/logout",
+      "/reports/game-sessions",
+      "/users/preferences",
+      "/users/profile",
+      "/professional/patients",
+      "/users/avatar",
+      "/auth/profile",
+      "/auth/login",
+      "/auth/me",
+      "/auth/refresh",
+      "/reports/dashboard",
+      "/auth/change-password",
+      "/professional/analytics",
+      "/auth/forgot-password",
+      "/users/dashboard",
+      "/professional/reviews"
+    ],
+    "total_endpoints_used": 21,
+    "unused_endpoints": []
+  },
+  "backend_frontend_comparison": {
+    "backend_total": 82,
+    "frontend_total": 21,
+    "used_in_both": 14,
+    "backend_only": 68,
+    "frontend_only": 7,
+    "usage_rate": 17.073170731707318,
+    "details": {
+      "used_endpoints": [
+        "/auth/change-password",
+        "/auth/forgot-password",
+        "/auth/login",
+        "/auth/logout",
+        "/auth/me",
+        "/auth/refresh",
+        "/auth/register",
+        "/auth/reset-password",
+        "/reports/dashboard",
+        "/reports/game-sessions",
+        "/users/children",
+        "/users/dashboard",
+        "/users/preferences",
+        "/users/profile"
+      ],
+      "unused_endpoints": [
+        "/",
+        "/auth/parent-only",
+        "/auth/professional-only",
+        "/auth/stats",
+        "/auth/users",
+        "/auth/verify-email/{user_id}",
+        "/endpoints",
+        "/health",
+        "/professional/professional-profile",
+        "/professional/professionals/search",
+        "/reports/analytics/cohort-comparison",
+        "/reports/analytics/export",
+        "/reports/analytics/insights",
+        "/reports/analytics/population",
+        "/reports/analytics/test-data",
+        "/reports/analytics/treatment-effectiveness",
+        "/reports/child/{child_id}/analytics",
+        "/reports/child/{child_id}/export",
+        "/reports/child/{child_id}/generate-report",
+        "/reports/child/{child_id}/progress",
+        "/reports/child/{child_id}/summary",
+        "/reports/children/{child_id}/progress",
+        "/reports/children/{child_id}/sessions/trends",
+        "/reports/clinical-analytics/insights",
+        "/reports/clinical-analytics/population",
+        "/reports/game-sessions/child/{child_id}",
+        "/reports/game-sessions/{session_id}",
+        "/reports/game-sessions/{session_id}/end",
+        "/reports/reports",
+        "/reports/reports/{report_id}",
+        "/reports/reports/{report_id}/export",
+        "/reports/reports/{report_id}/generate",
+        "/reports/reports/{report_id}/permissions",
+        "/reports/reports/{report_id}/share",
+        "/reports/reports/{report_id}/status",
+        "/reports/sessions",
+        "/reports/sessions/{session_id}",
+        "/reports/sessions/{session_id}/analytics",
+        "/reports/sessions/{session_id}/complete",
+        "/users/analytics/platform",
+        "/users/child/{child_id}/progress",
+        "/users/children/bulk-update",
+        "/users/children/compare",
+        "/users/children/quick-setup",
+        "/users/children/search",
+        "/users/children/statistics",
+        "/users/children/templates",
+        "/users/children/{child_id}",
+        "/users/children/{child_id}/achievements",
+        "/users/children/{child_id}/activities",
+        "/users/children/{child_id}/activities/{activity_id}/verify",
+        "/users/children/{child_id}/export",
+        "/users/children/{child_id}/points",
+        "/users/children/{child_id}/profile-completion",
+        "/users/children/{child_id}/progress",
+        "/users/children/{child_id}/progress-notes",
+        "/users/children/{child_id}/sensory-profile",
+        "/users/children/{child_id}/sessions",
+        "/users/children/{child_id}/share",
+        "/users/export/child/{child_id}",
+        "/users/professional-profile",
+        "/users/professionals/search",
+        "/users/profile/avatar",
+        "/users/profile/completion",
+        "/users/profile/professional/{professional_id}",
+        "/users/profile/search/professionals",
+        "/users/users/{user_id}",
+        "/users/users/{user_id}/status"
+      ],
+      "frontend_only_endpoints": [
+        "/auth/",
+        "/auth/profile",
+        "/professional/analytics",
+        "/professional/patients",
+        "/professional/profiles",
+        "/professional/reviews",
+        "/users/avatar"
+      ]
+    }
+  },
+  "summary": {
+    "backend_routes_working": 100,
+    "backend_routes_total": 103,
+    "backend_success_rate": 97.0873786407767,
+    "frontend_endpoints_implemented": 21,
+    "frontend_usage_rate": 17.073170731707318,
+    "overall_integration_health": "NEEDS_IMPROVEMENT"
+  }
+}
