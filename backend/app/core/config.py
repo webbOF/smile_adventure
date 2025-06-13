@@ -8,7 +8,7 @@ from pydantic import Field
 
 
 class Settings(BaseSettings):
-    """Application settings configuration"""    # Application Configuration
+    """Application settings configuration"""# Application Configuration
     APP_NAME: str = Field(default="Smile Adventure")
     APP_VERSION: str = Field(default="1.0.0")
     APP_DESCRIPTION: str = Field(default="Smile Adventure - Sensory Learning Platform for Children")
@@ -37,24 +37,29 @@ class Settings(BaseSettings):
     
     # Development Configuration
     AUTO_VERIFY_EMAIL: bool = Field(default=True)  # Auto-verify emails in development
-    REQUIRE_EMAIL_VERIFICATION: bool = Field(default=False)  # Bypass verification for testing
-      # CORS Configuration
+    REQUIRE_EMAIL_VERIFICATION: bool = Field(default=False)  # Bypass verification for testing    # CORS Configuration
     ALLOWED_HOSTS: List[str] = Field(
         default=[
             "http://localhost:3000",
             "http://localhost:8000", 
             "http://127.0.0.1:3000",
             "http://127.0.0.1:8000"
-        ]
-    )
+        ]    )
     ALLOW_CREDENTIALS: bool = Field(default=True)
     ALLOWED_METHODS: List[str] = Field(default=["*"])
     ALLOWED_HEADERS: List[str] = Field(default=["*"])
     
+    # Docker-specific environment variables (optional)
+    POSTGRES_DB: str = Field(default="smile_adventure")
+    POSTGRES_USER: str = Field(default="smile_user") 
+    POSTGRES_PASSWORD: str = Field(default="password")
+    OPENAI_API_KEY: str = Field(default="")
+    
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
-        "case_sensitive": True
+        "case_sensitive": True,
+        "extra": "ignore"  # Ignore extra environment variables
     }
 
 
