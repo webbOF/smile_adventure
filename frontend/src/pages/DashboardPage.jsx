@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useAuth } from '../hooks/useAuth';
 import { Layout, Button, Spinner, Alert, Header } from '../components/UI';
-import { USER_ROLES } from '../utils/constants';
+import { USER_ROLES, ROUTES } from '../utils/constants';
 import './DashboardPage.css';
 
 // Dashboard components for different roles
-const ParentDashboard = ({ user, dashboardData }) => (
+const ParentDashboard = ({ user, dashboardData, navigate }) => (
   <div className="dashboard-content">
     {/* Stats Grid */}
     <div className="dashboard-stats-grid">
@@ -73,12 +74,24 @@ const ParentDashboard = ({ user, dashboardData }) => (
 
     {/* Main Content Grid */}
     <div className="dashboard-main-grid">
-      <div className="dashboard-children-card">
-        <div className="dashboard-children-header">
+      <div className="dashboard-children-card">        <div className="dashboard-children-header">
           <h3 className="dashboard-children-title">I Miei Bambini</h3>
-          <Button variant="primary" size="small">
-            Aggiungi Bambino
-          </Button>
+          <div className="dashboard-children-actions">
+            <Button 
+              variant="outline" 
+              size="small"
+              onClick={() => navigate(ROUTES.CHILDREN)}
+            >
+              Visualizza Tutti
+            </Button>
+            <Button 
+              variant="primary" 
+              size="small"
+              onClick={() => navigate(ROUTES.CHILDREN_NEW)}
+            >
+              Aggiungi Bambino
+            </Button>
+          </div>
         </div>
         
         {dashboardData?.children_stats?.length > 0 ? (
@@ -90,8 +103,11 @@ const ParentDashboard = ({ user, dashboardData }) => (
                     <span className="dashboard-child-level">Livello {child.level}</span>
                     {child.points} punti • {child.activities_this_week || 0} attività questa settimana
                   </p>
-                </div>
-                <Button variant="outline" size="small">
+                </div>                <Button 
+                  variant="outline" 
+                  size="small"
+                  onClick={() => navigate(ROUTES.CHILDREN_DETAIL(child.id))}
+                >
                   Visualizza
                 </Button>
               </div>
@@ -103,8 +119,10 @@ const ParentDashboard = ({ user, dashboardData }) => (
             <div className="dashboard-empty-title">Nessun bambino registrato</div>
             <div className="dashboard-empty-description">
               Inizia registrando il profilo del tuo primo bambino per accedere alle funzionalità della piattaforma.
-            </div>
-            <Button variant="primary">
+            </div>            <Button 
+              variant="primary"
+              onClick={() => navigate(ROUTES.CHILDREN_NEW)}
+            >
               Registra il Primo Bambino
             </Button>
           </div>
@@ -151,7 +169,8 @@ ParentDashboard.propTypes = {
     total_sessions: PropTypes.number,
     children_stats: PropTypes.arrayOf(PropTypes.object),
     recent_activities: PropTypes.arrayOf(PropTypes.object)
-  })
+  }),
+  navigate: PropTypes.func.isRequired
 };
 
 const ProfessionalDashboard = ({ user, dashboardData }) => (
@@ -412,6 +431,7 @@ AdminDashboard.propTypes = {
 
 const DashboardPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -499,11 +519,10 @@ const DashboardPage = () => {
       </Layout>
     );
   }
-
   const getDashboardComponent = () => {
     switch (user.role) {
       case USER_ROLES.PARENT:
-        return <ParentDashboard user={user} dashboardData={dashboardData} />;
+        return <ParentDashboard user={user} dashboardData={dashboardData} navigate={navigate} />;
       case USER_ROLES.PROFESSIONAL:
         return <ProfessionalDashboard user={user} dashboardData={dashboardData} />;
       case USER_ROLES.ADMIN:

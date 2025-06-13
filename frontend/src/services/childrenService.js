@@ -335,3 +335,13 @@ class ChildrenService {
 // Create and export singleton instance
 const childrenService = new ChildrenService();
 export default childrenService;
+
+// Named exports for convenience (most commonly used methods)
+export const getChildren = (includeInactive = false) => childrenService.getChildren(includeInactive);
+export const getChild = (childId) => childrenService.getChildDetail(childId);
+export const createChild = (childData) => childrenService.createChild(childData);
+export const updateChild = (childId, childData) => childrenService.updateChild(childId, childData);
+export const deleteChild = (childId) => childrenService.deleteChild(childId);
+export const getChildProgress = (childId, days = 30) => childrenService.getChildProgress(childId, days);
+export const updateSensoryProfile = (childId, sensoryData) => childrenService.updateSensoryProfile(childId, sensoryData);
+export const getSensoryProfile = (childId, domain = null) => childrenService.getSensoryProfile(childId, domain);

@@ -10,6 +10,10 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import NotFoundPage from './pages/NotFoundPage';
+import ChildrenListPage from './pages/ChildrenListPage';
+import ChildDetailPage from './pages/ChildDetailPage';
+import ChildCreatePage from './pages/ChildCreatePage';
+import ChildEditPage from './pages/ChildEditPage';
 
 // Components
 import { Spinner, Layout } from './components/UI';
@@ -87,14 +91,36 @@ const AppRoutes = () => {
             <DashboardPage />
           </ProtectedRoute>
         }
-      />
-
-      {/* Parent-only routes */}
+      />      {/* Parent-only routes */}
       <Route
-        path="/children/*"
+        path="/children"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
-            <div>Children routes (TODO: implement)</div>
+            <ChildrenListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/children/new"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+            <ChildCreatePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/children/:id"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+            <ChildDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/children/:id/edit"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+            <ChildEditPage />
           </ProtectedRoute>
         }
       />

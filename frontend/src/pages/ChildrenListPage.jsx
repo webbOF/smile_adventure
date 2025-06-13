@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { useAuth } from '../hooks/useAuth';
 import { Layout, Button, Spinner, Alert, Header } from '../components/UI';
 import childrenService from '../services/childrenService';
+import { ROUTES } from '../utils/constants';
 import './ChildrenListPage.css';
 
 const ChildrenListPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [children, setChildren] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [includeInactive, setIncludeInactive] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     fetchChildren();
-  }, [includeInactive]);
+    
+    // Check for success message from navigation state
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Clear the message from history
+      window.history.replaceState({}, document.title);
+    }
+  }, [includeInactive, location.state]);
 
   const fetchChildren = async () => {
     try {
@@ -30,19 +41,34 @@ const ChildrenListPage = () => {
   };
 
   const handleDeleteChild = async (childId) => {
-    if (!window.confirm('Sei sicuro di voler eliminare questo profilo bambino?')) {
+    const child = children.find(c => c.id === childId);
+    if (!child) return;
+
+    if (!window.confirm(`Sei sicuro di voler eliminare il profilo di ${child.name}? Questa azione non può essere annullata.`)) {
       return;
     }
 
     try {
       await childrenService.deleteChild(childId);
-      setChildren(children.filter(child => child.id !== childId));
+      setChildren(children.filter(c => c.id !== childId));
+      setSuccessMessage(`Profilo di ${child.name} eliminato con successo`);
     } catch (err) {
       console.error('Error deleting child:', err);
       setError('Errore durante l\'eliminazione del bambino.');
     }
   };
 
+  const handleCreateChild = () => {
+    navigate(ROUTES.CHILDREN_NEW);
+  };
+
+  const handleViewChild = (childId) => {
+    navigate(ROUTES.CHILDREN_DETAIL(childId));
+  };
+
+  const handleEditChild = (childId) => {
+    navigate(ROUTES.CHILDREN_EDIT(childId));
+  };
   if (isLoading) {
     return (
       <Layout>
@@ -69,6 +95,13 @@ const ChildrenListPage = () => {
       header={<Header title="I Miei Bambini" showUserInfo={true} showLogout={true} />}
     >
       <div className="children-page-container">
+        {/* Success Message */}
+        {successMessage && (
+          <Alert variant="success" onClose={() => setSuccessMessage(null)}>
+            {successMessage}
+          </Alert>
+        )}
+
         {/* Header della pagina */}
         <div className="children-page-header">
           <div className="children-page-title-section">
@@ -83,7 +116,7 @@ const ChildrenListPage = () => {
             <Button 
               variant="primary" 
               size="large"
-              onClick={() => {/* TODO: Navigate to create child page */}}
+              onClick={handleCreateChild}
             >
               ➕ Aggiungi Bambino
             </Button>
@@ -92,15 +125,14 @@ const ChildrenListPage = () => {
 
         {/* Filtri e opzioni */}
         <div className="children-filters-section">
-          <div className="children-filter-item">
-            <label className="children-checkbox-label">
+          <div className="children-filter-item">            <label className="children-checkbox-label">
               <input
                 type="checkbox"
                 checked={includeInactive}
                 onChange={(e) => setIncludeInactive(e.target.checked)}
                 className="children-checkbox"
               />
-              Mostra profili inattivi
+              {' '}Mostra profili inattivi
             </label>
           </div>
           <div className="children-stats">
@@ -121,7 +153,7 @@ const ChildrenListPage = () => {
             <Button 
               variant="primary" 
               size="large"
-              onClick={() => {/* TODO: Navigate to create child page */}}
+              onClick={handleCreateChild}
             >
               Registra il Primo Bambino
             </Button>
@@ -133,8 +165,8 @@ const ChildrenListPage = () => {
                 key={child.id}
                 child={child}
                 onDelete={() => handleDeleteChild(child.id)}
-                onEdit={() => {/* TODO: Navigate to edit child page */}}
-                onView={() => {/* TODO: Navigate to child detail page */}}
+                onEdit={() => handleEditChild(child.id)}
+                onView={() => handleViewChild(child.id)}
               />
             ))}
           </div>

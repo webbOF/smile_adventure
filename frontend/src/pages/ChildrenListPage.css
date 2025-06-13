@@ -1,0 +1,442 @@
+/**
+ * ChildrenListPage Component Styles
+ * Stili moderni per la pagina lista bambini ASD
+ */
+
+/* Main Container */
+.children-page-container {
+  padding: 2rem;
+  min-height: calc(100vh - 80px);
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+/* Page Header */
+.children-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+  gap: 2rem;
+}
+
+.children-page-title-section {
+  flex: 1;
+}
+
+.children-page-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.children-page-subtitle {
+  margin: 0;
+  color: #6b7280;
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.children-page-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Filters Section */
+.children-filters-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(103, 126, 234, 0.1);
+}
+
+.children-filter-item {
+  display: flex;
+  align-items: center;
+}
+
+.children-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.children-checkbox-label:hover {
+  color: #667eea;
+}
+
+.children-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.25rem;
+  border: 2px solid #d1d5db;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.children-checkbox:checked {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+.children-stats {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.children-count {
+  font-size: 0.875rem;
+}
+
+/* Loading State */
+.children-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.children-loading-text {
+  color: #6b7280;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Empty State */
+.children-empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(103, 126, 234, 0.1);
+}
+
+.children-empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.children-empty-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.children-empty-description {
+  color: #6b7280;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Children Grid */
+.children-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* Child Card */
+.child-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(103, 126, 234, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.child-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(103, 126, 234, 0.05), transparent);
+  transition: left 0.5s ease;
+}
+
+.child-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(103, 126, 234, 0.15);
+  border-color: rgba(103, 126, 234, 0.3);
+}
+
+.child-card:hover::before {
+  left: 100%;
+}
+
+/* Child Card Header */
+.child-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.child-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid transparent;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.child-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.child-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #667eea;
+  border-radius: 50%;
+}
+
+.child-info {
+  flex: 1;
+}
+
+.child-name {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.child-age {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.child-status {
+  flex-shrink: 0;
+}
+
+.child-status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.child-status-badge.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.child-status-badge.inactive {
+  background: rgba(156, 163, 175, 0.1);
+  color: #6b7280;
+}
+
+/* Child Stats */
+.child-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.child-stat {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(103, 126, 234, 0.05);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(103, 126, 234, 0.1);
+}
+
+.child-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: #1f2937;
+}
+
+.child-stat-value.low {
+  color: #ef4444;
+}
+
+.child-stat-value.medium {
+  color: #f59e0b;
+}
+
+.child-stat-value.high {
+  color: #10b981;
+}
+
+.child-stat-value.points {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.child-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Child Progress */
+.child-card-progress {
+  margin-bottom: 1.5rem;
+}
+
+.child-progress-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.child-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.child-progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.child-progress-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: right;
+}
+
+/* Child Actions */
+.child-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.child-action-btn {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.child-action-delete {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.child-action-delete:hover {
+  background: #ef4444;
+  color: white;
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% { text-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+  50% { text-shadow: 0 0 20px rgba(102, 126, 234, 0.6), 0 0 30px rgba(118, 75, 162, 0.4); }
+  100% { text-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .children-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .children-filters-section {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .children-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .children-page-container {
+    padding: 1rem;
+  }
+  
+  .children-page-title {
+    font-size: 2rem;
+  }
+  
+  .children-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .child-card {
+    padding: 1rem;
+  }
+  
+  .child-card-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .child-stat {
+    padding: 0.75rem;
+  }
+  
+  .child-card-actions {
+    flex-direction: column;
+  }
+  
+  .child-action-btn {
+    flex: none;
+  }
+}
