@@ -20,7 +20,7 @@ from app.auth.services import get_auth_service, AuthService
 from app.auth.dependencies import (
     get_current_user, get_current_active_user, get_current_verified_user,
     require_parent, require_professional, require_admin, 
-    check_login_rate_limit, create_user_session_on_login
+    create_user_session_on_login
 )
 
 # Create router
@@ -70,14 +70,13 @@ async def register_user(
 async def login_user(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
-    _: None = Depends(check_login_rate_limit)  # Rate limiting
+    db: Session = Depends(get_db)
 ):
     """
     User login with email and password
     
     Returns access and refresh tokens upon successful authentication.
-    Includes rate limiting and account lockout protection.
+    Includes account lockout protection.
     """
     try:
         # Get auth service

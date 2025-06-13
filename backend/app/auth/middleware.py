@@ -257,112 +257,8 @@ def get_cors_middleware_config() -> dict:
     }
 
 # =============================================================================
-# RATE LIMITING MIDDLEWARE
+# SESSION TRACKING MIDDLEWARE  
 # =============================================================================
-
-class RateLimitMiddleware(BaseHTTPMiddleware):
-    """
-    Simple rate limiting middleware
-    """
-    
-    def __init__(self, app, requests_per_minute: int = 60):
-        """
-        Initialize rate limiting middleware
-        
-        Args:
-            app: FastAPI application
-            requests_per_minute: Maximum requests per minute per IP
-        """
-        super().__init__(app)
-        self.requests_per_minute = requests_per_minute
-        self.request_counts = {}  # In production, use Redis
-    
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        """
-        Apply rate limiting
-        
-        Args:
-            request: Incoming request
-            call_next: Next middleware/endpoint in chain
-            
-        Returns:
-            Response or rate limit error
-        """
-        from app.core.config import settings
-        
-        # Skip rate limiting completely in testing environment
-        if hasattr(settings, 'is_testing') and settings.is_testing:
-            return await call_next(request)
-        
-        # Skip rate limiting for test clients (detected by user agent or client IP)
-        client_ip = request.client.host if request.client else "unknown"
-        user_agent = request.headers.get("user-agent", "").lower()
-        
-        # Check if this is a test request
-        if (client_ip == "testclient" or 
-            "testclient" in user_agent or 
-            "pytest" in user_agent):
-            return await call_next(request)
-        
-        # Skip rate limiting for health checks and static files
-        if request.url.path in ["/health", "/docs", "/redoc", "/openapi.json"]:
-            return await call_next(request)
-        
-        # Check rate limit
-        if not self._check_rate_limit(client_ip):
-            logger.warning(f"Rate limit exceeded for IP: {client_ip}")
-            return JSONResponse(
-                status_code=429,
-                content={
-                    "detail": "Rate limit exceeded. Please try again later.",
-                    "type": "rate_limit_exceeded"
-                }
-            )
-        
-        return await call_next(request)
-    
-    def _check_rate_limit(self, client_ip: str) -> bool:
-        """
-        Check if client IP is within rate limit
-        
-        Args:
-            client_ip: Client IP address
-            
-        Returns:
-            True if within limit, False if exceeded
-        """
-        import time
-        current_time = time.time()
-        window_seconds = 60  # 1 minute window
-        
-        if client_ip not in self.request_counts:
-            self.request_counts[client_ip] = []
-        
-        # Remove old requests outside the window
-        self.request_counts[client_ip] = [
-            req_time for req_time in self.request_counts[client_ip]
-            if current_time - req_time < window_seconds
-        ]
-          # Check if within limit
-        if len(self.request_counts[client_ip]) >= self.requests_per_minute:
-            return False
-        
-        # Record this request
-        self.request_counts[client_ip].append(current_time)
-        return True
-    
-    def reset_counts(self):
-        """
-        Reset all request counts - useful for testing
-        """
-        self.request_counts.clear()
-
-# =============================================================================
-# MIDDLEWARE SETUP UTILITIES
-# =============================================================================
-
-# Global middleware instances for test access
-rate_limit_middleware_instance = None
 
 def setup_auth_middleware(app):
     """
@@ -371,17 +267,6 @@ def setup_auth_middleware(app):
     Args:
         app: FastAPI application instance
     """
-    global rate_limit_middleware_instance
-    
-    # Create rate limiting middleware instance
-    rate_limit_middleware_instance = RateLimitMiddleware(app, requests_per_minute=100)
-    
-    # Add rate limiting middleware
-    app.add_middleware(
-        RateLimitMiddleware,
-        requests_per_minute=100  # Adjust as needed
-    )
-    
     # Add session tracking middleware
     app.add_middleware(SessionTrackingMiddleware)
     

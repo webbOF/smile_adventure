@@ -1,0 +1,117 @@
+/* Card Component Styles */
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+/* Variants */
+.card--default {
+  border: 1px solid #e5e7eb;
+}
+
+.card--outlined {
+  border: 2px solid #d1d5db;
+}
+
+.card--elevated {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.card--filled {
+  background-color: #f9fafb;
+  border: 1px solid #f3f4f6;
+}
+
+/* Sizes */
+.card--small {
+  max-width: 320px;
+}
+
+.card--medium {
+  max-width: 480px;
+}
+
+.card--large {
+  max-width: 640px;
+}
+
+/* Padding variants */
+.card--none .card-content {
+  padding: 0;
+}
+
+.card--small .card-content {
+  padding: 0.75rem;
+}
+
+.card--default .card-content {
+  padding: 1rem;
+}
+
+.card--large .card-content {
+  padding: 1.5rem;
+}
+
+/* Interactive states */
+.card--hover:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.card--clickable {
+  cursor: pointer;
+  border: none;
+  background: white;
+  text-align: left;
+  width: 100%;
+}
+
+.card--clickable:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Header */
+.card-header {
+  padding: 1rem 1rem 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.card-header-content {
+  flex: 1;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.25rem 0;
+}
+
+.card-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.card-header-action {
+  flex-shrink: 0;
+}
+
+/* Content */
+.card-content {
+  padding: 1rem;
+}
+
+/* Footer */
+.card-footer {
+  padding: 0 1rem 1rem 1rem;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}

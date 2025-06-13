@@ -1,0 +1,110 @@
+/* Select Component Styles */
+.select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.select-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.select-required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.select-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: white;
+  color: #111827;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  padding-right: 2.5rem;
+}
+
+.select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Sizes */
+.select--small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.select--medium {
+  padding: 0.625rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.select--large {
+  padding: 0.75rem 1rem;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+/* Variants */
+.select--default {
+  border-color: #d1d5db;
+}
+
+.select--outline {
+  border-color: #6b7280;
+  border-width: 2px;
+}
+
+.select--filled {
+  background-color: #f9fafb;
+  border-color: #f9fafb;
+}
+
+/* States */
+.select--error {
+  border-color: #ef4444;
+}
+
+.select--error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.select--disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Arrow */
+.select-arrow {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+  font-size: 0.75rem;
+}
+
+/* Error message */
+.select-error {
+  font-size: 0.875rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+}

@@ -1,0 +1,121 @@
+/* Button Component Styles */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-family: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Sizes */
+.button--small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.button--medium {
+  padding: 0.625rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.button--large {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+/* Variants */
+.button--primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.button--primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.button--secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.button--secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+.button--outline {
+  background-color: transparent;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+}
+
+.button--outline:hover:not(:disabled) {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.button--ghost {
+  background-color: transparent;
+  color: #3b82f6;
+}
+
+.button--ghost:hover:not(:disabled) {
+  background-color: #eff6ff;
+}
+
+.button--danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.button--danger:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+/* States */
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button--loading {
+  cursor: wait;
+}
+
+.button--loading .button-content {
+  opacity: 0.6;
+}
+
+/* Icon styles */
+.button-icon {
+  flex-shrink: 0;
+}
+
+/* Loading spinner styles */
+.button-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Fullwidth */
+.button--fullwidth {
+  width: 100%;
+}

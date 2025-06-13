@@ -55,8 +55,7 @@ async def global_http_exception_handler(request: Request, exc: HTTPException) ->
             "timestamp": "2025-06-09T00:00:00Z"
         }
     }
-    
-    # Add additional details for specific status codes
+      # Add additional details for specific status codes
     if exc.status_code == status.HTTP_401_UNAUTHORIZED:
         error_response["error"]["type"] = "AuthenticationError"
         error_response["error"]["message"] = "Authentication required or invalid credentials"
@@ -66,9 +65,6 @@ async def global_http_exception_handler(request: Request, exc: HTTPException) ->
     elif exc.status_code == status.HTTP_404_NOT_FOUND:
         error_response["error"]["type"] = "NotFoundError"
         error_response["error"]["message"] = "The requested resource was not found"
-    elif exc.status_code == status.HTTP_429_TOO_MANY_REQUESTS:
-        error_response["error"]["type"] = "RateLimitError"
-        error_response["error"]["message"] = "Too many requests. Please try again later"
     
     return JSONResponse(
         status_code=exc.status_code,
@@ -158,14 +154,12 @@ async def global_generic_exception_handler(request: Request, exc: Exception) -> 
 # =============================================================================
 
 # Create the main v1 API router
-api_v1_router = APIRouter(
-    responses={
+api_v1_router = APIRouter(    responses={
         400: {"description": "Bad Request"},
         401: {"description": "Unauthorized"},
         403: {"description": "Forbidden"},
         404: {"description": "Not Found"},
         422: {"description": "Validation Error"},
-        429: {"description": "Rate Limit Exceeded"},
         500: {"description": "Internal Server Error"},
     }
 )
@@ -247,10 +241,9 @@ async def api_v1_info() -> Dict[str, Any]:
         "description": "Healthcare gamification platform API for children's medical care tracking",
         "version": "1.0.0",
         "status": "active",
-        "features": {
-            "authentication": {
+        "features": {            "authentication": {
                 "endpoints": ["/auth/register", "/auth/login", "/auth/logout", "/auth/me"],
-                "features": ["JWT tokens", "Role-based access", "Rate limiting", "Account lockout"]
+                "features": ["JWT tokens", "Role-based access", "Account lockout"]
             },
             "users": {
                 "endpoints": ["/users/profile", "/users/children", "/users/dashboard"],
@@ -264,18 +257,11 @@ async def api_v1_info() -> Dict[str, Any]:
                 "endpoints": ["/professional/profile", "/professional/search"],
                 "features": ["Professional profiles", "Clinical tools", "Patient management"]
             }
-        },
-        "security": {
+        },        "security": {
             "authentication": "JWT Bearer tokens",
             "authorization": "Role-based access control (RBAC)",
-            "rate_limiting": "100 requests per minute",
             "data_encryption": "TLS 1.2+",
             "input_validation": "Comprehensive request validation"
-        },
-        "rate_limits": {
-            "general": "100 requests per minute",
-            "auth": "5 login attempts per minute",
-            "uploads": "10 file uploads per minute"
         },
         "documentation": {
             "swagger_ui": "/docs",
