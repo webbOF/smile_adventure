@@ -20,10 +20,12 @@ export const API_ENDPOINTS = {
   PASSWORD_RESET_REQUEST: '/auth/request-password-reset',
   PASSWORD_RESET_CONFIRM: '/auth/reset-password',
   PASSWORD_CHANGE: '/auth/change-password',
-  
-  // User endpoints
-  USER_PROFILE: '/users/me',
+    // User endpoints
+  USER_PROFILE: '/users/profile',
   USER_DASHBOARD: '/users/dashboard',
+  USER_AVATAR: '/users/profile/avatar',
+  USER_PREFERENCES: '/users/preferences',
+  USER_PROFILE_COMPLETION: '/users/profile/completion',
   
   // Children endpoints
   CHILDREN: '/users/children',

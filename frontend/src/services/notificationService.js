@@ -99,28 +99,81 @@ class NotificationService {
   notifyListeners() {
     this.listeners.forEach(listener => listener(this.notifications));
   }
-
   // Metodi di convenienza
-  success(title, message, options = {}) {
-    return this.add({ type: 'success', title, message, ...options });
+  success(titleOrMessage, message, options = {}) {
+    // Se message è undefined, titleOrMessage è il messaggio
+    if (message === undefined) {
+      return this.add({ 
+        type: 'success', 
+        title: 'Successo', 
+        message: titleOrMessage, 
+        ...options 
+      });
+    }
+    return this.add({ type: 'success', title: titleOrMessage, message, ...options });
   }
 
-  error(title, message, options = {}) {
+  error(titleOrMessage, message, options = {}) {
+    // Se message è undefined, titleOrMessage è il messaggio
+    if (message === undefined) {
+      return this.add({ 
+        type: 'error', 
+        title: 'Errore', 
+        message: titleOrMessage, 
+        duration: 8000, // Errori durano di più
+        ...options 
+      });
+    }
     return this.add({ 
       type: 'error', 
-      title, 
+      title: titleOrMessage, 
       message, 
       duration: 8000, // Errori durano di più
       ...options 
     });
   }
 
-  warning(title, message, options = {}) {
-    return this.add({ type: 'warning', title, message, ...options });
+  warning(titleOrMessage, message, options = {}) {
+    // Se message è undefined, titleOrMessage è il messaggio
+    if (message === undefined) {
+      return this.add({ 
+        type: 'warning', 
+        title: 'Attenzione', 
+        message: titleOrMessage, 
+        ...options 
+      });
+    }
+    return this.add({ type: 'warning', title: titleOrMessage, message, ...options });
   }
 
-  info(title, message, options = {}) {
-    return this.add({ type: 'info', title, message, ...options });
+  info(titleOrMessage, message, options = {}) {
+    // Se message è undefined, titleOrMessage è il messaggio
+    if (message === undefined) {
+      return this.add({ 
+        type: 'info', 
+        title: 'Informazione', 
+        message: titleOrMessage, 
+        ...options 
+      });
+    }
+    return this.add({ type: 'info', title: titleOrMessage, message, ...options });
+  }
+
+  // Metodi alternativi per compatibilità
+  showSuccess(title, message, options = {}) {
+    return this.success(title, message, options);
+  }
+
+  showError(title, message, options = {}) {
+    return this.error(title, message, options);
+  }
+
+  showWarning(title, message, options = {}) {
+    return this.warning(title, message, options);
+  }
+
+  showInfo(title, message, options = {}) {
+    return this.info(title, message, options);
   }
 
   // Notifiche specializzate per l'app

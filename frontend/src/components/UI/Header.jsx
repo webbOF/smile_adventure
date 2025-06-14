@@ -62,20 +62,20 @@ const Header = ({
     { label: 'Registrati', path: ROUTES.REGISTER, icon: '📝' },
     { label: 'Info', path: '/info', icon: 'ℹ️' }
   ];
-
   // Navigation items per genitori autenticati
   const getParentNavItems = () => [
     { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: '📊' },
     { label: 'I Miei Bambini', path: ROUTES.CHILDREN, icon: '👶' },
+    { label: 'Trova Professionisti', path: ROUTES.PROFESSIONAL_SEARCH, icon: '🔍' },
     { label: 'Profilo', path: ROUTES.PROFILE, icon: '👤' }
   ];
-
   // Navigation items per professionisti autenticati
   const getProfessionalNavItems = () => [
     { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: '📊' },
-    { label: 'Pazienti', path: '/clinical/patients', icon: '👥' },
-    { label: 'Analytics', path: '/clinical/analytics', icon: '📈' },
-    { label: 'Profilo', path: ROUTES.PROFESSIONAL_PROFILE, icon: '👤' }
+    { label: 'Il Mio Profilo', path: ROUTES.PROFESSIONAL_PROFILE, icon: '👤' },
+    { label: 'Trova Colleghi', path: ROUTES.PROFESSIONAL_SEARCH, icon: '�' },
+    { label: 'Pazienti', path: '/clinical/patients', icon: '�' },
+    { label: 'Analytics', path: '/clinical/analytics', icon: '�' }
   ];
 
   // Navigation items per admin

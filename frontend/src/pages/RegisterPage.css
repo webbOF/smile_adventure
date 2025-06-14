@@ -1,0 +1,449 @@
+/* RegisterPage.css - Modern Design */
+/* Stili specifici per la pagina di registrazione che estende quelli del login */
+
+/* Usa gli stessi stili base di auth-page dal LoginPage */
+
+/* Container più ampio per più campi */
+.auth-container {
+  max-width: 580px;
+}
+
+/* Form row per campi affiancati */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+/* Select wrapper */
+.select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-select {
+  width: 100%;
+  padding: 1rem 3.5rem 1rem 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 400;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.8);
+  color: #374151;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+.form-select.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.form-select:disabled {
+  background: rgba(249, 250, 251, 0.8);
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-icon {
+  position: absolute;
+  right: 1.25rem;
+  font-size: 1.25rem;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+/* Helper text */
+.helper-text {
+  display: block;
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  font-style: italic;
+  padding-left: 0.25rem;
+}
+
+/* Card più alta per RegisterPage con scroll */
+.auth-card {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Stili per la scrollbar personalizzata */
+.auth-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.auth-card::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.auth-card::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.3);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.auth-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.5);
+}
+
+/* Animazioni progressive per campi register */
+.form-group:nth-child(1) { animation-delay: 0.1s; }
+.form-group:nth-child(2) { animation-delay: 0.15s; }
+.form-group:nth-child(3) { animation-delay: 0.2s; }
+.form-group:nth-child(4) { animation-delay: 0.25s; }
+.form-group:nth-child(5) { animation-delay: 0.3s; }
+.form-group:nth-child(6) { animation-delay: 0.35s; }
+.form-group:nth-child(7) { animation-delay: 0.4s; }
+.form-group:nth-child(8) { animation-delay: 0.45s; }
+
+/* Responsive per form row */
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .auth-card {
+    max-height: 95vh;
+  }
+  
+  .form-input,
+  .form-select {
+    padding: 0.875rem 3rem 0.875rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    max-height: 98vh;
+  }
+  
+  .form-row {
+    gap: 0.75rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+}
+
+/* Supporto per dark mode */
+@media (prefers-color-scheme: dark) {
+  .form-select {
+    background: rgba(31, 41, 55, 0.8);
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .form-select:focus {
+    background: rgba(31, 41, 55, 0.95);
+  }
+  
+  .helper-text {
+    color: #9ca3af;
+  }
+}
+
+.register-form {
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-input.error {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.form-input:disabled {
+  background: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: white;
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-select.error {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.error-message {
+  display: block;
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.role-selection {
+  margin-bottom: 1.5rem;
+}
+
+.role-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.role-option {
+  position: relative;
+}
+
+.role-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.role-label {
+  display: block;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.role-label:hover {
+  border-color: #cbd5e0;
+  background: #f7fafc;
+}
+
+.role-input:checked + .role-label {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  font-weight: 600;
+}
+
+.role-label .role-title {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.role-label .role-description {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.professional-fields {
+  background: #f7fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  border: 1px solid #e2e8f0;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.professional-fields .section-title {
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.professional-fields .section-title::before {
+  content: "👨‍⚕️";
+  margin-right: 0.5rem;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.submit-button .loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.register-footer {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.register-footer p {
+  color: #718096;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.auth-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.auth-link:hover {
+  color: #5a67d8;
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 580px) {
+  .register-page {
+    padding: 0.5rem;
+  }
+  
+  .register-container {
+    padding: 2rem;
+  }
+  
+  .register-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  
+  .role-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-input,
+  .form-select {
+    padding: 0.75rem;
+  }
+  
+  .submit-button {
+    padding: 0.75rem 1.25rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .register-container {
+    padding: 1.5rem;
+  }
+  
+  .register-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .professional-fields {
+    padding: 1rem;
+  }
+}

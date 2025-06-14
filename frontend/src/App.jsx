@@ -5,15 +5,22 @@ import { useAuth } from './hooks/useAuth';
 import './App.css';
 
 // Pages
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import UnauthorizedPage from './pages/UnauthorizedPage';
-import NotFoundPage from './pages/NotFoundPage';
-import ChildrenListPage from './pages/ChildrenListPage';
-import ChildDetailPage from './pages/ChildDetailPage';
-import ChildCreatePage from './pages/ChildCreatePage';
-import ChildEditPage from './pages/ChildEditPage';
+import {
+  LoginPage,
+  RegisterPage,
+  DashboardPage,
+  UnauthorizedPage,
+  NotFoundPage,
+  ForgotPasswordPage,
+  ResetPasswordPage,
+  ChildrenListPage,
+  ChildDetailPage,
+  ChildCreatePage,
+  ChildEditPage,
+  ProfilePage,
+  ProfessionalProfilePage,
+  ProfessionalSearchPage
+} from './pages';
 
 // Components
 import { Spinner, Layout, ToastContainer } from './components/UI';
@@ -53,8 +60,7 @@ const AppRoutes = () => {
         path="/" 
         element={<HomePage />}
       />
-      
-      {/* Public routes */}
+        {/* Public routes */}
       <Route 
         path={ROUTES.LOGIN} 
         element={
@@ -72,6 +78,26 @@ const AppRoutes = () => {
             <Navigate to={ROUTES.DASHBOARD} replace />
           ) : (
             <RegisterPage />
+          )
+        } 
+      />
+      <Route 
+        path={ROUTES.PASSWORD_RESET_REQUEST} 
+        element={
+          isAuthenticated ? (
+            <Navigate to={ROUTES.DASHBOARD} replace />
+          ) : (
+            <ForgotPasswordPage />
+          )
+        } 
+      />
+      <Route 
+        path={ROUTES.PASSWORD_RESET_CONFIRM} 
+        element={
+          isAuthenticated ? (
+            <Navigate to={ROUTES.DASHBOARD} replace />
+          ) : (
+            <ResetPasswordPage />
           )
         } 
       />
@@ -116,9 +142,23 @@ const AppRoutes = () => {
             <ChildEditPage />
           </ProtectedRoute>
         }
+      />      {/* Professional-only routes */}
+      <Route
+        path="/professional/profile"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.PROFESSIONAL]}>
+            <ProfessionalProfilePage />
+          </ProtectedRoute>
+        }
       />
-
-      {/* Professional-only routes */}
+      <Route
+        path="/professional/search"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.PROFESSIONAL, USER_ROLES.PARENT]}>
+            <ProfessionalSearchPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/clinical/*"
         element={
@@ -136,14 +176,12 @@ const AppRoutes = () => {
             <div>Admin routes (TODO: implement)</div>
           </ProtectedRoute>
         }
-      />
-
-      {/* Profile routes (available to all authenticated users) */}
+      />      {/* Profile routes (available to all authenticated users) */}
       <Route
         path="/profile"
         element={
           <ProtectedRoute>
-            <div>Profile page (TODO: implement)</div>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />

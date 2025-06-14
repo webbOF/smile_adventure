@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Button, FormField, Card, Alert, Layout, Select } from '../components/UI';
 import { validateForm } from '../utils/validation';
-import { USER_ROLES } from '../utils/constants';
+import notificationService from '../services/notificationService';
+import { USER_ROLES, ROUTES } from '../utils/constants';
+import './RegisterPage.css';
 
 const RegisterPage = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialRole = queryParams.get('role') === 'professional' ? USER_ROLES.PROFESSIONAL : USER_ROLES.PARENT;
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -32,6 +34,7 @@ const RegisterPage = () => {
       navigate('/dashboard', { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,7 +69,9 @@ const RegisterPage = () => {
         license_number: ''
       }));
     }
-  };// Form validation schema
+  };
+
+  // Form validation schema
   const getValidationSchema = () => {
     const baseSchema = {
       email: { required: true, email: true },
@@ -76,7 +81,9 @@ const RegisterPage = () => {
       lastName: { required: true, name: true },
       phone: { phone: true }, // Optional
       role: { required: true }
-    };    // Add license number validation for professionals
+    };
+
+    // Add license number validation for professionals
     if (formData.role === USER_ROLES.PROFESSIONAL) {
       baseSchema.license_number = { 
         required: true,
@@ -109,182 +116,252 @@ const RegisterPage = () => {
       console.log('RegisterPage: Starting registration process');
       await register(formData);
       console.log('RegisterPage: Registration completed, waiting for redirect');
+      notificationService.success('Registrazione completata con successo!');
       // Navigation handled by useEffect when isAuthenticated changes
     } catch (error) {
       console.error('RegisterPage: Registration error:', error);
-      // Error displayed by authError from context
+      notificationService.error(error.message || 'Errore durante la registrazione. Riprova.');
     } finally {
       setIsSubmitting(false);
     }
   };
+
   const roleOptions = [
     { value: USER_ROLES.PARENT, label: 'Genitore/Tutore' },
     { value: USER_ROLES.PROFESSIONAL, label: 'Professionista Sanitario' }
   ];
 
   return (
-    <Layout variant="centered">
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        padding: '2rem 0'
-      }}>
-        <Card 
-          title="Registrati a Smile Adventure"
-          subtitle="Crea il tuo account per iniziare il viaggio di apprendimento"
-          style={{ width: '100%', maxWidth: '500px' }}
-        >
+    <div className="auth-page">
+      <div className="auth-background">
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+        <div className="gradient-orb orb-3"></div>
+        <div className="floating-particles">
+          {Array.from({ length: 15 }, (_, i) => (
+            <div key={`particle-${i}`} className={`particle particle-${i + 1}`}></div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-logo">
+              <div className="logo-icon">😊</div>
+              <span className="logo-text">Smile Adventure</span>
+            </div>
+            <h1 className="auth-title">Benvenuto!</h1>
+            <p className="auth-subtitle">Crea il tuo account per iniziare l&apos;avventura del sorriso</p>
+          </div>
+
           {authError && (
-            <Alert variant="error" style={{ marginBottom: '1rem' }}>
-              {authError}
-            </Alert>
+            <div className="error-alert">
+              <div className="error-icon">⚠️</div>
+              <span>{authError}</span>
+            </div>
           )}
-
-          <form onSubmit={handleSubmit} noValidate>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {/* Role Selection */}
-              <Select
-                name="role"
-                label="Tipo di Account"
-                value={formData.role}
-                onChange={handleChange}
-                options={roleOptions}
-                error={errors.role}
-                required
-              />
-
-              {/* Personal Information */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <FormField
-                  name="firstName"
-                  type="text"
-                  label="Nome"
-                  value={formData.firstName}
+          
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
+            {/* Role Selection */}
+            <div className="form-group">
+              <label htmlFor="role" className="form-label">Tipo di Account</label>
+              <div className="select-wrapper">
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
                   onChange={handleChange}
-                  error={errors.firstName}
+                  className={`form-select ${errors.role ? 'error' : ''}`}
                   required
-                  placeholder="Mario"
-                />
+                  disabled={isSubmitting}
+                >
+                  {roleOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="select-icon">👥</div>
+              </div>
+              {errors.role && <span className="error-message">{errors.role}</span>}
+            </div>
 
-                <FormField
-                  name="lastName"
-                  type="text"
-                  label="Cognome"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  error={errors.lastName}
-                  required
-                  placeholder="Rossi"
-                />
+            {/* Personal Information */}
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="firstName" className="form-label">Nome</label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    placeholder="Mario"
+                    className={`form-input ${errors.firstName ? 'error' : ''}`}
+                    required
+                    disabled={isSubmitting}
+                  />
+                  <div className="input-icon">👤</div>
+                </div>
+                {errors.firstName && <span className="error-message">{errors.firstName}</span>}
               </div>
 
-              <FormField
-                name="email"
-                type="email"
-                label="Email"
-                value={formData.email}
-                onChange={handleChange}
-                error={errors.email}
-                required
-                placeholder="mario.rossi@email.com"
-                autoComplete="email"
-              />              <FormField
-                name="phone"
-                type="tel"
-                label="Telefono (opzionale)"
-                value={formData.phone}
-                onChange={handleChange}
-                error={errors.phone}
-                placeholder="+39 123 456 7890"
-                autoComplete="tel"
-              />
-
-              {/* License Number - Only for professionals */}
-              {formData.role === USER_ROLES.PROFESSIONAL && (
-                <FormField
-                  name="license_number"
-                  type="text"
-                  label="Numero di Licenza Professionale"
-                  value={formData.license_number}
-                  onChange={handleChange}
-                  error={errors.license_number}
-                  required
-                  placeholder="Es. AB123456"
-                  helperText="Inserisci il numero della tua licenza professionale sanitaria"
-                />
-              )}
-
-              {/* Password Fields */}
-              <FormField
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                label="Password"
-                value={formData.password}
-                onChange={handleChange}
-                error={errors.password}
-                required
-                placeholder="Minimum 8 caratteri"
-                autoComplete="new-password"
-                helperText="La password deve contenere almeno 8 caratteri"
-                rightIcon={
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{ 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer',
-                      padding: '0.25rem'
-                    }}
-                    aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
-                  >
-                    {showPassword ? '🙈' : '👁️'}
-                  </button>
-                }
-              />              <FormField
-                name="confirmPassword"
-                type={showPassword ? 'text' : 'password'}
-                label="Conferma Password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                error={errors.confirmPassword}
-                required
-                placeholder="Ripeti la password"
-                autoComplete="new-password"
-              />
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="large"
-                fullWidth
-                loading={isSubmitting}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Registrazione in corso...' : 'Registrati'}
-              </Button>
+              <div className="form-group">
+                <label htmlFor="lastName" className="form-label">Cognome</label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    placeholder="Rossi"
+                    className={`form-input ${errors.lastName ? 'error' : ''}`}
+                    required
+                    disabled={isSubmitting}
+                  />
+                  <div className="input-icon">👤</div>
+                </div>
+                {errors.lastName && <span className="error-message">{errors.lastName}</span>}
+              </div>
             </div>
-          </form>
 
-          <div style={{ 
-            marginTop: '1.5rem', 
-            textAlign: 'center',
-            fontSize: '0.875rem',
-            color: '#6b7280'
-          }}>
-            Hai già un account?{' '}
-            <Link 
-              to="/login" 
-              style={{ color: '#3b82f6', textDecoration: 'none', fontWeight: '500' }}
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">Email</label>
+              <div className="input-wrapper">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="mario.rossi@email.com"
+                  className={`form-input ${errors.email ? 'error' : ''}`}
+                  required
+                  disabled={isSubmitting}
+                  autoComplete="email"
+                />
+                <div className="input-icon">📧</div>
+              </div>
+              {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="phone" className="form-label">Telefono (opzionale)</label>
+              <div className="input-wrapper">
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+39 123 456 7890"
+                  className={`form-input ${errors.phone ? 'error' : ''}`}
+                  disabled={isSubmitting}
+                  autoComplete="tel"
+                />
+                <div className="input-icon">📞</div>
+              </div>
+              {errors.phone && <span className="error-message">{errors.phone}</span>}
+            </div>
+
+            {/* License Number - Only for professionals */}
+            {formData.role === USER_ROLES.PROFESSIONAL && (
+              <div className="form-group">
+                <label htmlFor="license_number" className="form-label">Numero di Licenza Professionale</label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id="license_number"
+                    name="license_number"
+                    value={formData.license_number}
+                    onChange={handleChange}
+                    placeholder="Es. AB123456"
+                    className={`form-input ${errors.license_number ? 'error' : ''}`}
+                    required
+                    disabled={isSubmitting}
+                  />
+                  <div className="input-icon">🏥</div>
+                </div>
+                <small className="helper-text">Inserisci il numero della tua licenza professionale sanitaria</small>
+                {errors.license_number && <span className="error-message">{errors.license_number}</span>}
+              </div>
+            )}
+
+            {/* Password Fields */}
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">Password</label>
+              <div className="input-wrapper">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Minimum 8 caratteri"
+                  className={`form-input ${errors.password ? 'error' : ''}`}
+                  required
+                  disabled={isSubmitting}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="password-toggle"
+                  aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
+              <small className="helper-text">La password deve contenere almeno 8 caratteri</small>
+              {errors.password && <span className="error-message">{errors.password}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirmPassword" className="form-label">Conferma Password</label>
+              <div className="input-wrapper">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Ripeti la password"
+                  className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
+                  required
+                  disabled={isSubmitting}
+                  autoComplete="new-password"
+                />
+                <div className="input-icon">🔒</div>
+              </div>
+              {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+            </div>
+            
+            <button 
+              type="submit" 
+              className={`auth-button ${isSubmitting ? 'loading' : ''}`}
+              disabled={isSubmitting}
             >
-              Accedi
-            </Link>
+              <span className="button-text">
+                {isSubmitting ? 'Registrazione in corso...' : 'Registrati'}
+              </span>
+              {isSubmitting && <div className="button-spinner"></div>}
+            </button>
+          </form>
+          
+          <div className="auth-footer">
+            <p className="auth-footer-text">
+              Hai già un account?{' '}
+              <Link to={ROUTES.LOGIN} className="auth-link">
+                Accedi qui
+              </Link>
+            </p>
           </div>
-        </Card>
+        </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

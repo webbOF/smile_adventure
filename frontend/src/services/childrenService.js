@@ -68,6 +68,72 @@ import notificationService from './notificationService';
 /**
  * Children Service
  */
+/**
+ * Transform sensory profile from frontend format to backend format
+ * @param {Object} sensoryProfile - Frontend sensory profile (numbers)
+ * @returns {Object} Backend sensory profile (objects with sensitivity levels)
+ */
+const transformSensoryProfile = (sensoryProfile) => {
+  if (!sensoryProfile || typeof sensoryProfile !== 'object') {
+    return {};
+  }
+  // Mapping from numeric values to sensitivity strings
+  const sensitivityMap = {
+    1: 'low',
+    2: 'moderate', 
+    3: 'high'
+  };
+
+  // Domain-specific field mappings based on backend model
+  const domainFieldMap = {
+    auditory: ['preferences'],
+    visual: ['triggers'],
+    tactile: ['preferred_textures'],
+    vestibular: ['activities'],
+    proprioceptive: ['activities'],
+    gustatory: ['preferences'],
+    olfactory: ['triggers']
+  };
+
+  const transformed = {};
+  
+  // Transform each sensory domain from number to object
+  Object.keys(sensoryProfile).forEach(domain => {
+    const value = sensoryProfile[domain];
+      if (typeof value === 'number' || typeof value === 'string') {
+      // Convert numeric/string sensitivity to descriptive format
+      const sensitivity = sensitivityMap[parseInt(value)] || sensitivityMap[value] || 'moderate';
+      
+      // Create domain object with appropriate fields
+      const domainFields = domainFieldMap[domain] || ['preferences'];
+      transformed[domain] = {
+        sensitivity: sensitivity
+      };
+        // Add domain-specific fields as empty arrays
+      domainFields.forEach(field => {
+        transformed[domain][field] = [];
+      });
+        } else if (typeof value === 'object' && value !== null) {
+      // Already in object format, ensure proper structure
+      const sensitivity = sensitivityMap[parseInt(value.sensitivity)] || sensitivityMap[value.sensitivity] || value.sensitivity || 'moderate';
+      const domainFields = domainFieldMap[domain] || ['preferences'];
+      
+      transformed[domain] = {
+        sensitivity: sensitivity,
+        ...value
+      };
+        // Ensure required fields exist
+      domainFields.forEach(field => {
+        if (!transformed[domain][field]) {
+          transformed[domain][field] = [];
+        }
+      });
+    }
+  });
+
+  return transformed;
+};
+
 export const childrenService = {
   /**
    * Get all children for current user
@@ -104,9 +170,7 @@ export const childrenService = {
       console.error('Error fetching child:', error.response?.data || error.message);
       throw error;
     }
-  },
-
-  /**
+  },  /**
    * Create new child
    * @param {ChildCreateRequest} childData
    * @returns {Promise<Child>}
@@ -120,22 +184,34 @@ export const childrenService = {
         date_of_birth: childData.dateOfBirth || childData.date_of_birth,
         gender: childData.gender,
         avatar_url: childData.avatarUrl || childData.avatar_url,
-        diagnosis: childData.diagnosis || '',
+        diagnosis: childData.diagnosis || 'Non specificata',  // Provide default if empty
         support_level: childData.supportLevel ? parseInt(childData.supportLevel) : null,
         diagnosis_date: childData.diagnosisDate || childData.diagnosis_date,
         diagnosing_professional: childData.diagnosingProfessional || childData.diagnosing_professional,
-        sensory_profile: childData.sensoryProfile || childData.sensory_profile || {},
+        sensory_profile: transformSensoryProfile(childData.sensoryProfile || childData.sensory_profile),
         behavioral_notes: childData.behavioralNotes || childData.behavioral_notes || '',
         communication_style: childData.communicationStyle || childData.communication_style || 'verbal',
         communication_notes: childData.communicationNotes || childData.communication_notes || ''
-      };      const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN, backendData);
+      };const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN, backendData);
       
       // Notifica di successo
       notificationService.childCreated(backendData.name);
       
-      return response.data;
-    } catch (error) {
+      return response.data;    } catch (error) {
       console.error('Error creating child:', error.response?.data || error.message);
+      
+      // Trasforma errori di validazione Pydantic in messaggi leggibili
+      if (error.response?.status === 422 && error.response.data?.detail) {
+        const validationErrors = error.response.data.detail;
+        if (Array.isArray(validationErrors)) {
+          const errorMessages = validationErrors.map(err => {
+            const field = err.loc ? err.loc.join('.') : 'field';
+            return `${field}: ${err.msg}`;
+          }).join(', ');
+          throw new Error(`Errori di validazione: ${errorMessages}`);
+        }
+      }
+      
       throw error;
     }
   },

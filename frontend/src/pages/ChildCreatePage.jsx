@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Layout, Button } from '../components/UI';
 import PhotoUpload from '../components/PhotoUpload';
 import SensoryProfileEditor from '../components/SensoryProfileEditor';
-import { createChild } from '../services/childrenService';
+import { childrenService } from '../services/childrenService';
 import { ROUTES } from '../utils/constants';
 import './ChildCreatePage.css';
 
@@ -110,25 +110,28 @@ const ChildCreatePage = () => {
     }
 
     setLoading(true);
-    setErrors({});
-
-    try {
-      // Calculate age and prepare data
+    setErrors({});    try {      // Calculate age and prepare data
       const childData = {
         ...formData,
         age: calculateAge(formData.birth_date),
-        name: formData.name.trim()
+        name: formData.name.trim(),
+        // Map frontend fields to backend expected format
+        diagnosis: formData.asd_diagnosis 
+          ? (formData.diagnosis_notes?.trim() || 'Disturbo dello Spettro Autistico')
+          : 'Non specificata',
+        dateOfBirth: formData.birth_date,
+        sensoryProfile: formData.sensory_profile
       };
 
-      // Remove empty optional fields
-      if (!childData.diagnosis_notes?.trim()) {
-        delete childData.diagnosis_notes;
-      }
+      // Remove empty optional fields that aren't needed for backend
+      const fieldsToRemove = ['asd_diagnosis', 'diagnosis_notes', 'birth_date'];
+      fieldsToRemove.forEach(field => delete childData[field]);
+
       if (!childData.special_notes?.trim()) {
         delete childData.special_notes;
       }
 
-      const newChild = await createChild(childData);
+      const newChild = await childrenService.createChild(childData);
       
       // Navigate to the new child's detail page
       navigate(ROUTES.CHILDREN_DETAIL(newChild.id), {

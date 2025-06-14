@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Button, FormField, Card, Alert, Layout } from '../components/UI';
 import { validateEmail, validatePassword } from '../utils/validation';
+import notificationService from '../services/notificationService';
+import { ROUTES } from '../utils/constants';
+import './LoginPage.css';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -82,129 +84,137 @@ const LoginPage = () => {
         rememberMe: formData.rememberMe
       });
       
+      notificationService.success('Login effettuato con successo!');
       // Navigation handled by useEffect above
     } catch (error) {
       console.error('Login error:', error);
-      // Error displayed by authError from context
+      notificationService.error(error.message || 'Errore durante il login. Riprova.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Layout variant="centered">
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        padding: '2rem 0'
-      }}>
-        <Card 
-          title="Accedi a Smile Adventure"
-          subtitle="Benvenuto nella piattaforma di apprendimento per bambini"
-          style={{ width: '100%', maxWidth: '400px' }}
-        >
+    <div className="auth-page">
+      <div className="auth-background">
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+        <div className="gradient-orb orb-3"></div>        <div className="floating-particles">
+          {Array.from({ length: 15 }, (_, i) => (
+            <div key={`particle-${i}`} className={`particle particle-${i + 1}`}></div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-logo">
+              <div className="logo-icon">😊</div>
+              <span className="logo-text">Smile Adventure</span>
+            </div>
+            <h1 className="auth-title">Bentornato!</h1>
+            <p className="auth-subtitle">Accedi al tuo account per continuare l&apos;avventura</p>
+          </div>
+
           {authError && (
-            <Alert variant="error" style={{ marginBottom: '1rem' }}>
-              {authError}
-            </Alert>
+            <div className="error-alert">
+              <div className="error-icon">⚠️</div>
+              <span>{authError}</span>
+            </div>
           )}
-
-          <form onSubmit={handleSubmit} noValidate>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <FormField
-                name="email"
-                type="email"
-                label="Email"
-                value={formData.email}
-                onChange={handleChange}
-                error={errors.email}
-                required
-                placeholder="inserisci@email.com"
-                autoComplete="email"
-              />
-
-              <FormField
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                label="Password"
-                value={formData.password}
-                onChange={handleChange}
-                error={errors.password}
-                required
-                placeholder="Inserisci la password"
-                autoComplete="current-password"
-                rightIcon={
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{ 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer',
-                      padding: '0.25rem'
-                    }}
-                    aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
-                  >
-                    {showPassword ? '🙈' : '👁️'}
-                  </button>
-                }
-              />
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">Email</label>
+              <div className="input-wrapper">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="inserisci@email.com"
+                  className={`form-input ${errors.email ? 'error' : ''}`}
+                  required
+                  disabled={isSubmitting}
+                  autoComplete="email"
+                />
+                <div className="input-icon">📧</div>
+              </div>
+              {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">Password</label>
+              <div className="input-wrapper">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Inserisci la tua password"
+                  className={`form-input ${errors.password ? 'error' : ''}`}
+                  required
+                  disabled={isSubmitting}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="password-toggle"
+                  aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
+              {errors.password && <span className="error-message">{errors.password}</span>}
+            </div>
+            
+            <div className="form-options">
+              <label className="checkbox-wrapper">
                 <input
                   type="checkbox"
                   id="rememberMe"
                   name="rememberMe"
                   checked={formData.rememberMe}
                   onChange={handleChange}
+                  disabled={isSubmitting}
+                  className="checkbox-input"
                 />
-                <label htmlFor="rememberMe" style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                  Ricordami
-                </label>
-              </div>
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="large"
-                fullWidth
-                loading={isSubmitting}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Accesso in corso...' : 'Accedi'}
-              </Button>
-            </div>
-          </form>
-
-          <div style={{ 
-            marginTop: '1.5rem', 
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem'
-          }}>
-            <Link 
-              to="/forgot-password" 
-              style={{ color: '#3b82f6', textDecoration: 'none', fontSize: '0.875rem' }}
-            >
-              Password dimenticata?
-            </Link>
-            
-            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-              Non hai un account?{' '}
-              <Link 
-                to="/register" 
-                style={{ color: '#3b82f6', textDecoration: 'none', fontWeight: '500' }}
-              >
-                Registrati
+                <span className="checkbox-custom"></span>
+                <span className="checkbox-label">Ricordami</span>
+              </label>
+              
+              <Link to={ROUTES.PASSWORD_RESET_REQUEST} className="forgot-password-link">
+                Password dimenticata?
               </Link>
             </div>
+            
+            <button 
+              type="submit" 
+              className={`auth-button ${isSubmitting ? 'loading' : ''}`}
+              disabled={isSubmitting}
+            >
+              <span className="button-text">
+                {isSubmitting ? 'Accesso in corso...' : 'Accedi'}
+              </span>
+              {isSubmitting && <div className="button-spinner"></div>}
+            </button>
+          </form>
+          
+          <div className="auth-footer">
+            <p className="auth-footer-text">
+              Non hai un account?{' '}
+              <Link to={ROUTES.REGISTER} className="auth-link">
+                Registrati qui
+              </Link>
+            </p>
           </div>
-        </Card>
+        </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
