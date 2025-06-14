@@ -9,7 +9,6 @@ const RegisterPage = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialRole = queryParams.get('role') === 'professional' ? USER_ROLES.PROFESSIONAL : USER_ROLES.PARENT;
-
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,7 +16,8 @@ const RegisterPage = () => {
     firstName: '',
     lastName: '',
     phone: '',
-    role: initialRole
+    role: initialRole,
+    license_number: ''
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,14 +32,24 @@ const RegisterPage = () => {
       navigate('/dashboard', { replace: true });
     }
   }, [isAuthenticated, navigate]);
-
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Special handling for role change
+    if (name === 'role') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        // Clear license_number if switching away from professional
+        license_number: value === USER_ROLES.PROFESSIONAL ? prev.license_number : ''
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
 
     // Clear errors when user starts typing
     if (errors[name]) {
@@ -48,8 +58,15 @@ const RegisterPage = () => {
         [name]: ''
       }));
     }
-  };
-  // Form validation schema
+
+    // Clear license_number error when switching roles
+    if (name === 'role' && errors.license_number) {
+      setErrors(prev => ({
+        ...prev,
+        license_number: ''
+      }));
+    }
+  };// Form validation schema
   const getValidationSchema = () => {
     const baseSchema = {
       email: { required: true, email: true },
@@ -59,9 +76,19 @@ const RegisterPage = () => {
       lastName: { required: true, name: true },
       phone: { phone: true }, // Optional
       role: { required: true }
-    };
+    };    // Add license number validation for professionals
+    if (formData.role === USER_ROLES.PROFESSIONAL) {
+      baseSchema.license_number = { 
+        required: true,
+        customValidator: (value) => {
+          if (!value) return false;
+          return value.trim().length >= 3 && value.trim().length <= 100;
+        }
+      };
+    }
 
-    return baseSchema;  };
+    return baseSchema;
+  };
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -163,9 +190,7 @@ const RegisterPage = () => {
                 required
                 placeholder="mario.rossi@email.com"
                 autoComplete="email"
-              />
-
-              <FormField
+              />              <FormField
                 name="phone"
                 type="tel"
                 label="Telefono (opzionale)"
@@ -175,6 +200,21 @@ const RegisterPage = () => {
                 placeholder="+39 123 456 7890"
                 autoComplete="tel"
               />
+
+              {/* License Number - Only for professionals */}
+              {formData.role === USER_ROLES.PROFESSIONAL && (
+                <FormField
+                  name="license_number"
+                  type="text"
+                  label="Numero di Licenza Professionale"
+                  value={formData.license_number}
+                  onChange={handleChange}
+                  error={errors.license_number}
+                  required
+                  placeholder="Es. AB123456"
+                  helperText="Inserisci il numero della tua licenza professionale sanitaria"
+                />
+              )}
 
               {/* Password Fields */}
               <FormField

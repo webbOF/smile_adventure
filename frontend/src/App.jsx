@@ -16,7 +16,7 @@ import ChildCreatePage from './pages/ChildCreatePage';
 import ChildEditPage from './pages/ChildEditPage';
 
 // Components
-import { Spinner, Layout } from './components/UI';
+import { Spinner, Layout, ToastContainer } from './components/UI';
 import { HomePage } from './components/common';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -48,17 +48,10 @@ const AppRoutes = () => {
     return <AppLoading />;
   }
   return (
-    <Routes>
-      {/* Homepage route */}
+    <Routes>      {/* Homepage route - sempre accessibile */}
       <Route 
         path="/" 
-        element={
-          isAuthenticated ? (
-            <Navigate to={ROUTES.DASHBOARD} replace />
-          ) : (
-            <HomePage />
-          )
-        } 
+        element={<HomePage />}
       />
       
       {/* Public routes */}
@@ -182,6 +175,7 @@ const App = () => {
       <AuthProvider>
         <div className="app">
           <AppRoutes />
+          <ToastContainer />
         </div>
       </AuthProvider>
     </Router>

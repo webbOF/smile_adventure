@@ -1,347 +1,364 @@
 /**
- * Children API Service
- * Handles all API calls related to children management for ASD platform
+ * Children Service - API calls per gestione bambini ASD
+ * Servizio completo per CRUD bambini con integrazione backend FastAPI
  */
 
 import axiosInstance from './axiosInstance';
+import { API_ENDPOINTS } from '../config/apiConfig';
+import notificationService from './notificationService';
 
 /**
- * Children Service - Complete CRUD operations for child management
+ * @typedef {Object} Child
+ * @property {number} id
+ * @property {string} name
+ * @property {number} age
+ * @property {string} date_of_birth - ISO date string
+ * @property {string} gender - 'M' | 'F' | 'Other'
+ * @property {string} avatar_url
+ * @property {number} parent_id
+ * @property {number} points
+ * @property {number} level
+ * @property {Array} achievements
+ * @property {string} diagnosis
+ * @property {number} support_level - 1-3 based on DSM-5
+ * @property {string} diagnosis_date
+ * @property {string} diagnosing_professional
+ * @property {Object} sensory_profile - JSON structure
+ * @property {string} behavioral_notes
+ * @property {string} communication_style
+ * @property {string} communication_notes
+ * @property {string} created_at
+ * @property {string} updated_at
  */
-class ChildrenService {
+
+/**
+ * @typedef {Object} ChildCreateRequest
+ * @property {string} name
+ * @property {number} age
+ * @property {string} date_of_birth
+ * @property {string} gender
+ * @property {string} [avatar_url]
+ * @property {string} [diagnosis]
+ * @property {number} [support_level]
+ * @property {string} [diagnosis_date]
+ * @property {string} [diagnosing_professional]
+ * @property {Object} [sensory_profile]
+ * @property {string} [behavioral_notes]
+ * @property {string} [communication_style]
+ * @property {string} [communication_notes]
+ */
+
+/**
+ * @typedef {Object} ChildUpdateRequest
+ * @property {string} [name]
+ * @property {number} [age]
+ * @property {string} [date_of_birth]
+ * @property {string} [gender]
+ * @property {string} [avatar_url]
+ * @property {string} [diagnosis]
+ * @property {number} [support_level]
+ * @property {string} [diagnosis_date]
+ * @property {string} [diagnosing_professional]
+ * @property {Object} [sensory_profile]
+ * @property {string} [behavioral_notes]
+ * @property {string} [communication_style]
+ * @property {string} [communication_notes]
+ */
+
+/**
+ * Children Service
+ */
+export const childrenService = {
   /**
-   * Get all children for current user (parent)
-   * @param {boolean} includeInactive - Include soft-deleted children
-   * @returns {Promise<Array>} List of children
+   * Get all children for current user
+   * @param {boolean} [includeInactive=false] - Include inactive children
+   * @returns {Promise<Child[]>}
    */
   async getChildren(includeInactive = false) {
-    try {
-      const response = await axiosInstance.get('/users/children', {
-        params: { include_inactive: includeInactive }
-      });
+    try {      const params = new URLSearchParams();
+      if (includeInactive) {
+        params.append('include_inactive', 'true');
+      }
+      
+      const queryString = params.toString();
+      const url = queryString ? `${API_ENDPOINTS.CHILDREN}?${queryString}` : API_ENDPOINTS.CHILDREN;
+      
+      const response = await axiosInstance.get(url);
       return response.data;
     } catch (error) {
-      console.error('Error fetching children:', error);
+      console.error('Error fetching children:', error.response?.data || error.message);
       throw error;
     }
-  }
+  },
 
   /**
-   * Get detailed information about a specific child
-   * @param {number} childId - Child ID
-   * @returns {Promise<Object>} Child details with activities and progress
+   * Get child by ID
+   * @param {number} childId
+   * @returns {Promise<Child>}
    */
-  async getChildDetail(childId) {
+  async getChild(childId) {
     try {
-      const response = await axiosInstance.get(`/users/children/${childId}`);
+      const response = await axiosInstance.get(`${API_ENDPOINTS.CHILDREN}/${childId}`);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching child detail for ID ${childId}:`, error);
+      console.error('Error fetching child:', error.response?.data || error.message);
       throw error;
     }
-  }
+  },
 
   /**
-   * Create a new child profile
-   * @param {Object} childData - Child creation data
-   * @returns {Promise<Object>} Created child
+   * Create new child
+   * @param {ChildCreateRequest} childData
+   * @returns {Promise<Child>}
    */
   async createChild(childData) {
     try {
-      const response = await axiosInstance.post('/users/children', childData);
+      // Transform frontend data to backend format
+      const backendData = {
+        name: childData.name,
+        age: parseInt(childData.age),
+        date_of_birth: childData.dateOfBirth || childData.date_of_birth,
+        gender: childData.gender,
+        avatar_url: childData.avatarUrl || childData.avatar_url,
+        diagnosis: childData.diagnosis || '',
+        support_level: childData.supportLevel ? parseInt(childData.supportLevel) : null,
+        diagnosis_date: childData.diagnosisDate || childData.diagnosis_date,
+        diagnosing_professional: childData.diagnosingProfessional || childData.diagnosing_professional,
+        sensory_profile: childData.sensoryProfile || childData.sensory_profile || {},
+        behavioral_notes: childData.behavioralNotes || childData.behavioral_notes || '',
+        communication_style: childData.communicationStyle || childData.communication_style || 'verbal',
+        communication_notes: childData.communicationNotes || childData.communication_notes || ''
+      };      const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN, backendData);
+      
+      // Notifica di successo
+      notificationService.childCreated(backendData.name);
+      
       return response.data;
     } catch (error) {
-      console.error('Error creating child:', error);
+      console.error('Error creating child:', error.response?.data || error.message);
       throw error;
     }
-  }
-
+  },
   /**
-   * Update existing child profile
-   * @param {number} childId - Child ID
-   * @param {Object} updateData - Updated child data
-   * @returns {Promise<Object>} Updated child
+   * Transform frontend data to backend format for updates
+   * @param {ChildUpdateRequest} childData
+   * @returns {Object} Backend formatted data
    */
-  async updateChild(childId, updateData) {
-    try {
-      const response = await axiosInstance.put(`/users/children/${childId}`, updateData);
-      return response.data;
-    } catch (error) {
-      console.error(`Error updating child ${childId}:`, error);
-      throw error;
-    }
-  }
+  _transformUpdateData(childData) {
+    const backendData = {};
+    
+    // Mapping object for field transformations
+    const fieldMappings = {
+      name: 'name',
+      age: (val) => parseInt(val),
+      dateOfBirth: 'date_of_birth',
+      date_of_birth: 'date_of_birth',
+      gender: 'gender',
+      avatarUrl: 'avatar_url',
+      avatar_url: 'avatar_url',
+      diagnosis: 'diagnosis',
+      supportLevel: (val) => parseInt(val),
+      support_level: 'support_level',
+      diagnosisDate: 'diagnosis_date',
+      diagnosis_date: 'diagnosis_date',
+      diagnosingProfessional: 'diagnosing_professional',
+      diagnosing_professional: 'diagnosing_professional',
+      sensoryProfile: 'sensory_profile',
+      sensory_profile: 'sensory_profile',
+      behavioralNotes: 'behavioral_notes',
+      behavioral_notes: 'behavioral_notes',
+      communicationStyle: 'communication_style',
+      communication_style: 'communication_style',
+      communicationNotes: 'communication_notes',
+      communication_notes: 'communication_notes'
+    };
 
-  /**
-   * Delete child profile (soft delete for parents, hard delete for admins)
-   * @param {number} childId - Child ID
-   * @param {boolean} permanent - Permanent deletion (admin only)
-   * @returns {Promise<Object>} Success message
-   */
-  async deleteChild(childId, permanent = false) {
-    try {
-      const response = await axiosInstance.delete(`/users/children/${childId}`, {
-        params: { permanent }
-      });
-      return response.data;
-    } catch (error) {
-      console.error(`Error deleting child ${childId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get child's activities
-   * @param {number} childId - Child ID
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} List of activities
-   */
-  async getChildActivities(childId, options = {}) {
-    try {
-      const response = await axiosInstance.get(`/users/children/${childId}/activities`, {
-        params: {
-          limit: options.limit || 50,
-          activity_type: options.activityType,
-          verified_only: options.verifiedOnly || false
+    Object.keys(childData).forEach(key => {
+      if (childData[key] !== undefined && fieldMappings[key]) {
+        const mapping = fieldMappings[key];
+        if (typeof mapping === 'function') {
+          backendData[key] = mapping(childData[key]);
+        } else if (typeof mapping === 'string') {
+          backendData[mapping] = childData[key];
+        } else {
+          backendData[key] = childData[key];
         }
-      });
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching activities for child ${childId}:`, error);
-      throw error;
-    }
-  }
+      }
+    });
+
+    return backendData;
+  },
 
   /**
-   * Get child's game sessions
-   * @param {number} childId - Child ID
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} List of game sessions
+   * Update child
+   * @param {number} childId
+   * @param {ChildUpdateRequest} childData
+   * @returns {Promise<Child>}
    */
-  async getChildSessions(childId, options = {}) {
+  async updateChild(childId, childData) {
     try {
-      const response = await axiosInstance.get(`/users/children/${childId}/sessions`, {
-        params: {
-          limit: options.limit || 20,
-          session_type: options.sessionType
-        }
-      });
+      const backendData = this._transformUpdateData(childData);
+
+      const response = await axiosInstance.put(`${API_ENDPOINTS.CHILDREN}/${childId}`, backendData);
+      
+      // Notifica di successo
+      const childName = backendData.name || childData.name || 'Bambino';
+      notificationService.childUpdated(childName);
+      
       return response.data;
     } catch (error) {
-      console.error(`Error fetching sessions for child ${childId}:`, error);
+      console.error('Error updating child:', error.response?.data || error.message);
       throw error;
     }
-  }
+  },
+  /**
+   * Delete child
+   * @param {number} childId
+   * @param {string} [childName] - Nome del bambino per notifica (opzionale)
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async deleteChild(childId, childName = null) {
+    try {
+      const response = await axiosInstance.delete(`${API_ENDPOINTS.CHILDREN}/${childId}`);
+      
+      // Notifica di successo
+      const name = childName || 'Bambino';
+      notificationService.childDeleted(name);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting child:', error.response?.data || error.message);
+      throw error;
+    }
+  },
 
   /**
-   * Get child's progress analytics
-   * @param {number} childId - Child ID
-   * @param {number} days - Number of days to analyze (default: 30)
-   * @returns {Promise<Object>} Progress analytics
+   * Get child activities
+   * @param {number} childId
+   * @param {number} [days=30] - Number of days to look back
+   * @returns {Promise<Object>}
+   */
+  async getChildActivities(childId, days = 30) {
+    try {
+      const response = await axiosInstance.get(
+        `${API_ENDPOINTS.CHILDREN}/${childId}/activities?days=${days}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching child activities:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Get child progress report
+   * @param {number} childId
+   * @param {number} [days=30] - Number of days to look back
+   * @returns {Promise<Object>}
    */
   async getChildProgress(childId, days = 30) {
     try {
-      const response = await axiosInstance.get(`/users/children/${childId}/progress`, {
-        params: { days }
-      });
+      const response = await axiosInstance.get(`/reports/child/${childId}/progress?days=${days}`);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching progress for child ${childId}:`, error);
+      console.error('Error fetching child progress:', error.response?.data || error.message);
       throw error;
     }
-  }
+  },
 
   /**
-   * Add points to child
-   * @param {number} childId - Child ID
-   * @param {Object} pointsData - Points data (points, activity_type, reason)
-   * @returns {Promise<Object>} Points addition result
+   * Get child game sessions
+   * @param {number} childId
+   * @param {number} [limit=20] - Number of sessions to fetch
+   * @returns {Promise<Object[]>}
    */
-  async addPoints(childId, pointsData) {
+  async getChildSessions(childId, limit = 20) {
     try {
-      const response = await axiosInstance.post(`/users/children/${childId}/points`, pointsData);
+      const response = await axiosInstance.get(
+        `${API_ENDPOINTS.CHILDREN}/${childId}/sessions?limit=${limit}`
+      );
       return response.data;
     } catch (error) {
-      console.error(`Error adding points to child ${childId}:`, error);
+      console.error('Error fetching child sessions:', error.response?.data || error.message);
       throw error;
     }
-  }
+  },
 
   /**
-   * Add progress note to child
-   * @param {number} childId - Child ID
-   * @param {Object} noteData - Note data (note_text, category)
-   * @returns {Promise<Object>} Success response
+   * Upload child photo/avatar
+   * @param {number} childId
+   * @param {File} file
+   * @returns {Promise<{avatar_url: string}>}
    */
-  async addProgressNote(childId, noteData) {
+  async uploadChildPhoto(childId, file) {
     try {
-      const response = await axiosInstance.post(`/users/children/${childId}/progress-notes`, noteData);
-      return response.data;
-    } catch (error) {
-      console.error(`Error adding progress note to child ${childId}:`, error);
-      throw error;
-    }
-  }
+      const formData = new FormData();
+      formData.append('file', file);
 
-  /**
-   * Get child's progress notes
-   * @param {number} childId - Child ID
-   * @param {Object} options - Query options
-   * @returns {Promise<Object>} Progress notes
-   */
-  async getProgressNotes(childId, options = {}) {
-    try {
-      const response = await axiosInstance.get(`/users/children/${childId}/progress-notes`, {
-        params: {
-          category: options.category,
-          limit: options.limit || 50
+      const response = await axiosInstance.post(
+        `${API_ENDPOINTS.CHILDREN}/${childId}/upload-photo`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         }
-      });
+      );
       return response.data;
     } catch (error) {
-      console.error(`Error fetching progress notes for child ${childId}:`, error);
+      console.error('Error uploading child photo:', error.response?.data || error.message);
       throw error;
     }
-  }
+  },
 
   /**
    * Search children with filters
-   * @param {Object} filters - Search filters
-   * @returns {Promise<Array>} Filtered children list
+   * @param {Object} filters
+   * @param {string} [filters.search] - Search in name
+   * @param {string} [filters.gender] - Filter by gender
+   * @param {number} [filters.minAge] - Minimum age
+   * @param {number} [filters.maxAge] - Maximum age
+   * @param {number} [filters.supportLevel] - Support level filter
+   * @param {number} [filters.page=1] - Page number
+   * @param {number} [filters.limit=20] - Items per page
+   * @returns {Promise<{children: Child[], total: number, page: number, pages: number}>}
    */
   async searchChildren(filters = {}) {
     try {
-      const response = await axiosInstance.get('/users/children/search', {
-        params: {
-          search_term: filters.searchTerm,
-          age_min: filters.ageMin,
-          age_max: filters.ageMax,
-          support_level: filters.supportLevel,
-          diagnosis_keyword: filters.diagnosisKeyword,
-          limit: filters.limit || 50
-        }
-      });
+      const params = new URLSearchParams();
+      
+      if (filters.search) params.append('search', filters.search);
+      if (filters.gender) params.append('gender', filters.gender);
+      if (filters.minAge) params.append('min_age', filters.minAge.toString());
+      if (filters.maxAge) params.append('max_age', filters.maxAge.toString());
+      if (filters.supportLevel) params.append('support_level', filters.supportLevel.toString());
+      if (filters.page) params.append('page', filters.page.toString());
+      if (filters.limit) params.append('limit', filters.limit.toString());
+
+      const response = await axiosInstance.get(
+        `${API_ENDPOINTS.CHILDREN}/search?${params.toString()}`
+      );
       return response.data;
     } catch (error) {
-      console.error('Error searching children:', error);
+      console.error('Error searching children:', error.response?.data || error.message);
       throw error;
     }
   }
+};
 
-  /**
-   * Export child data
-   * @param {number} childId - Child ID
-   * @param {Object} options - Export options
-   * @returns {Promise<Blob|Object>} Export data
-   */
-  async exportChildData(childId, options = {}) {
-    try {
-      const response = await axiosInstance.get(`/users/children/${childId}/export`, {
-        params: {
-          format: options.format || 'json',
-          include_activities: options.includeActivities !== false,
-          include_sessions: options.includeSessions !== false,
-          include_notes: options.includeNotes !== false,
-          date_from: options.dateFrom,
-          date_to: options.dateTo
-        },
-        responseType: options.format === 'csv' ? 'blob' : 'json'
-      });
-      return response.data;
-    } catch (error) {
-      console.error(`Error exporting data for child ${childId}:`, error);
-      throw error;
-    }
-  }
+// Named exports for individual functions
+export const {
+  getChildren,
+  getChild,
+  createChild,
+  updateChild,
+  deleteChild,
+  getChildActivities,
+  getChildProgress,
+  getChildSessions,
+  uploadChildPhoto,
+  searchChildren
+} = childrenService;
 
-  /**
-   * Get child profile templates
-   * @returns {Promise<Object>} Available templates
-   */
-  async getProfileTemplates() {
-    try {
-      const response = await axiosInstance.get('/users/children/templates');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching profile templates:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Quick child setup (minimal data)
-   * @param {Object} basicInfo - Basic child information
-   * @returns {Promise<Object>} Created child
-   */
-  async quickSetup(basicInfo) {
-    try {
-      const response = await axiosInstance.post('/users/children/quick-setup', basicInfo);
-      return response.data;
-    } catch (error) {
-      console.error('Error in quick child setup:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get children statistics for current user
-   * @returns {Promise<Object>} Children statistics
-   */
-  async getStatistics() {
-    try {
-      const response = await axiosInstance.get('/users/children/statistics');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching children statistics:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update child's sensory profile
-   * @param {number} childId - Child ID
-   * @param {Object} sensoryData - Sensory profile data
-   * @returns {Promise<Object>} Success response
-   */
-  async updateSensoryProfile(childId, sensoryData) {
-    try {
-      const response = await axiosInstance.put(`/users/children/${childId}/sensory-profile`, sensoryData);
-      return response.data;
-    } catch (error) {
-      console.error(`Error updating sensory profile for child ${childId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get child's sensory profile
-   * @param {number} childId - Child ID
-   * @param {string} domain - Specific sensory domain (optional)
-   * @returns {Promise<Object>} Sensory profile
-   */
-  async getSensoryProfile(childId, domain = null) {
-    try {
-      const response = await axiosInstance.get(`/users/children/${childId}/sensory-profile`, {
-        params: { domain }
-      });
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching sensory profile for child ${childId}:`, error);
-      throw error;
-    }
-  }
-}
-
-// Create and export singleton instance
-const childrenService = new ChildrenService();
+// Default export
 export default childrenService;
-
-// Named exports for convenience (most commonly used methods)
-export const getChildren = (includeInactive = false) => childrenService.getChildren(includeInactive);
-export const getChild = (childId) => childrenService.getChildDetail(childId);
-export const createChild = (childData) => childrenService.createChild(childData);
-export const updateChild = (childId, childData) => childrenService.updateChild(childId, childData);
-export const deleteChild = (childId) => childrenService.deleteChild(childId);
-export const getChildProgress = (childId, days = 30) => childrenService.getChildProgress(childId, days);
-export const updateSensoryProfile = (childId, sensoryData) => childrenService.updateSensoryProfile(childId, sensoryData);
-export const getSensoryProfile = (childId, domain = null) => childrenService.getSensoryProfile(childId, domain);

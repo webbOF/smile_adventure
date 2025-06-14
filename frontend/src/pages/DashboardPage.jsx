@@ -175,14 +175,10 @@ ParentDashboard.propTypes = {
 
 const ProfessionalDashboard = ({ user, dashboardData }) => (
   <div className="dashboard-container">
-    <div className="dashboard-header">
-      <div className="dashboard-welcome">
+    <div className="dashboard-header">      <div className="dashboard-welcome">
         <h2 className="dashboard-title">
           Dashboard Professionale
         </h2>
-        <p className="dashboard-subtitle">
-          Benvenuto/a Dr. {user.name || user.email}, gestisci i tuoi pazienti e monitora i progressi terapeutici.
-        </p>
       </div>
     </div>
 
@@ -309,7 +305,7 @@ const AdminDashboard = ({ user, dashboardData }) => (
           Dashboard Amministratore
         </h2>
         <p className="dashboard-subtitle">
-          Benvenuto/a {user.name || user.email}, gestisci l'intera piattaforma Smile Adventure.
+          Benvenuto/a {user.name || user.email}, gestisci l&apos;intera piattaforma Smile Adventure.
         </p>
       </div>
     </div>

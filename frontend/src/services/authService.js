@@ -90,7 +90,7 @@ export const authService = {  /**
         language: userData.language || 'en'
       };      // Aggiungi campi professionali se il ruolo è professional
       if (userData.role === 'professional') {
-        if (userData.licenseNumber) backendData.license_number = userData.licenseNumber;
+        if (userData.license_number) backendData.license_number = userData.license_number;
         if (userData.specialization) backendData.specialization = userData.specialization;
         if (userData.clinicName) backendData.clinic_name = userData.clinicName;
         if (userData.clinicAddress) backendData.clinic_address = userData.clinicAddress;

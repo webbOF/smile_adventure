@@ -8,3 +8,4 @@ export { default as Spinner } from './Spinner';
 export { default as Alert } from './Alert';
 export { default as Layout } from './Layout';
 export { default as Header } from './Header';
+export { default as ToastContainer, Toast } from './Toast';

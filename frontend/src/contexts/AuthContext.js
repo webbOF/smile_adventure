@@ -4,8 +4,10 @@
  */
 
 import React, { createContext, useContext, useReducer, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { STORAGE_KEYS, USER_ROLES } from '../utils/constants';
 import { authService } from '../services/authService';
+import notificationService from '../services/notificationService';
 
 /**
  * @typedef {Object} User
@@ -188,15 +190,19 @@ export const AuthProvider = ({ children }) => {
       
       if (credentials.remember_me) {
         localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
-      }
-
-      dispatch({
+      }      dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: { user, token: access_token }
       });
 
+      // Notifica di successo
+      notificationService.authSuccess(user.full_name || user.first_name || user.email);
+
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Errore durante il login';
+      
+      // Notifica di errore
+      notificationService.authError();
       dispatch({ type: AUTH_ACTIONS.SET_ERROR, payload: errorMessage });
       throw error;
     }
@@ -260,11 +266,12 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   };
-
   /**
    * Logout function
    */
   const logout = async () => {
+    const userName = state.currentUser?.full_name || state.currentUser?.first_name || 'Utente';
+    
     try {
       // Chiamata al backend per invalidare la sessione (se supportato)
       await authService.logout();
@@ -278,6 +285,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
 
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      
+      // Notifica di logout
+      notificationService.success('Logout effettuato', `Arrivederci, ${userName}!`);
     }
   };
 
@@ -370,6 +380,11 @@ export const useAuth = () => {
   }
   
   return context;
+};
+
+// PropTypes
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired
 };
 
 export default AuthContext;

@@ -2,9 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Layout, Button, Spinner } from '../components/UI';
+import ProgressCharts from '../components/ProgressCharts';
+import SessionTracker from '../components/SessionTracker';
+import ASDAssessmentTool from '../components/ASDAssessmentTool';
 import { getChild, deleteChild } from '../services/childrenService';
 import { ROUTES } from '../utils/constants';
 import './ChildDetailPage.css';
+
+/**
+ * Helper function to get gender label
+ * @param {string} gender - Gender code
+ * @returns {string} Gender label
+ */
+const getGenderLabel = (gender) => {
+  switch(gender) {
+    case 'M': return 'Maschio';
+    case 'F': return 'Femmina';
+    default: return 'Non specificato';
+  }
+};
 
 /**
  * Tab Navigation Component
@@ -70,18 +86,17 @@ const ProfileTab = ({ child }) => (
 
     <div className="profile-sections">
       <div className="info-section">
-        <h3>📋 Informazioni Generali</h3>
-        <div className="info-grid">
+        <h3>📋 Informazioni Generali</h3>        <div className="info-grid">
           <div className="info-item">
-            <label>Genere:</label>
-            <span>{child.gender === 'M' ? 'Maschio' : child.gender === 'F' ? 'Femmina' : 'Non specificato'}</span>
+            <span className="info-label">Genere:</span>
+            <span>{getGenderLabel(child.gender)}</span>
           </div>
           <div className="info-item">
-            <label>Data di nascita:</label>
+            <span className="info-label">Data di nascita:</span>
             <span>{new Date(child.birth_date).toLocaleDateString('it-IT')}</span>
           </div>
           <div className="info-item">
-            <label>Creato il:</label>
+            <span className="info-label">Creato il:</span>
             <span>{new Date(child.created_at).toLocaleDateString('it-IT')}</span>
           </div>
         </div>
@@ -94,9 +109,8 @@ const ProfileTab = ({ child }) => (
             <div className="diagnosis-badge">
               Diagnosi confermata
             </div>
-            {child.diagnosis_notes && (
-              <div className="diagnosis-notes">
-                <label>Note aggiuntive:</label>
+            {child.diagnosis_notes && (              <div className="diagnosis-notes">
+                <span className="info-label">Note aggiuntive:</span>
                 <p>{child.diagnosis_notes}</p>
               </div>
             )}
@@ -190,15 +204,11 @@ const ProgressTab = ({ child }) => (
       </div>
     </div>
 
-    <div className="progress-placeholder">
-      <div className="placeholder-content">
-        <div className="placeholder-icon">📊</div>
-        <h4>Grafici e Analytics</h4>
-        <p>I grafici dettagliati dei progressi saranno implementati nella prossima fase</p>
-        <Button variant="outline" size="small">
-          Visualizza Report Completo
-        </Button>
-      </div>
+    <div className="progress-charts-section">
+      <ProgressCharts 
+        childId={child.id} 
+        period={30}        chartType="line"
+      />
     </div>
   </div>
 );
@@ -221,17 +231,11 @@ const SessionsTab = ({ child }) => (
       </Button>
     </div>
 
-    <div className="sessions-placeholder">
-      <div className="placeholder-content">
-        <div className="placeholder-icon">🎮</div>
-        <h4>Tracking Sessioni</h4>
-        <p>Il monitoraggio delle sessioni di gioco sarà implementato nella prossima fase</p>
-        <div className="placeholder-features">
-          <div className="feature-item">✨ Real-time monitoring</div>
-          <div className="feature-item">📱 Mobile tracking</div>
-          <div className="feature-item">🎯 Goal-based sessions</div>
-        </div>
-      </div>
+    <div className="session-tracker-section">
+      <SessionTracker 
+        childId={child.id}
+        childName={child.name}
+      />
     </div>
   </div>
 );
@@ -245,35 +249,40 @@ SessionsTab.propTypes = {
  * @param {Object} props - Component props
  * @param {Object} props.child - Child data
  */
-const AnalyticsTab = ({ child }) => (
-  <div className="analytics-tab">
-    <div className="analytics-header">
-      <h3>📊 Analisi Comportamentali</h3>
-      <div className="analytics-actions">
-        <Button variant="outline" size="small">
-          Esporta PDF
-        </Button>
-        <Button variant="primary" size="small">
-          Genera Report
-        </Button>
-      </div>
-    </div>
+const AnalyticsTab = ({ child }) => {
+  const [assessment, setAssessment] = useState(child.assessment || null);
 
-    <div className="analytics-placeholder">
-      <div className="placeholder-content">
-        <div className="placeholder-icon">📊</div>
-        <h4>Dashboard Analytics</h4>
-        <p>Le analisi avanzate e i grafici comportamentali saranno implementati nella prossima fase</p>
-        <div className="placeholder-features">
-          <div className="feature-item">📈 Pattern comportamentali</div>
-          <div className="feature-item">🧠 Insight emotionali</div>
-          <div className="feature-item">📋 Report clinici</div>
-          <div className="feature-item">📊 Confronti temporali</div>
+  const handleAssessmentChange = (newAssessment) => {
+    setAssessment(newAssessment);
+    // Here you would typically save to backend
+    console.log('Assessment updated:', newAssessment);
+  };
+
+  return (
+    <div className="analytics-tab">
+      <div className="analytics-header">
+        <h3>📊 Analisi Comportamentali</h3>
+        <div className="analytics-actions">
+          <Button variant="outline" size="small">
+            Esporta PDF
+          </Button>
+          <Button variant="primary" size="small">
+            Genera Report
+          </Button>
         </div>
       </div>
+
+      <div className="assessment-section">
+        <ASDAssessmentTool
+          childId={child.id}
+          currentAssessment={assessment}
+          onAssessmentChange={handleAssessmentChange}
+          readOnly={false}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 AnalyticsTab.propTypes = {
   child: PropTypes.object.isRequired

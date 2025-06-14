@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout, Button, Spinner } from '../components/UI';
+import PhotoUpload from '../components/PhotoUpload';
+import SensoryProfileEditor from '../components/SensoryProfileEditor';
 import { getChild, updateChild } from '../services/childrenService';
 import { ROUTES } from '../utils/constants';
 import './ChildEditPage.css';
@@ -149,18 +151,7 @@ const ChildEditPage = () => {
       setErrors(prev => ({
         ...prev,
         [field]: null
-      }));
-    }
-  };
-
-  const handleSensoryChange = (sensoryType, value) => {
-    setFormData(prev => ({
-      ...prev,
-      sensory_profile: {
-        ...prev.sensory_profile,
-        [sensoryType]: parseInt(value)
-      }
-    }));
+      }));    }
   };
 
   const handleSubmit = async (e) => {
@@ -315,7 +306,16 @@ const ChildEditPage = () => {
                 </select>
                 {errors.gender && <span className="error-message">{errors.gender}</span>}
               </div>
-            </div>
+            </div>          </div>
+
+          {/* Photo Upload Section */}
+          <div className="form-section">
+            <h2>📷 Foto Profilo</h2>
+            <PhotoUpload
+              currentPhoto={formData.photo}
+              onPhotoChange={(file) => handleInputChange('photo', file)}
+              childName={formData.name || 'del bambino'}
+            />
           </div>
 
           {/* ASD Diagnosis Section */}
@@ -351,37 +351,13 @@ const ChildEditPage = () => {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Sensory Profile Section */}
+          </div>          {/* Sensory Profile Section */}
           <div className="form-section">
-            <h2>🌈 Profilo Sensoriale</h2>
-            <p className="section-description">
-              Valuta il livello di sensibilità del bambino per ogni area sensoriale (1 = molto bassa, 5 = molto alta)
-            </p>
-            
-            <div className="sensory-grid">
-              {Object.entries(formData.sensory_profile).map(([sensoryType, value]) => (
-                <div key={sensoryType} className="sensory-item">
-                  <label htmlFor={`sensory_${sensoryType}`}>
-                    {sensoryType.charAt(0).toUpperCase() + sensoryType.slice(1)}
-                  </label>
-                  <div className="sensory-control">
-                    <input
-                      type="range"
-                      id={`sensory_${sensoryType}`}
-                      min="1"
-                      max="5"
-                      value={value}
-                      onChange={(e) => handleSensoryChange(sensoryType, e.target.value)}
-                      className="sensory-slider"
-                      disabled={saving}
-                    />
-                    <span className={`sensory-value level-${value}`}>{value}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <SensoryProfileEditor
+              sensoryProfile={formData.sensory_profile}
+              onProfileChange={(newProfile) => handleInputChange('sensory_profile', newProfile)}
+              disabled={saving}
+            />
           </div>
 
           {/* Special Notes Section */}

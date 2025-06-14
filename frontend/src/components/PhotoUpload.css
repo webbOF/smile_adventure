@@ -1,0 +1,278 @@
+/* PhotoUpload.css */
+/* Stili per il componente PhotoUpload */
+
+.photo-upload-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.photo-upload-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.photo-upload-area {
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.photo-upload-area:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.photo-upload-area:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+.photo-upload-area.drag-active {
+  border-color: #10b981;
+  background: #ecfdf5;
+  transform: scale(1.02);
+}
+
+.photo-upload-area.error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.photo-preview-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+}
+
+.photo-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.photo-preview-container:hover .photo-overlay {
+  opacity: 1;
+}
+
+.photo-remove-btn,
+.photo-change-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.photo-remove-btn:hover {
+  background: #ef4444;
+}
+
+.photo-change-btn:hover {
+  background: #667eea;
+}
+
+.photo-upload-placeholder {
+  text-align: center;
+  padding: 20px;
+  width: 100%;
+}
+
+.upload-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #667eea;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.upload-text {
+  margin-bottom: 12px;
+}
+
+.upload-primary {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.upload-secondary {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.upload-formats {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 8px;
+}
+
+.photo-upload-error {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.photo-upload-input {
+  display: none !important;
+}
+
+.photo-upload-tips {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f0f9ff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #075985;
+}
+
+.photo-upload-tips strong {
+  color: #0c4a6e;
+}
+
+.photo-upload-tips ul {
+  margin: 12px 0 0 0;
+  padding-left: 20px;
+}
+
+.photo-upload-tips li {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .photo-upload-container {
+    max-width: 100%;
+  }
+
+  .photo-upload-area {
+    min-height: 160px;
+    padding: 16px;
+  }
+
+  .upload-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+  }
+
+  .upload-primary {
+    font-size: 1rem;
+  }
+
+  .photo-preview {
+    max-height: 140px;
+  }
+
+  .photo-overlay {
+    top: 4px;
+    right: 4px;
+    gap: 4px;
+  }
+
+  .photo-remove-btn,
+  .photo-change-btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .photo-upload-label {
+    color: #f3f4f6;
+  }
+
+  .photo-upload-area {
+    background: #1f2937;
+    border-color: #4b5563;
+  }
+
+  .photo-upload-area:hover {
+    background: #374151;
+  }
+
+  .upload-primary {
+    color: #f3f4f6;
+  }
+
+  .upload-secondary {
+    color: #d1d5db;
+  }
+
+  .upload-formats {
+    color: #9ca3af;
+  }
+
+  .photo-upload-tips {
+    background: #1e3a8a;
+    color: #bfdbfe;
+  }
+
+  .photo-upload-tips strong {
+    color: #dbeafe;
+  }
+}

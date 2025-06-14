@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, Button } from '../components/UI';
+import PhotoUpload from '../components/PhotoUpload';
+import SensoryProfileEditor from '../components/SensoryProfileEditor';
 import { createChild } from '../services/childrenService';
 import { ROUTES } from '../utils/constants';
 import './ChildCreatePage.css';
@@ -66,11 +68,11 @@ const calculateAge = (birthDate) => {
 const ChildCreatePage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [formData, setFormData] = useState({
+  const [errors, setErrors] = useState({});  const [formData, setFormData] = useState({
     name: '',
     birth_date: '',
     gender: '',
+    photo: null,
     asd_diagnosis: false,
     diagnosis_notes: '',
     special_notes: '',
@@ -94,18 +96,7 @@ const ChildCreatePage = () => {
       setErrors(prev => ({
         ...prev,
         [field]: null
-      }));
-    }
-  };
-
-  const handleSensoryChange = (sensoryType, value) => {
-    setFormData(prev => ({
-      ...prev,
-      sensory_profile: {
-        ...prev.sensory_profile,
-        [sensoryType]: parseInt(value)
-      }
-    }));
+      }));    }
   };
 
   const handleSubmit = async (e) => {
@@ -221,8 +212,17 @@ const ChildCreatePage = () => {
                   <option value="O">Altro</option>
                 </select>
                 {errors.gender && <span className="error-message">{errors.gender}</span>}
-              </div>
-            </div>
+              </div>            </div>
+          </div>
+
+          {/* Photo Upload Section */}
+          <div className="form-section">
+            <h2>📷 Foto Profilo</h2>
+            <PhotoUpload
+              currentPhoto={formData.photo}
+              onPhotoChange={(file) => handleInputChange('photo', file)}
+              childName={formData.name || 'del bambino'}
+            />
           </div>
 
           {/* ASD Diagnosis Section */}
@@ -258,37 +258,13 @@ const ChildCreatePage = () => {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Sensory Profile Section */}
+          </div>          {/* Sensory Profile Section */}
           <div className="form-section">
-            <h2>🌈 Profilo Sensoriale</h2>
-            <p className="section-description">
-              Valuta il livello di sensibilità del bambino per ogni area sensoriale (1 = molto bassa, 5 = molto alta)
-            </p>
-            
-            <div className="sensory-grid">
-              {Object.entries(formData.sensory_profile).map(([sensoryType, value]) => (
-                <div key={sensoryType} className="sensory-item">
-                  <label htmlFor={`sensory_${sensoryType}`}>
-                    {sensoryType.charAt(0).toUpperCase() + sensoryType.slice(1)}
-                  </label>
-                  <div className="sensory-control">
-                    <input
-                      type="range"
-                      id={`sensory_${sensoryType}`}
-                      min="1"
-                      max="5"
-                      value={value}
-                      onChange={(e) => handleSensoryChange(sensoryType, e.target.value)}
-                      className="sensory-slider"
-                      disabled={loading}
-                    />
-                    <span className={`sensory-value level-${value}`}>{value}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <SensoryProfileEditor
+              sensoryProfile={formData.sensory_profile}
+              onProfileChange={(newProfile) => handleInputChange('sensory_profile', newProfile)}
+              disabled={loading}
+            />
           </div>
 
           {/* Special Notes Section */}
