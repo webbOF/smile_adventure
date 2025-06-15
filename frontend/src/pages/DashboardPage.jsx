@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { useAuth } from '../hooks/useAuth';
 import { Layout, Button, Spinner, Alert, Header } from '../components/UI';
 import { USER_ROLES, ROUTES } from '../utils/constants';
+import dashboardService from '../services/dashboardService';
 import './DashboardPage.css';
 
 // Dashboard components for different roles
@@ -431,13 +432,21 @@ const DashboardPage = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        setIsLoading(true);        // API integration: dashboardService.getDashboardData() will replace mock data
-        // const data = await dashboardService.getDashboardData();
-          // Mock data for development
+        setIsLoading(true);
+        
+        // Real API integration with dashboard service
+        const data = await dashboardService.getDashboardData();
+        setDashboardData(data);
+        setIsLoading(false);
+
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Errore nel caricamento dei dati del dashboard');
+        
+        // Fallback to mock data in case of API error
         const mockData = {
           [USER_ROLES.PARENT]: {
             total_children: 2,
@@ -477,16 +486,8 @@ const DashboardPage = () => {
             ]
           }
         };
-
-        // Simulate API delay
-        setTimeout(() => {
-          setDashboardData(mockData[user.role] || {});
-          setIsLoading(false);
-        }, 1000);
-
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('Errore nel caricamento dei dati del dashboard');
+        
+        setDashboardData(mockData[user.role] || {});
         setIsLoading(false);
       }
     };

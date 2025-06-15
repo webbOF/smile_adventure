@@ -65,9 +65,16 @@ const ChildrenListPage = () => {
   const handleViewChild = (childId) => {
     navigate(ROUTES.CHILDREN_DETAIL(childId));
   };
-
   const handleEditChild = (childId) => {
     navigate(ROUTES.CHILDREN_EDIT(childId));
+  };
+
+  const handleViewProgress = (childId) => {
+    navigate(`/children/${childId}/progress`);
+  };
+
+  const handleViewActivities = (childId) => {
+    navigate(`/children/${childId}/activities`);
   };
   if (isLoading) {
     return (
@@ -159,14 +166,15 @@ const ChildrenListPage = () => {
             </Button>
           </div>
         ) : (
-          <div className="children-grid">
-            {children.map((child) => (
+          <div className="children-grid">            {children.map((child) => (
               <ChildCard
                 key={child.id}
                 child={child}
                 onDelete={() => handleDeleteChild(child.id)}
                 onEdit={() => handleEditChild(child.id)}
                 onView={() => handleViewChild(child.id)}
+                onViewProgress={() => handleViewProgress(child.id)}
+                onViewActivities={() => handleViewActivities(child.id)}
               />
             ))}
           </div>
@@ -177,7 +185,7 @@ const ChildrenListPage = () => {
 };
 
 // Child Card Component
-const ChildCard = ({ child, onDelete, onEdit, onView }) => {
+const ChildCard = ({ child, onDelete, onEdit, onView, onViewProgress, onViewActivities }) => {
   const getAgeFromBirthDate = (birthDate) => {
     if (!birthDate) return 'N/A';
     const today = new Date();
@@ -256,9 +264,7 @@ const ChildCard = ({ child, onDelete, onEdit, onView }) => {
         <div className="child-progress-text">
           {child.activities_this_week || 0}/10 attività
         </div>
-      </div>
-
-      <div className="child-card-actions">
+      </div>      <div className="child-card-actions">
         <Button 
           variant="outline" 
           size="small"
@@ -266,6 +272,22 @@ const ChildCard = ({ child, onDelete, onEdit, onView }) => {
           className="child-action-btn"
         >
           📊 Visualizza
+        </Button>
+        <Button 
+          variant="outline" 
+          size="small"
+          onClick={onViewProgress}
+          className="child-action-btn"
+        >
+          📈 Progressi
+        </Button>
+        <Button 
+          variant="outline" 
+          size="small"
+          onClick={onViewActivities}
+          className="child-action-btn"
+        >
+          🎯 Attività
         </Button>
         <Button 
           variant="outline" 
@@ -301,7 +323,9 @@ ChildCard.propTypes = {
   }).isRequired,
   onDelete: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
-  onView: PropTypes.func.isRequired
+  onView: PropTypes.func.isRequired,
+  onViewProgress: PropTypes.func.isRequired,
+  onViewActivities: PropTypes.func.isRequired
 };
 
 export default ChildrenListPage;

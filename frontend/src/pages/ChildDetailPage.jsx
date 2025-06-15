@@ -418,8 +418,23 @@ const ChildDetailPage = () => {
               ← Torna alla lista
             </Link>
             <h1>{child.name}</h1>
-          </div>
-          <div className="header-actions">
+          </div>          <div className="header-actions">
+            <Button 
+              as={Link}
+              to={`/children/${child.id}/progress`}
+              variant="outline"
+              title="Visualizza progressi dettagliati"
+            >
+              📈 Progressi
+            </Button>
+            <Button 
+              as={Link}
+              to={`/children/${child.id}/activities`}
+              variant="outline"
+              title="Visualizza attività del bambino"
+            >
+              🎯 Attività
+            </Button>
             <Button 
               variant="outline" 
               onClick={handleEdit}

@@ -1,0 +1,198 @@
+/* Export Component Styles */
+.export-component {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+
+.export-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.export-header h3 {
+  color: #1a202c;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.export-header p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Export Options */
+.export-options {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.export-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+
+.export-option:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+}
+
+.export-option.selected {
+  border-color: #3b82f6;
+  background: #dbeafe;
+}
+
+.export-icon {
+  font-size: 1.5rem;
+}
+
+.export-label {
+  font-weight: 600;
+  color: #374151;
+  flex: 1;
+}
+
+/* Export Actions */
+.export-actions {
+  margin-bottom: 1.5rem;
+}
+
+.btn-export {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-export:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.btn-export:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Export Summary */
+.export-summary {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.export-summary h4 {
+  color: #374151;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+}
+
+.export-summary ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.export-summary li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Professional Options */
+.professional-export-options {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.5rem;
+}
+
+.professional-export-options h4 {
+  color: #374151;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+}
+
+.professional-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.professional-checkboxes label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.professional-checkboxes input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .export-component {
+    padding: 1rem;
+  }
+  
+  .export-option {
+    padding: 0.75rem;
+  }
+  
+  .export-icon {
+    font-size: 1.25rem;
+  }
+  
+  .btn-export {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+}

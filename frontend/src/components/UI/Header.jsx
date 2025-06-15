@@ -77,11 +77,11 @@ const Header = ({
     { label: 'Pazienti', path: '/clinical/patients', icon: '�' },
     { label: 'Analytics', path: '/clinical/analytics', icon: '�' }
   ];
-
   // Navigation items per admin
   const getAdminNavItems = () => [
-    { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: '📊' },
-    { label: 'Utenti', path: ROUTES.ADMIN_USERS, icon: '👥' },
+    { label: 'Admin Dashboard', path: '/admin', icon: '⚡' },
+    { label: 'Gestione Utenti', path: '/admin/users', icon: '👥' },
+    { label: 'Analytics', path: '/admin/analytics', icon: '�' },
     { label: 'Sistema', path: '/admin/system', icon: '⚙️' },
     { label: 'Profilo', path: ROUTES.PROFILE, icon: '👤' }
   ];

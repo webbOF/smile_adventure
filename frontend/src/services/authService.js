@@ -185,6 +185,20 @@ export const authService = {  /**
       console.error('Password change error:', error.response?.data || error.message);
       throw error;
     }
+  },
+
+  /**
+   * Get current user profile
+   * @returns {Promise<User>}
+   */
+  async getMe() {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.AUTH_ME);
+      return response.data;
+    } catch (error) {
+      console.error('Get current user error:', error.response?.data || error.message);
+      throw error;
+    }
   }
 };
 

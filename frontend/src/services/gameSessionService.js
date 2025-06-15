@@ -4,6 +4,7 @@
  */
 
 import axiosInstance from './axiosInstance';
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 /**
  * Avvia una nuova sessione di gioco
@@ -19,7 +20,7 @@ import axiosInstance from './axiosInstance';
  */
 export const startGameSession = async (sessionData) => {
   try {
-    const response = await axiosInstance.post('/game-sessions', {
+    const response = await axiosInstance.post(API_ENDPOINTS.GAME_SESSION_CREATE, {
       child_id: sessionData.child_id,
       session_type: sessionData.session_type,
       scenario_name: sessionData.scenario_name,
@@ -46,7 +47,7 @@ export const startGameSession = async (sessionData) => {
  */
 export const updateGameSession = async (sessionId, updateData) => {
   try {
-    const response = await axiosInstance.patch(`/game-sessions/${sessionId}`, updateData);
+    const response = await axiosInstance.patch(API_ENDPOINTS.GAME_SESSION_UPDATE(sessionId), updateData);
     return response.data;
   } catch (error) {
     console.error('Error updating game session:', error);
@@ -74,7 +75,7 @@ export const updateGameSession = async (sessionId, updateData) => {
  */
 export const endGameSession = async (sessionId, endData) => {
   try {
-    const response = await axiosInstance.patch(`/game-sessions/${sessionId}/end`, {
+    const response = await axiosInstance.patch(API_ENDPOINTS.GAME_SESSION_COMPLETE(sessionId), {
       ended_at: new Date().toISOString(),
       completion_status: endData.completion_status || 'completed',
       exit_reason: endData.exit_reason || 'normal_completion',
@@ -109,7 +110,7 @@ export const endGameSession = async (sessionId, endData) => {
  */
 export const addParentFeedback = async (sessionId, parentData) => {
   try {
-    const response = await axiosInstance.patch(`/game-sessions/${sessionId}/parent-feedback`, {
+    const response = await axiosInstance.patch(API_ENDPOINTS.GAME_SESSION_PARENT_FEEDBACK(sessionId), {
       parent_notes: parentData.parent_notes,
       parent_rating: parentData.parent_rating,
       parent_observed_behavior: parentData.parent_observed_behavior || {}
@@ -141,7 +142,7 @@ export const getChildGameSessions = async (childId, options = {}) => {
     if (options.date_from) params.append('date_from', options.date_from);
     if (options.date_to) params.append('date_to', options.date_to);
 
-    const response = await axiosInstance.get(`/children/${childId}/game-sessions?${params}`);
+    const response = await axiosInstance.get(`${API_ENDPOINTS.CHILD_GAME_SESSIONS(childId)}?${params}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching child game sessions:', error);
@@ -156,7 +157,7 @@ export const getChildGameSessions = async (childId, options = {}) => {
  */
 export const getGameSession = async (sessionId) => {
   try {
-    const response = await axiosInstance.get(`/game-sessions/${sessionId}`);
+    const response = await axiosInstance.get(API_ENDPOINTS.GAME_SESSION_BY_ID(sessionId));
     return response.data;
   } catch (error) {
     console.error('Error fetching game session:', error);
@@ -180,7 +181,7 @@ export const getChildSessionStats = async (childId, options = {}) => {
     if (options.date_from) params.append('date_from', options.date_from);
     if (options.date_to) params.append('date_to', options.date_to);
 
-    const response = await axiosInstance.get(`/children/${childId}/session-stats?${params}`);
+    const response = await axiosInstance.get(`${API_ENDPOINTS.CHILD_SESSION_STATS(childId)}?${params}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching child session stats:', error);
@@ -202,7 +203,7 @@ export const getChildProgressAnalysis = async (childId, options = {}) => {
     if (options.days) params.append('days', options.days);
     if (options.metric_type) params.append('metric_type', options.metric_type);
 
-    const response = await axiosInstance.get(`/reports/child/${childId}/progress?${params}`);
+    const response = await axiosInstance.get(`${API_ENDPOINTS.CHILD_PROGRESS_REPORT(childId)}?${params}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching child progress analysis:', error);
@@ -217,7 +218,7 @@ export const getChildProgressAnalysis = async (childId, options = {}) => {
  */
 export const pauseGameSession = async (sessionId) => {
   try {
-    const response = await axiosInstance.patch(`/game-sessions/${sessionId}/pause`);
+    const response = await axiosInstance.patch(API_ENDPOINTS.GAME_SESSION_PAUSE(sessionId));
     return response.data;
   } catch (error) {
     console.error('Error pausing game session:', error);
@@ -232,7 +233,7 @@ export const pauseGameSession = async (sessionId) => {
  */
 export const resumeGameSession = async (sessionId) => {
   try {
-    const response = await axiosInstance.patch(`/game-sessions/${sessionId}/resume`);
+    const response = await axiosInstance.patch(API_ENDPOINTS.GAME_SESSION_RESUME(sessionId));
     return response.data;
   } catch (error) {
     console.error('Error resuming game session:', error);

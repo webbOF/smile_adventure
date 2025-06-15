@@ -204,6 +204,9 @@ require_professional = require_role([UserRole.PROFESSIONAL])
 # Admin role dependency
 require_admin = require_role([UserRole.ADMIN])
 
+# Parent or Professional dependency (for professional search, etc.)
+require_parent_or_professional = require_role([UserRole.PARENT, UserRole.PROFESSIONAL])
+
 # Professional or Admin dependency (for clinic management)
 require_professional_or_admin = require_role([UserRole.PROFESSIONAL, UserRole.ADMIN])
 

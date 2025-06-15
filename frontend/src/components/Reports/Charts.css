@@ -1,0 +1,81 @@
+/* Charts Components Styles */
+
+/* Base Chart Styles */
+.progress-chart,
+.bar-chart,
+.donut-chart {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chart-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.chart-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Empty States */
+.progress-chart-empty,
+.bar-chart-empty,
+.donut-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Donut Chart Legend */
+.chart-legend {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  flex: 1;
+  color: #374151;
+}
+
+.legend-value {
+  font-weight: 600;
+  color: #1a202c;
+}
+
+/* Responsive Charts */
+@media (max-width: 768px) {
+  .chart-title {
+    font-size: 0.9rem;
+  }
+  
+  .legend-item {
+    font-size: 0.8rem;
+  }
+}

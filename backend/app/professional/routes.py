@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.core.database import get_db
-from app.auth.dependencies import get_current_user, require_professional
+from app.auth.dependencies import get_current_user, require_professional, require_parent_or_professional
 from app.users.models import User
 from app.users.schemas import ProfessionalProfileCreate, ProfessionalProfileUpdate, ProfessionalProfileResponse
 from app.users.profile_routes import (
@@ -61,12 +61,14 @@ async def search_professionals(
     location: Optional[str] = Query(None, description="Filter by location (city, state, or country)"),
     accepting_patients: Optional[bool] = Query(None, description="Filter by professionals accepting new patients"),
     limit: int = Query(50, ge=1, le=100, description="Maximum number of results"),
-    current_user: User = Depends(require_professional),
+    current_user: User = Depends(require_parent_or_professional),
     db: Session = Depends(get_db)
 ):
     """
     Search professionals with filters (Task 16 endpoint)
-    Redirects to existing implementation in profile_routes
+    Accessible by both PARENT and PROFESSIONAL users
+    - PARENT: Find specialists for their children (pediatricians, therapists, etc.)
+    - PROFESSIONAL: Network with colleagues and find referral specialists
     """
     # Map accepting_patients to accepts_new_patients parameter name
     accepts_new_patients = accepting_patients if accepting_patients is not None else True

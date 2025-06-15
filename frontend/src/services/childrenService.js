@@ -307,37 +307,56 @@ export const childrenService = {
       throw error;
     }
   },
-
   /**
-   * Get child activities
-   * @param {number} childId
-   * @param {number} [days=30] - Number of days to look back
-   * @returns {Promise<Object>}
+   * Get child activities list (Enhanced version)
+   * @param {number} childId - Child ID
+   * @param {Object} options - Query options
+   * @param {string} options.period - Time period (week, month, year)
+   * @param {string} options.type - Activity type filter
+   * @param {boolean} options.completed - Filter by completion status
+   * @param {number} options.limit - Results limit
+   * @returns {Promise<Array>} List of activities
    */
-  async getChildActivities(childId, days = 30) {
+  async getChildActivities(childId, options = {}) {
     try {
-      const response = await axiosInstance.get(
-        `${API_ENDPOINTS.CHILDREN}/${childId}/activities?days=${days}`
-      );
+      const params = new URLSearchParams();
+      if (options.period) params.append('period', options.period);
+      if (options.type) params.append('type', options.type);
+      if (options.completed !== undefined) params.append('completed', options.completed);
+      if (options.limit) params.append('limit', options.limit);
+
+      const url = `${API_ENDPOINTS.CHILD_ACTIVITIES(childId)}?${params}`;
+      const response = await axiosInstance.get(url);
+      
       return response.data;
     } catch (error) {
       console.error('Error fetching child activities:', error.response?.data || error.message);
+      notificationService.showError('Errore nel caricamento delle attività');
       throw error;
     }
   },
 
   /**
-   * Get child progress report
-   * @param {number} childId
-   * @param {number} [days=30] - Number of days to look back
-   * @returns {Promise<Object>}
+   * Get child progress data (Enhanced version)
+   * @param {number} childId - Child ID  
+   * @param {Object} options - Query options
+   * @param {number} options.days - Days period (default 30)
+   * @param {string} options.metric - Specific metric to track
+   * @returns {Promise<Object>} Progress data and metrics
    */
-  async getChildProgress(childId, days = 30) {
+  async getChildProgress(childId, options = {}) {
     try {
-      const response = await axiosInstance.get(`/reports/child/${childId}/progress?days=${days}`);
+      const params = new URLSearchParams();
+      if (options.days) params.append('days', options.days);
+      if (options.metric) params.append('metric', options.metric);
+
+      const url = `${API_ENDPOINTS.CHILD_PROGRESS_DATA(childId)}?${params}`;
+      const response = await axiosInstance.get(url);
+      
       return response.data;
     } catch (error) {
       console.error('Error fetching child progress:', error.response?.data || error.message);
+      notificationService.showError('Errore nel caricamento dei progressi');
       throw error;
     }
   },
@@ -347,11 +366,10 @@ export const childrenService = {
    * @param {number} childId
    * @param {number} [limit=20] - Number of sessions to fetch
    * @returns {Promise<Object[]>}
-   */
-  async getChildSessions(childId, limit = 20) {
+   */  async getChildSessions(childId, limit = 20) {
     try {
       const response = await axiosInstance.get(
-        `${API_ENDPOINTS.CHILDREN}/${childId}/sessions?limit=${limit}`
+        `${API_ENDPOINTS.CHILD_SESSIONS(childId)}?limit=${limit}`
       );
       return response.data;
     } catch (error) {
@@ -369,10 +387,8 @@ export const childrenService = {
   async uploadChildPhoto(childId, file) {
     try {
       const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await axiosInstance.post(
-        `${API_ENDPOINTS.CHILDREN}/${childId}/upload-photo`,
+      formData.append('file', file);      const response = await axiosInstance.post(
+        API_ENDPOINTS.CHILD_UPLOAD_PHOTO(childId),
         formData,
         {
           headers: {
@@ -402,8 +418,7 @@ export const childrenService = {
   async searchChildren(filters = {}) {
     try {
       const params = new URLSearchParams();
-      
-      if (filters.search) params.append('search', filters.search);
+        if (filters.search) params.append('search', filters.search);
       if (filters.gender) params.append('gender', filters.gender);
       if (filters.minAge) params.append('min_age', filters.minAge.toString());
       if (filters.maxAge) params.append('max_age', filters.maxAge.toString());
@@ -412,11 +427,179 @@ export const childrenService = {
       if (filters.limit) params.append('limit', filters.limit.toString());
 
       const response = await axiosInstance.get(
-        `${API_ENDPOINTS.CHILDREN}/search?${params.toString()}`
+        `${API_ENDPOINTS.CHILDREN_SEARCH}?${params.toString()}`
       );
       return response.data;
     } catch (error) {
       console.error('Error searching children:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Transform child data from backend to frontend format
+   * @param {Object} childData - Backend child data
+   * @returns {Object} Frontend formatted child data
+   */
+  transformChildData(childData) {
+    return {
+      id: childData.id,
+      name: childData.name,
+      age: childData.age,
+      dateOfBirth: childData.date_of_birth,
+      gender: childData.gender,
+      avatarUrl: childData.avatar_url,
+      parentId: childData.parent_id,
+      points: childData.points || 0,
+      level: childData.level || 1,
+      achievements: childData.achievements || [],
+      diagnosis: childData.diagnosis,
+      supportLevel: childData.support_level,
+      diagnosisDate: childData.diagnosis_date,
+      diagnosingProfessional: childData.diagnosing_professional,
+      sensoryProfile: childData.sensory_profile,
+      behavioralNotes: childData.behavioral_notes,
+      communicationStyle: childData.communication_style,
+      communicationNotes: childData.communication_notes,
+      createdAt: childData.created_at,
+      updatedAt: childData.updated_at
+    };
+  },
+  // ================================
+  // CHILDREN ENHANCED FEATURES
+  // ================================
+
+  /**
+   * Add points to child
+   * @param {number} childId - Child ID
+   * @param {Object} pointsData - Points data
+   * @param {number} pointsData.points - Points to add
+   * @param {string} pointsData.reason - Reason for points
+   * @param {string} pointsData.activity_type - Type of activity
+   * @returns {Promise<Object>} Updated child data
+   */
+  async addChildPoints(childId, pointsData) {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CHILD_POINTS(childId), pointsData);
+      notificationService.showSuccess(`Aggiunti ${pointsData.points} punti!`);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding child points:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'aggiunta dei punti');
+      throw error;
+    }
+  },
+
+  /**
+   * Verify child activity completion
+   * @param {number} childId - Child ID
+   * @param {number} activityId - Activity ID
+   * @param {Object} verificationData - Verification data
+   * @param {boolean} verificationData.completed - Completion status
+   * @param {number} verificationData.parent_rating - Parent rating (1-10)
+   * @param {string} verificationData.parent_notes - Parent observations
+   * @returns {Promise<Object>} Verification result
+   */
+  async verifyChildActivity(childId, activityId, verificationData) {
+    try {
+      const response = await axiosInstance.put(
+        API_ENDPOINTS.CHILD_ACTIVITY_VERIFY(childId, activityId), 
+        verificationData
+      );
+      
+      notificationService.showSuccess('Attività verificata con successo');
+      return response.data;
+    } catch (error) {
+      console.error('Error verifying activity:', error.response?.data || error.message);
+      notificationService.showError('Errore nella verifica dell\'attività');
+      throw error;
+    }
+  },
+
+  /**
+   * Get child progress notes
+   * @param {number} childId - Child ID
+   * @param {Object} options - Query options
+   * @param {number} options.limit - Results limit
+   * @param {string} options.period - Time period filter
+   * @returns {Promise<Array>} List of progress notes
+   */
+  async getChildProgressNotes(childId, options = {}) {
+    try {
+      const params = new URLSearchParams();
+      if (options.limit) params.append('limit', options.limit);
+      if (options.period) params.append('period', options.period);
+
+      const url = `${API_ENDPOINTS.CHILD_PROGRESS_NOTES(childId)}?${params}`;
+      const response = await axiosInstance.get(url);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching progress notes:', error.response?.data || error.message);
+      notificationService.showError('Errore nel caricamento delle note');
+      throw error;
+    }
+  },
+
+  /**
+   * Add progress note for child
+   * @param {number} childId - Child ID
+   * @param {Object} noteData - Note data
+   * @param {string} noteData.content - Note content
+   * @param {string} noteData.category - Note category (behavior, communication, social, etc.)
+   * @param {Array} noteData.tags - Note tags
+   * @param {boolean} noteData.milestone - Is this a milestone?
+   * @returns {Promise<Object>} Created note
+   */
+  async addChildProgressNote(childId, noteData) {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CHILD_PROGRESS_NOTES(childId), noteData);
+      notificationService.showSuccess('Nota aggiunta con successo');
+      return response.data;
+    } catch (error) {
+      console.error('Error adding progress note:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'aggiunta della nota');
+      throw error;
+    }
+  },
+
+  /**
+   * Get child sensory profile
+   * @param {number} childId - Child ID
+   * @returns {Promise<Object>} Sensory profile data
+   */
+  async getChildSensoryProfile(childId) {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.CHILD_SENSORY_PROFILE(childId));
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching sensory profile:', error.response?.data || error.message);
+      notificationService.showError('Errore nel caricamento del profilo sensoriale');
+      throw error;
+    }
+  },
+
+  /**
+   * Update child sensory profile
+   * @param {number} childId - Child ID
+   * @param {Object} profileData - Sensory profile data
+   * @param {Object} profileData.visual - Visual sensitivities
+   * @param {Object} profileData.auditory - Auditory sensitivities
+   * @param {Object} profileData.tactile - Tactile sensitivities
+   * @param {Object} profileData.vestibular - Vestibular sensitivities
+   * @param {Object} profileData.proprioceptive - Proprioceptive sensitivities
+   * @param {Object} profileData.gustatory - Gustatory sensitivities
+   * @param {Object} profileData.olfactory - Olfactory sensitivities
+   * @returns {Promise<Object>} Updated sensory profile
+   */
+  async updateChildSensoryProfile(childId, profileData) {
+    try {
+      const response = await axiosInstance.put(API_ENDPOINTS.CHILD_SENSORY_PROFILE(childId), profileData);
+      notificationService.showSuccess('Profilo sensoriale aggiornato');
+      return response.data;
+    } catch (error) {
+      console.error('Error updating sensory profile:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'aggiornamento del profilo sensoriale');
       throw error;
     }
   }

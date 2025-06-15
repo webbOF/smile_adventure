@@ -56,12 +56,13 @@ export const ROUTES = {
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',
-  
-  // Children routes (for PARENT role)
+    // Children routes (for PARENT role)
   CHILDREN: '/children',
   CHILDREN_NEW: '/children/new',
-  CHILDREN_EDIT: (id) => `/children/${id}/edit`,
-  CHILDREN_DETAIL: (id) => `/children/${id}`,
+  CHILDREN_DETAIL: '/children/:id',
+  CHILDREN_EDIT: '/children/:id/edit',
+  CHILD_PROGRESS: '/children/:childId/progress',
+  CHILD_ACTIVITIES: '/children/:childId/activities',
   
   // Professional routes
   PROFESSIONAL_PROFILE: '/professional/profile',
@@ -70,11 +71,12 @@ export const ROUTES = {
   
   // Reports routes
   REPORTS: '/reports',
-  CHILD_PROGRESS: (childId) => `/reports/child/${childId}/progress`,
-  
-  // Admin routes
-  ADMIN_DASHBOARD: '/admin/dashboard',
+  CHILD_PROGRESS_REPORT: (childId) => `/reports/child/${childId}/progress`,
+    // Admin routes
+  ADMIN_DASHBOARD: '/admin',
   ADMIN_USERS: '/admin/users',
+  ADMIN_ANALYTICS: '/admin/analytics',
+  ADMIN_SYSTEM: '/admin/system',
   
   // Password reset
   PASSWORD_RESET_REQUEST: '/password-reset',
@@ -132,4 +134,22 @@ export const DEFAULTS = {
   LANGUAGE: 'en',
   PAGINATION_LIMIT: 20,
   PROGRESS_REPORT_DAYS: 30
+};
+
+/**
+ * Helper functions for generating dynamic routes
+ */
+export const generateChildRoute = (childId, type = 'detail') => {
+  switch (type) {
+    case 'detail':
+      return `/children/${childId}`;
+    case 'edit':
+      return `/children/${childId}/edit`;
+    case 'progress':
+      return `/children/${childId}/progress`;
+    case 'activities':
+      return `/children/${childId}/activities`;
+    default:
+      return `/children/${childId}`;
+  }
 };

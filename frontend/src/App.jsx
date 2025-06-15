@@ -17,9 +17,13 @@ import {
   ChildDetailPage,
   ChildCreatePage,
   ChildEditPage,
+  ChildProgressPage,
+  ChildActivitiesPage,
   ProfilePage,
   ProfessionalProfilePage,
-  ProfessionalSearchPage
+  ProfessionalSearchPage,
+  AdminDashboardPage,
+  ReportsPage
 } from './pages';
 
 // Components
@@ -134,15 +138,30 @@ const AppRoutes = () => {
             <ChildDetailPage />
           </ProtectedRoute>
         }
-      />
-      <Route
+      />      <Route
         path="/children/:id/edit"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
             <ChildEditPage />
           </ProtectedRoute>
         }
-      />      {/* Professional-only routes */}
+      />
+      <Route
+        path="/children/:childId/progress"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+            <ChildProgressPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/children/:childId/activities"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+            <ChildActivitiesPage />
+          </ProtectedRoute>
+        }
+      />{/* Professional-only routes */}
       <Route
         path="/professional/profile"
         element={
@@ -158,8 +177,7 @@ const AppRoutes = () => {
             <ProfessionalSearchPage />
           </ProtectedRoute>
         }
-      />
-      <Route
+      />      <Route
         path="/clinical/*"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.PROFESSIONAL]}>
@@ -168,15 +186,33 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Admin-only routes */}
+      {/* Reports routes - Available to Parents and Professionals */}
       <Route
-        path="/admin/*"
+        path="/reports"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]}>
-            <div>Admin routes (TODO: implement)</div>
+          <ProtectedRoute allowedRoles={[USER_ROLES.PARENT, USER_ROLES.PROFESSIONAL]}>
+            <ReportsPage />
           </ProtectedRoute>
         }
-      />      {/* Profile routes (available to all authenticated users) */}
+      />
+
+      {/* Admin-only routes */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]}>
+            <AdminDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]}>
+            <AdminDashboardPage />
+          </ProtectedRoute>
+        }
+      />{/* Profile routes (available to all authenticated users) */}
       <Route
         path="/profile"
         element={
