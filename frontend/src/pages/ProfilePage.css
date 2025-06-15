@@ -552,3 +552,81 @@
   0% { transform: translate(-50%, -50%) rotate(0deg); }
   100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
+
+/* Security Tab Styles */
+.security-form {
+  max-width: 500px;
+}
+
+.security-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.security-form .password-requirements {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: rgba(74, 144, 226, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid var(--color-primary, #4a90e2);
+}
+
+.security-form .password-requirements p {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: var(--color-primary, #4a90e2);
+  font-size: 0.9rem;
+}
+
+.security-form .password-requirements ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  list-style-type: disc;
+}
+
+.security-form .password-requirements li {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #666);
+  margin-bottom: 0.2rem;
+}
+
+.security-info {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(80, 200, 120, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid var(--color-success, #50c878);
+}
+
+.security-info h4 {
+  margin: 0 0 1rem 0;
+  color: var(--color-success, #50c878);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.security-info ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  list-style-type: disc;
+}
+
+.security-info li {
+  font-size: 0.9rem;
+  color: var(--color-text, #333);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+/* Error states for security form */
+.security-form input.error {
+  border-color: var(--color-error, #dc3545);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.security-form .error-message {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--color-error, #dc3545);
+  font-weight: 500;
+}

@@ -5,6 +5,7 @@ import { Layout, Button, Spinner } from '../components/UI';
 import ProgressCharts from '../components/ProgressCharts';
 import SessionTracker from '../components/SessionTracker';
 import ASDAssessmentTool from '../components/ASDAssessmentTool';
+import { ProgressNotes, SensoryProfile, GoalTracking } from '../components/Children';
 import { getChild, deleteChild } from '../services/childrenService';
 import { ROUTES } from '../utils/constants';
 import './ChildDetailPage.css';
@@ -33,7 +34,10 @@ const TabNavigation = ({ activeTab, onTabChange }) => {
     { id: 'profile', label: 'Profilo', icon: '👤' },
     { id: 'progress', label: 'Progressi', icon: '📈' },
     { id: 'sessions', label: 'Sessioni', icon: '🎮' },
-    { id: 'analytics', label: 'Analisi', icon: '📊' }
+    { id: 'analytics', label: 'Analisi', icon: '📊' },
+    { id: 'notes', label: 'Note Progressi', icon: '📝' },
+    { id: 'sensory', label: 'Profilo Sensoriale', icon: '🌈' },
+    { id: 'goals', label: 'Obiettivi', icon: '🎯' }
   ];
 
   return (
@@ -342,7 +346,6 @@ const ChildDetailPage = () => {
       setDeleting(false);
     }
   };
-
   const renderTabContent = () => {
     switch (activeTab) {
       case 'profile':
@@ -353,6 +356,12 @@ const ChildDetailPage = () => {
         return <SessionsTab child={child} />;
       case 'analytics':
         return <AnalyticsTab child={child} />;
+      case 'notes':
+        return <ProgressNotes childId={child.id} childName={child.name} />;
+      case 'sensory':
+        return <SensoryProfile childId={child.id} childName={child.name} />;
+      case 'goals':
+        return <GoalTracking childId={child.id} childName={child.name} />;
       default:
         return <ProfileTab child={child} />;
     }

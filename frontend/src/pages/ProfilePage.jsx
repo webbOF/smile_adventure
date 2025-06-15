@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout, Button, Card } from '../components/UI';
 import profileService from '../services/profileService';
+import { authService } from '../services/authService';
 import notificationService from '../services/notificationService';
 import './ProfilePage.css';
 
@@ -30,10 +31,15 @@ const ProfilePage = () => {
       share_progress: false,
       allow_contact: false
     }
-  });
-  const [avatar, setAvatar] = useState(null);
+  });  const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [profileCompletion, setProfileCompletion] = useState(null);
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    new_password_confirm: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState({});
 
   useEffect(() => {
     loadProfileData();
@@ -486,12 +492,180 @@ const ProfilePage = () => {
                 <span>Permetti Contatto da Altri Utenti</span>
               </label>
             </div>
-          </div>
-
-          <Button type="submit" disabled={loading} className="primary">
+          </div>          <Button type="submit" disabled={loading} className="primary">
             {loading ? 'Salvando...' : 'Salva Preferenze'}
           </Button>
         </form>
+      </div>
+    </Card>
+  );
+
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    
+    const errors = [];
+    
+    if (password.length < minLength) {
+      errors.push(`Almeno ${minLength} caratteri`);
+    }
+    if (!hasUpperCase) {
+      errors.push('Almeno una lettera maiuscola');
+    }
+    if (!hasLowerCase) {
+      errors.push('Almeno una lettera minuscola');
+    }
+    if (!hasNumbers) {
+      errors.push('Almeno un numero');
+    }
+    
+    return errors;
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    
+    // Validazione
+    const newErrors = {};
+    
+    if (!passwordData.current_password) {
+      newErrors.current_password = 'Password attuale richiesta';
+    }
+    
+    if (!passwordData.new_password) {
+      newErrors.new_password = 'Nuova password richiesta';
+    } else {
+      const passwordValidation = validatePassword(passwordData.new_password);
+      if (passwordValidation.length > 0) {
+        newErrors.new_password = passwordValidation.join(', ');
+      }
+    }
+    
+    if (!passwordData.new_password_confirm) {
+      newErrors.new_password_confirm = 'Conferma password richiesta';
+    } else if (passwordData.new_password !== passwordData.new_password_confirm) {
+      newErrors.new_password_confirm = 'Le password non corrispondono';
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setPasswordErrors(newErrors);
+      return;
+    }
+    
+    setLoading(true);
+    setPasswordErrors({});
+    
+    try {
+      await authService.changePassword(passwordData);
+      
+      // Reset form
+      setPasswordData({
+        current_password: '',
+        new_password: '',
+        new_password_confirm: ''
+      });
+      
+      notificationService.showSuccess('Password cambiata con successo');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      
+      if (error.response?.status === 400) {
+        setPasswordErrors({ 
+          current_password: 'Password attuale non corretta' 
+        });
+      } else {
+        notificationService.showError('Errore nel cambio password');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderSecurityTab = () => (
+    <Card>
+      <div className="profile-section">
+        <h3>Sicurezza</h3>
+        
+        <form onSubmit={handlePasswordChange} className="security-form">
+          <div className="form-group">
+            <label htmlFor="current_password">Password Attuale *</label>
+            <input
+              type="password"
+              id="current_password"
+              value={passwordData.current_password}
+              onChange={(e) => setPasswordData({
+                ...passwordData,
+                current_password: e.target.value
+              })}
+              className={passwordErrors.current_password ? 'error' : ''}
+              placeholder="Inserisci la password attuale"
+            />
+            {passwordErrors.current_password && (
+              <span className="error-message">{passwordErrors.current_password}</span>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="new_password">Nuova Password *</label>
+            <input
+              type="password"
+              id="new_password"
+              value={passwordData.new_password}
+              onChange={(e) => setPasswordData({
+                ...passwordData,
+                new_password: e.target.value
+              })}
+              className={passwordErrors.new_password ? 'error' : ''}
+              placeholder="Inserisci la nuova password"
+            />
+            {passwordErrors.new_password && (
+              <span className="error-message">{passwordErrors.new_password}</span>
+            )}
+            <div className="password-requirements">
+              <p>La password deve contenere:</p>
+              <ul>
+                <li>Almeno 8 caratteri</li>
+                <li>Almeno una lettera maiuscola</li>
+                <li>Almeno una lettera minuscola</li>
+                <li>Almeno un numero</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="new_password_confirm">Conferma Nuova Password *</label>
+            <input
+              type="password"
+              id="new_password_confirm"
+              value={passwordData.new_password_confirm}
+              onChange={(e) => setPasswordData({
+                ...passwordData,
+                new_password_confirm: e.target.value
+              })}
+              className={passwordErrors.new_password_confirm ? 'error' : ''}
+              placeholder="Conferma la nuova password"
+            />
+            {passwordErrors.new_password_confirm && (
+              <span className="error-message">{passwordErrors.new_password_confirm}</span>
+            )}
+          </div>
+
+          <Button type="submit" disabled={loading} className="primary">
+            {loading ? 'Cambiando Password...' : 'Cambia Password'}
+          </Button>
+        </form>
+
+        <div className="security-info">
+          <h4>Suggerimenti per la Sicurezza</h4>
+          <ul>
+            <li>Usa una password unica per questo account</li>
+            <li>Cambia la password regolarmente</li>
+            <li>Non condividere la tua password con nessuno</li>
+            <li>Usa un gestore di password per maggiore sicurezza</li>
+          </ul>
+        </div>
       </div>
     </Card>
   );
@@ -516,19 +690,23 @@ const ProfilePage = () => {
             onClick={() => setActiveTab('avatar')}
           >
             Avatar
-          </button>
-          <button
+          </button>          <button
             className={`tab-button ${activeTab === 'preferences' ? 'active' : ''}`}
             onClick={() => setActiveTab('preferences')}
           >
             Preferenze
           </button>
-        </div>
-
-        <div className="profile-content">
+          <button
+            className={`tab-button ${activeTab === 'security' ? 'active' : ''}`}
+            onClick={() => setActiveTab('security')}
+          >
+            Sicurezza
+          </button>
+        </div>        <div className="profile-content">
           {activeTab === 'general' && renderGeneralTab()}
           {activeTab === 'avatar' && renderAvatarTab()}
           {activeTab === 'preferences' && renderPreferencesTab()}
+          {activeTab === 'security' && renderSecurityTab()}
         </div>
       </div>
     </Layout>
