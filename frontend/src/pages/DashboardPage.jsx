@@ -440,10 +440,10 @@ const DashboardPage = () => {
         // Real API integration with dashboard service
         const data = await dashboardService.getDashboardData();
         setDashboardData(data);
-        setIsLoading(false);
-
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
+        setIsLoading(false);      } catch (err) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching dashboard data:', err);
+        }
         setError('Errore nel caricamento dei dati del dashboard');
         
         // Fallback to mock data in case of API error

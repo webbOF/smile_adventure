@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
   REFRESH: '/auth/refresh',
   LOGOUT: '/auth/logout',
   AUTH_ME: '/auth/me',
+  VERIFY_EMAIL: '/auth/verify-email/{user_id}',
   
   // Password reset endpoints
   PASSWORD_RESET_REQUEST: '/auth/request-password-reset',
@@ -35,7 +36,16 @@ export const API_ENDPOINTS = {
     AVATAR: '/users/profile/avatar',
     PREFERENCES: '/users/preferences',
     PROFILE_COMPLETION: '/users/profile/completion',
-    ANALYTICS: '/users/analytics/platform'
+    ANALYTICS: '/users/analytics/platform',
+    
+    // Admin user management endpoints
+    LIST: '/users/users',
+    DETAIL: '/users',
+    BULK_UPDATE_ROLE: '/users/bulk/update-role',
+    BULK_UPDATE_STATUS: '/users/bulk/update-status',
+    BULK_SEND_EMAIL: '/users/bulk/send-email',
+    EXPORT: '/users/export',
+    BULK_DELETE: '/users/bulk/delete'
   },
 
   // Children endpoints  
@@ -129,8 +139,11 @@ export const API_ENDPOINTS = {
   },
   
   // Admin endpoints (ipotizzati)
-  ADMIN_USERS: '/admin/users',
-  ADMIN_USER_BY_ID: (id) => `/admin/users/${id}`
+  ADMIN: {
+    USERS: '/admin/users',
+    STATS: '/admin/stats',
+    ANALYTICS: '/admin/analytics'
+  }
 };
 
 /**

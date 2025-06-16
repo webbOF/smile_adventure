@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import childrenService from '../../services/childrenService';
 import './ProgressNotes.css';
 
@@ -51,10 +52,12 @@ const ProgressNotes = ({ childId, childName }) => {
         limit: 50,
         period: filters.period !== 'all' ? filters.period : undefined
       };
-      const data = await childrenService.getChildProgressNotes(childId, options);
-      setNotes(data || []);
+      const data = await childrenService.getChildProgressNotes(childId, options);      setNotes(data || []);
     } catch (error) {
-      console.error('Error loading progress notes:', error);
+      // Error logging for production monitoring
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading progress notes:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -80,10 +83,12 @@ const ProgressNotes = ({ childId, childName }) => {
         category: 'behavior',
         tags: [],
         milestone: false
-      });
-      setShowAddForm(false);
+      });      setShowAddForm(false);
     } catch (error) {
-      console.error('Error adding note:', error);
+      // Error logging for production monitoring
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error adding note:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -296,8 +301,13 @@ const ProgressNotes = ({ childId, childName }) => {
           );
         })}
       </div>
-    </div>
-  );
+    </div>  );
+};
+
+// PropTypes for type checking
+ProgressNotes.propTypes = {
+  childId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  childName: PropTypes.string.isRequired
 };
 
 export default ProgressNotes;

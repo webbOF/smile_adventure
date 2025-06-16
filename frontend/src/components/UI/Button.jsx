@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import './Button.css';
 
 /**
@@ -96,3 +97,16 @@ const Button = ({
 };
 
 export default Button;
+
+// PropTypes validation
+Button.propTypes = {
+  children: PropTypes.node.isRequired,
+  variant: PropTypes.oneOf(['primary', 'secondary', 'outline', 'outline-light', 'danger', 'ghost']),
+  size: PropTypes.oneOf(['small', 'medium', 'large']),
+  loading: PropTypes.bool,
+  disabled: PropTypes.bool,
+  fullWidth: PropTypes.bool,
+  type: PropTypes.oneOf(['button', 'submit', 'reset']),
+  className: PropTypes.string,
+  onClick: PropTypes.func
+};

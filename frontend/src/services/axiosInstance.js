@@ -37,10 +37,11 @@ axiosInstance.interceptors.request.use(
       });
     }
     
-    return config;
-  },
+    return config;  },
   (error) => {
-    console.error('Request interceptor error:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Request interceptor error:', error);
+    }
     return Promise.reject(error);
   }
 );
@@ -63,13 +64,14 @@ axiosInstance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
-    
-    // Log dell'errore
-    console.error('API Error:', {
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message,
-      url: error.config?.url
-    });
+      // Log dell'errore
+    if (process.env.NODE_ENV === 'development') {
+      console.error('API Error:', {
+        status: error.response?.status,
+        message: error.response?.data?.message || error.message,
+        url: error.config?.url
+      });
+    }
     
     // Gestione errore 401 - Token scaduto
     if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
@@ -93,9 +95,10 @@ axiosInstance.interceptors.response.use(
           // Riprova la richiesta originale con il nuovo token
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return axiosInstance(originalRequest);
+        }      } catch (refreshError) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Token refresh failed:', refreshError);
         }
-      } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
         
         // Pulisce i token e redirect al login
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);

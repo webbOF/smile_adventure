@@ -126,34 +126,43 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);  /**
    * Carica i dati utente dal localStorage all'avvio
-   */
-  useEffect(() => {
+   */  useEffect(() => {
     const loadUserFromStorage = () => {
       try {
-        console.log('🔍 AuthContext: Loading user from storage...');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 AuthContext: Loading user from storage...');
+        }
         const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
         const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
         
-        console.log('🔍 AuthContext: Storage check:', { 
-          hasToken: !!token, 
-          hasUserData: !!userData,
-          tokenPreview: token?.substring(0, 20) + '...',
-          userDataPreview: userData?.substring(0, 100) + '...'
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 AuthContext: Storage check:', { 
+            hasToken: !!token, 
+            hasUserData: !!userData,
+            tokenPreview: token?.substring(0, 20) + '...',
+            userDataPreview: userData?.substring(0, 100) + '...'
+          });
+        }
         
         if (token && userData) {
           const user = JSON.parse(userData);
-          console.log('✅ AuthContext: Successfully loaded user from storage:', user);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ AuthContext: Successfully loaded user from storage:', user);
+          }
           dispatch({
             type: AUTH_ACTIONS.LOGIN_SUCCESS,
             payload: { user, token }
           });
         } else {
-          console.log('❌ AuthContext: No valid auth data found in storage');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('❌ AuthContext: No valid auth data found in storage');
+          }
           dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
         }
       } catch (error) {
-        console.error('❌ AuthContext: Error loading user from storage:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ AuthContext: Error loading user from storage:', error);
+        }
         // Pulisce dati corrotti
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
@@ -216,30 +225,38 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
       dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-      
-      console.log('AuthContext: Starting registration for:', userData.email);
+        if (process.env.NODE_ENV === 'development') {
+        console.log('AuthContext: Starting registration for:', userData.email);
+      }
       const response = await authService.register(userData);
-      console.log('AuthContext: Registration response:', response);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AuthContext: Registration response:', response);
+      }
       
       // Backend response structure for register: { user: {...} } 
       // In development mode with AUTO_VERIFY_EMAIL=True, user is immediately verified
       const { user } = response;
-      
-      // In development, user is auto-verified and active
+        // In development, user is auto-verified and active
       if (user?.is_verified) {
-        console.log('AuthContext: User is verified, performing auto-login');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('AuthContext: User is verified, performing auto-login');
+        }
           // Perform login directly without calling the login function to avoid conflicts
         const loginResponse = await authService.login({ 
           email: userData.email, 
           password: userData.password 
         });
         
-        console.log('AuthContext: Auto-login response:', loginResponse);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('AuthContext: Auto-login response:', loginResponse);
+        }
         
         const { user: loginUser, token } = loginResponse;
         const { access_token, refresh_token } = token;
 
-        console.log('✅ AuthContext: Auto-login tokens received:', { hasToken: !!access_token });
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ AuthContext: Auto-login tokens received:', { hasToken: !!access_token });
+        }
 
         // Save data to localStorage
         localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, access_token);
@@ -249,18 +266,21 @@ export const AuthProvider = ({ children }) => {
         // Update state
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: { user: loginUser, token: access_token }
-        });
+          payload: { user: loginUser, token: access_token }        });
         
-        console.log('AuthContext: Registration and auto-login completed successfully');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('AuthContext: Registration and auto-login completed successfully');
+        }
       } else {
         // Registration successful but requires email verification
-        console.log('AuthContext: Registration successful, email verification required');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('AuthContext: Registration successful, email verification required');
+        }
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
+      }    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('AuthContext: Registration error:', error);
       }
-
-    } catch (error) {
-      console.error('AuthContext: Registration error:', error);
       const errorMessage = error.response?.data?.message || 'Errore durante la registrazione';
       dispatch({ type: AUTH_ACTIONS.SET_ERROR, payload: errorMessage });
       throw error;
@@ -274,10 +294,11 @@ export const AuthProvider = ({ children }) => {
     
     try {
       // Chiamata al backend per invalidare la sessione (se supportato)
-      await authService.logout();
-    } catch (error) {
-      console.error('Logout API call failed:', error);
-    } finally {
+      await authService.logout();    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Logout API call failed:', error);
+      }
+    }finally {
       // Pulisce sempre i dati locali
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);

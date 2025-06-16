@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout, Button, Card } from '../components/UI';
+import { ProfileCompletionBar, EnhancedUserPreferences } from '../components/Profile';
 import profileService from '../services/profileService';
 import { authService } from '../services/authService';
 import notificationService from '../services/notificationService';
@@ -105,22 +106,7 @@ const ProfilePage = () => {
       await loadProfileCompletion();
       notificationService.showSuccess('Profilo aggiornato con successo');
     } catch (error) {
-      console.error('Error updating profile:', error);
-      notificationService.showError('Errore nell\'aggiornamento del profilo');
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handlePreferencesSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      await profileService.updatePreferences(preferences);
-      notificationService.showSuccess('Preferenze aggiornate con successo');
-    } catch (error) {
-      console.error('Error updating preferences:', error);
-      notificationService.showError('Errore nell\'aggiornamento delle preferenze');
+      console.error('Error updating profile:', error);      notificationService.showError('Errore nell\'aggiornamento del profilo');
     } finally {
       setLoading(false);
     }
@@ -170,30 +156,16 @@ const ProfilePage = () => {
   const renderGeneralTab = () => (
     <Card>
       <div className="profile-section">
-        <h3>Informazioni Generali</h3>
-        
+        <h3>Informazioni Generali</h3>        
         {profileCompletion && (
-          <div className="profile-completion">
-            <div className="completion-header">
-              <span>Completamento Profilo</span>
-              <span className="completion-percentage">{profileCompletion.completion_percentage}%</span>
-            </div>
-            <div className="completion-bar">
-              <div 
-                className="completion-progress" 
-                style={{ width: `${profileCompletion.completion_percentage}%` }}
-              />
-            </div>
-            {profileCompletion.missing_fields.length > 0 && (
-              <div className="missing-fields">
-                <p>Campi mancanti:</p>                <ul>
-                  {profileCompletion.missing_fields.map((field, index) => (
-                    <li key={`missing-field-${index}-${field}`}>{field}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+          <ProfileCompletionBar
+            percentage={profileCompletion.completion_percentage || 0}
+            missingFields={profileCompletion.missing_fields || []}
+            recommendations={profileCompletion.recommendations || []}
+            totalSections={profileCompletion.total_sections || 10}
+            completedSections={profileCompletion.completion_score || 0}
+            className="profile-completion-enhanced"
+          />
         )}
 
         <form onSubmit={handleProfileSubmit} className="profile-form">          <div className="form-row">
@@ -378,126 +350,20 @@ const ProfilePage = () => {
       </div>
     </Card>
   );
-
   const renderPreferencesTab = () => (
-    <Card>
-      <div className="profile-section">
-        <h3>Preferenze</h3>
-        
-        <form onSubmit={handlePreferencesSubmit} className="preferences-form">
-          <div className="preference-group">
-            <h4>Aspetto</h4>            <div className="form-group">
-              <label htmlFor="themeSelect">Tema</label>
-              <select
-                id="themeSelect"
-                value={preferences.theme}
-                onChange={(e) => setPreferences({ ...preferences, theme: e.target.value })}
-              >
-                <option value="light">Chiaro</option>
-                <option value="dark">Scuro</option>
-                <option value="auto">Automatico</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="preference-group">
-            <h4>Notifiche</h4>
-            <div className="checkbox-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={preferences.email_notifications}
-                  onChange={(e) => setPreferences({ 
-                    ...preferences, 
-                    email_notifications: e.target.checked 
-                  })}
-                />
-                <span>Notifiche Email</span>
-              </label>
-
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={preferences.push_notifications}
-                  onChange={(e) => setPreferences({ 
-                    ...preferences, 
-                    push_notifications: e.target.checked 
-                  })}
-                />
-                <span>Notifiche Push</span>
-              </label>
-
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={preferences.sms_notifications}
-                  onChange={(e) => setPreferences({ 
-                    ...preferences, 
-                    sms_notifications: e.target.checked 
-                  })}
-                />
-                <span>Notifiche SMS</span>
-              </label>
-            </div>
-          </div>
-
-          <div className="preference-group">
-            <h4>Privacy</h4>            <div className="form-group">
-              <label htmlFor="profileVisibility">Visibilità Profilo</label>
-              <select
-                id="profileVisibility"
-                value={preferences.privacy_settings.profile_visibility}
-                onChange={(e) => setPreferences({ 
-                  ...preferences, 
-                  privacy_settings: {
-                    ...preferences.privacy_settings,
-                    profile_visibility: e.target.value
-                  }
-                })}
-              >
-                <option value="private">Privato</option>
-                <option value="public">Pubblico</option>
-                <option value="professionals">Solo Professionisti</option>
-              </select>
-            </div>
-
-            <div className="checkbox-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={preferences.privacy_settings.share_progress}
-                  onChange={(e) => setPreferences({ 
-                    ...preferences, 
-                    privacy_settings: {
-                      ...preferences.privacy_settings,
-                      share_progress: e.target.checked
-                    }
-                  })}
-                />
-                <span>Condividi Progressi</span>
-              </label>
-
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={preferences.privacy_settings.allow_contact}
-                  onChange={(e) => setPreferences({ 
-                    ...preferences, 
-                    privacy_settings: {
-                      ...preferences.privacy_settings,
-                      allow_contact: e.target.checked
-                    }
-                  })}
-                />
-                <span>Permetti Contatto da Altri Utenti</span>
-              </label>
-            </div>
-          </div>          <Button type="submit" disabled={loading} className="primary">
-            {loading ? 'Salvando...' : 'Salva Preferenze'}
-          </Button>
-        </form>
-      </div>
-    </Card>
+    <EnhancedUserPreferences
+      initialPreferences={preferences}
+      onSave={async (newPreferences) => {
+        setLoading(true);
+        try {
+          await profileService.updatePreferences(newPreferences);
+          setPreferences(newPreferences);
+        } finally {
+          setLoading(false);
+        }
+      }}
+      loading={loading}
+    />
   );
 
   const validatePassword = (password) => {

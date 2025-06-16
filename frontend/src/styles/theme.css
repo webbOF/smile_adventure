@@ -1,0 +1,179 @@
+/**
+ * Theme CSS - Support for themeService classes
+ * Applied to body element based on user preferences
+ */
+
+/* Light Theme (Default) */
+.smile-theme-light {
+  --primary-color: #6366f1;
+  --primary-hover: #5856eb;
+  --secondary-color: #64748b;
+  --background-color: #ffffff;
+  --surface-color: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
+}
+
+/* Dark Theme */
+.smile-theme-dark {
+  --primary-color: #818cf8;
+  --primary-hover: #6366f1;
+  --secondary-color: #94a3b8;
+  --background-color: #0f172a;
+  --surface-color: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --success-color: #34d399;
+  --warning-color: #fbbf24;
+  --error-color: #f87171;
+  --info-color: #60a5fa;
+}
+
+/* High Contrast Theme */
+.smile-theme-high-contrast {
+  --primary-color: #0000ff;
+  --primary-hover: #000080;
+  --secondary-color: #000000;
+  --background-color: #ffffff;
+  --surface-color: #ffffff;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --border-color: #000000;
+  --shadow-light: 0 2px 4px 0 rgba(0, 0, 0, 0.8);
+  --shadow-medium: 0 4px 8px -1px rgba(0, 0, 0, 0.8);
+  --success-color: #008000;
+  --warning-color: #ff8c00;
+  --error-color: #ff0000;
+  --info-color: #0000ff;
+}
+
+/* Large Text Accessibility */
+.smile-theme-large-text {
+  font-size: 120% !important;
+}
+
+.smile-theme-large-text * {
+  font-size: inherit !important;
+}
+
+.smile-theme-large-text .button,
+.smile-theme-large-text button,
+.smile-theme-large-text input,
+.smile-theme-large-text select,
+.smile-theme-large-text textarea {
+  font-size: 1.1em !important;
+  padding: 0.75rem 1rem !important;
+}
+
+/* Reduced Motion */
+.smile-theme-reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Screen Reader Optimizations */
+.smile-theme-screen-reader .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.smile-theme-screen-reader *:focus {
+  outline: 3px solid var(--primary-color) !important;
+  outline-offset: 2px !important;
+}
+
+.smile-theme-screen-reader .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Auto theme inherits appropriate theme variables based on system preference */
+.smile-theme-auto.smile-theme-light,
+.smile-theme-auto.smile-theme-dark {
+  /* Theme variables are inherited from parent theme classes */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Apply theme variables to common components */
+body {
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Override transitions for reduced motion */
+.smile-theme-reduce-motion body {
+  transition: none !important;
+}
+
+/* Card components */
+.card,
+.surface {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-light);
+}
+
+/* Button components */
+.button-primary,
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.button-primary:hover,
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* Input components */
+input,
+select,
+textarea {
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* High contrast focus indicators */
+.smile-theme-high-contrast input:focus,
+.smile-theme-high-contrast select:focus,
+.smile-theme-high-contrast textarea:focus,
+.smile-theme-high-contrast button:focus {
+  outline: 3px solid var(--primary-color) !important;
+  outline-offset: 2px !important;
+}

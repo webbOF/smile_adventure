@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/useAuth';
+import themeService from './services/themeService';
 import './App.css';
 
 // Pages
@@ -244,6 +245,12 @@ const AppRoutes = () => {
 
 // Main App component
 const App = () => {
+  // Initialize theme service on app startup
+  useEffect(() => {
+    // Theme service automatically loads saved preferences and applies them
+    themeService.init();
+  }, []);
+
   return (
     <Router>
       <AuthProvider>

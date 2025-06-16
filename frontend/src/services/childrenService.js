@@ -150,9 +150,10 @@ export const childrenService = {
       const url = queryString ? `${API_ENDPOINTS.CHILDREN}?${queryString}` : API_ENDPOINTS.CHILDREN;
       
       const response = await axiosInstance.get(url);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching children:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching children:', error.response?.data || error.message);
+      }
       throw error;
     }
   },
@@ -165,9 +166,10 @@ export const childrenService = {
   async getChild(childId) {
     try {
       const response = await axiosInstance.get(`${API_ENDPOINTS.CHILDREN}/${childId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching child:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching child:', error.response?.data || error.message);
+      }
       throw error;
     }
   },  /**
@@ -196,9 +198,10 @@ export const childrenService = {
       
       // Notifica di successo
       notificationService.childCreated(backendData.name);
-      
-      return response.data;    } catch (error) {
-      console.error('Error creating child:', error.response?.data || error.message);
+        return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error creating child:', error.response?.data || error.message);
+      }
       
       // Trasforma errori di validazione Pydantic in messaggi leggibili
       if (error.response?.status === 422 && error.response.data?.detail) {
@@ -281,9 +284,10 @@ export const childrenService = {
       const childName = backendData.name || childData.name || 'Bambino';
       notificationService.childUpdated(childName);
       
-      return response.data;
-    } catch (error) {
-      console.error('Error updating child:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating child:', error.response?.data || error.message);
+      }
       throw error;
     }
   },
@@ -301,9 +305,10 @@ export const childrenService = {
       const name = childName || 'Bambino';
       notificationService.childDeleted(name);
       
-      return response.data;
-    } catch (error) {
-      console.error('Error deleting child:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error deleting child:', error.response?.data || error.message);
+      }
       throw error;
     }
   },
@@ -328,9 +333,10 @@ export const childrenService = {
       const url = `${API_ENDPOINTS.CHILD_ACTIVITIES(childId)}?${params}`;
       const response = await axiosInstance.get(url);
       
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching child activities:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching child activities:', error.response?.data || error.message);
+      }
       notificationService.showError('Errore nel caricamento delle attività');
       throw error;
     }
@@ -353,9 +359,10 @@ export const childrenService = {
       const url = `${API_ENDPOINTS.CHILD_PROGRESS_DATA(childId)}?${params}`;
       const response = await axiosInstance.get(url);
       
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching child progress:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching child progress:', error.response?.data || error.message);
+      }
       notificationService.showError('Errore nel caricamento dei progressi');
       throw error;
     }
@@ -602,7 +609,233 @@ export const childrenService = {
       notificationService.showError('Errore nell\'aggiornamento del profilo sensoriale');
       throw error;
     }
-  }
+  },
+
+  // === BULK OPERATIONS ===
+  
+  /**
+   * Aggiorna il livello di gioco per più bambini
+   * @param {Array<number>} childrenIds
+   * @param {number} newLevel
+   * @returns {Promise<Object>}
+   */
+  async bulkUpdateLevel(childrenIds, newLevel) {
+    try {
+      const response = await axiosInstance.put(API_ENDPOINTS.CHILDREN_BULK_UPDATE_LEVEL, {
+        children_ids: childrenIds,
+        level: newLevel
+      });
+      notificationService.showSuccess(`Livello aggiornato per ${childrenIds.length} bambini`);
+      return response.data;
+    } catch (error) {
+      console.error('Error bulk updating level:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'aggiornamento del livello');
+      throw error;
+    }
+  },
+
+  /**
+   * Aggiorna il livello di supporto DSM-5 per più bambini
+   * @param {Array<number>} childrenIds
+   * @param {number} supportLevel
+   * @returns {Promise<Object>}
+   */
+  async bulkUpdateSupportLevel(childrenIds, supportLevel) {
+    try {
+      const response = await axiosInstance.put(API_ENDPOINTS.CHILDREN_BULK_UPDATE_SUPPORT, {
+        children_ids: childrenIds,
+        support_level: supportLevel
+      });
+      notificationService.showSuccess(`Livello di supporto aggiornato per ${childrenIds.length} bambini`);
+      return response.data;
+    } catch (error) {
+      console.error('Error bulk updating support level:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'aggiornamento del livello di supporto');
+      throw error;
+    }
+  },
+
+  /**
+   * Assegna un professionista a più bambini
+   * @param {Array<number>} childrenIds
+   * @param {string} professionalId
+   * @returns {Promise<Object>}
+   */
+  async bulkAssignProfessional(childrenIds, professionalId) {
+    try {
+      const response = await axiosInstance.put(API_ENDPOINTS.CHILDREN_BULK_ASSIGN_PROFESSIONAL, {
+        children_ids: childrenIds,
+        professional_id: professionalId
+      });
+      notificationService.showSuccess(`Professionista assegnato a ${childrenIds.length} bambini`);
+      return response.data;
+    } catch (error) {
+      console.error('Error bulk assigning professional:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'assegnazione del professionista');
+      throw error;
+    }
+  },
+
+  /**
+   * Aggiunge punti a più bambini
+   * @param {Array<number>} childrenIds
+   * @param {Object} pointsData
+   * @returns {Promise<Object>}
+   */
+  async bulkAddPoints(childrenIds, pointsData) {
+    try {
+      const response = await axiosInstance.put(API_ENDPOINTS.CHILDREN_BULK_ADD_POINTS, {
+        children_ids: childrenIds,
+        points: pointsData.points,
+        reason: pointsData.reason
+      });
+      notificationService.showSuccess(`Punti aggiunti a ${childrenIds.length} bambini`);
+      return response.data;
+    } catch (error) {
+      console.error('Error bulk adding points:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'aggiunta dei punti');
+      throw error;
+    }
+  },
+
+  /**
+   * Aggiorna le impostazioni di comunicazione per più bambini
+   * @param {Array<number>} childrenIds
+   * @param {Object} communicationData
+   * @returns {Promise<Object>}
+   */
+  async bulkUpdateCommunication(childrenIds, communicationData) {
+    try {
+      const response = await axiosInstance.put(API_ENDPOINTS.CHILDREN_BULK_UPDATE_COMMUNICATION, {
+        children_ids: childrenIds,
+        communication_style: communicationData.communication_style,
+        communication_notes: communicationData.communication_notes
+      });
+      notificationService.showSuccess(`Comunicazione aggiornata per ${childrenIds.length} bambini`);
+      return response.data;
+    } catch (error) {
+      console.error('Error bulk updating communication:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'aggiornamento della comunicazione');
+      throw error;
+    }
+  },
+
+  /**
+   * Esporta i profili di più bambini
+   * @param {Array<number>} childrenIds
+   * @param {string} format - pdf, csv, excel
+   * @returns {Promise<Object>}
+   */
+  async exportChildrenProfiles(childrenIds, format = 'pdf') {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN_EXPORT_PROFILES, {
+        children_ids: childrenIds,
+        format: format
+      });
+      notificationService.showSuccess(`Profili esportati per ${childrenIds.length} bambini`);
+      return response.data;
+    } catch (error) {
+      console.error('Error exporting profiles:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'esportazione dei profili');
+      throw error;
+    }
+  },
+
+  /**
+   * Genera report di progresso per più bambini
+   * @param {Array<number>} childrenIds
+   * @returns {Promise<Object>}
+   */
+  async generateProgressReports(childrenIds) {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN_GENERATE_REPORTS, {
+        children_ids: childrenIds
+      });
+      notificationService.showSuccess(`Report generati per ${childrenIds.length} bambini`);
+      return response.data;
+    } catch (error) {
+      console.error('Error generating reports:', error.response?.data || error.message);
+      notificationService.showError('Errore nella generazione dei report');
+      throw error;
+    }
+  },
+
+  // === ANALYTICS AND COMPLETION ===
+
+  /**
+   * Ottieni analytics per un gruppo di bambini
+   * @param {Array<number>} childrenIds
+   * @param {Object} options
+   * @returns {Promise<Object>}
+   */
+  async getChildrenAnalytics(childrenIds, options = {}) {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN_ANALYTICS, {
+        children_ids: childrenIds,
+        time_range: options.timeRange || '30',
+        include_trends: options.includeTrends || true
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error getting analytics:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Ottieni dati di completamento profili
+   * @param {Array<number>} childrenIds
+   * @returns {Promise<Object>}
+   */
+  async getProfileCompletion(childrenIds) {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN_PROFILE_COMPLETION, {
+        children_ids: childrenIds
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error getting profile completion:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Invia promemoria per completamento profilo
+   * @param {number} childId
+   * @param {Object} reminderData
+   * @returns {Promise<Object>}
+   */
+  async sendProfileCompletionReminder(childId, reminderData) {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CHILD_SEND_REMINDER(childId), reminderData);
+      notificationService.showSuccess('Promemoria inviato');
+      return response.data;
+    } catch (error) {
+      console.error('Error sending reminder:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'invio del promemoria');
+      throw error;
+    }
+  },
+
+  /**
+   * Esporta analytics
+   * @param {Array<number>} childrenIds
+   * @param {Object} options
+   * @returns {Promise<Object>}
+   */
+  async exportAnalytics(childrenIds, options = {}) {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN_EXPORT_ANALYTICS, {
+        children_ids: childrenIds,
+        format: options.format || 'pdf',
+        time_range: options.timeRange || '30'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error exporting analytics:', error.response?.data || error.message);
+      notificationService.showError('Errore nell\'esportazione delle analytics');
+      throw error;
+    }  }
 };
 
 // Named exports for individual functions
@@ -616,7 +849,20 @@ export const {
   getChildProgress,
   getChildSessions,
   uploadChildPhoto,
-  searchChildren
+  searchChildren,
+  // Bulk operations
+  bulkUpdateLevel,
+  bulkUpdateSupportLevel,
+  bulkAssignProfessional,
+  bulkAddPoints,
+  bulkUpdateCommunication,
+  exportChildrenProfiles,
+  generateProgressReports,
+  // Analytics
+  getChildrenAnalytics,
+  getProfileCompletion,
+  sendProfileCompletionReminder,
+  exportAnalytics
 } = childrenService;
 
 // Default export

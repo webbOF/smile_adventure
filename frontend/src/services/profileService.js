@@ -54,9 +54,10 @@ export const profileService = {
   async getProfile() {
     try {
       const response = await axiosInstance.get(API_ENDPOINTS.USER_PROFILE);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching user profile:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching user profile:', error.response?.data || error.message);
+      }
       notificationService.showError('Errore nel caricamento del profilo');
       throw error;
     }
@@ -88,9 +89,10 @@ export const profileService = {
       const response = await axiosInstance.put(API_ENDPOINTS.USER_PROFILE, backendData);
       
       notificationService.showSuccess('Profilo aggiornato con successo');
-      return response.data;
-    } catch (error) {
-      console.error('Error updating profile:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating profile:', error.response?.data || error.message);
+      }
       
       if (error.response?.status === 422 && error.response.data?.detail) {
         const validationErrors = error.response.data.detail;
@@ -126,9 +128,10 @@ export const profileService = {
       });
 
       notificationService.showSuccess('Avatar caricato con successo');
-      return response.data;
-    } catch (error) {
-      console.error('Error uploading avatar:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error uploading avatar:', error.response?.data || error.message);
+      }
       notificationService.showError('Errore nel caricamento dell\'avatar');
       throw error;
     }
@@ -142,9 +145,10 @@ export const profileService = {
     try {
       const response = await axiosInstance.delete(API_ENDPOINTS.USER_AVATAR);
       notificationService.showSuccess('Avatar rimosso con successo');
-      return response.data;
-    } catch (error) {
-      console.error('Error deleting avatar:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error deleting avatar:', error.response?.data || error.message);
+      }
       notificationService.showError('Errore nella rimozione dell\'avatar');
       throw error;
     }
@@ -157,9 +161,10 @@ export const profileService = {
   async getPreferences() {
     try {
       const response = await axiosInstance.get(API_ENDPOINTS.USER_PREFERENCES);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching preferences:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching preferences:', error.response?.data || error.message);
+      }
       notificationService.showError('Errore nel caricamento delle preferenze');
       throw error;
     }
@@ -174,9 +179,10 @@ export const profileService = {
     try {
       const response = await axiosInstance.put(API_ENDPOINTS.USER_PREFERENCES, preferences);
       notificationService.showSuccess('Preferenze aggiornate con successo');
-      return response.data;
-    } catch (error) {
-      console.error('Error updating preferences:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating preferences:', error.response?.data || error.message);
+      }
       notificationService.showError('Errore nell\'aggiornamento delle preferenze');
       throw error;
     }
@@ -189,9 +195,10 @@ export const profileService = {
   async getProfileCompletion() {
     try {
       const response = await axiosInstance.get(API_ENDPOINTS.USER_PROFILE_COMPLETION);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching profile completion:', error.response?.data || error.message);
+      return response.data;    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching profile completion:', error.response?.data || error.message);
+      }
       throw error;
     }
   },

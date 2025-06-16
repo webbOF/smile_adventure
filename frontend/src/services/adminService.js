@@ -74,6 +74,138 @@ class AdminService {
   }
 
   /**
+   * Get users list with advanced filtering and search capabilities
+   * @param {Object} filters - Advanced filter options
+   * @param {number} filters.skip - Number of records to skip
+   * @param {number} filters.limit - Number of records to return
+   * @param {string} filters.role - Filter by user role (PARENT, PROFESSIONAL, ADMIN)
+   * @param {string} filters.status - Filter by status (active, inactive, suspended)
+   * @param {string} filters.search - Search by name or email
+   * @param {string} filters.date_from - Filter registration from date (ISO format)
+   * @param {string} filters.date_to - Filter registration to date (ISO format)
+   * @param {string} filters.sort_by - Sort field (created_at, last_login, email)
+   * @param {string} filters.sort_order - Sort order (asc, desc)
+   * @returns {Promise<Object>} Users list with pagination and filtering applied
+   */
+  async getUsersListAdvanced(filters = {}) {
+    try {
+      const defaultFilters = {
+        skip: 0,
+        limit: 50,
+        sort_by: 'created_at',
+        sort_order: 'desc'
+      };
+      
+      const params = { ...defaultFilters, ...filters };
+      
+      // Remove null/undefined values
+      Object.keys(params).forEach(key => {
+        if (params[key] === null || params[key] === undefined || params[key] === '') {
+          delete params[key];
+        }
+      });
+
+      const response = await apiInstance.get(API_ENDPOINTS.AUTH.USERS, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch users list with advanced filters:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to load users list');
+    }
+  }
+
+  /**
+   * Get detailed user statistics with breakdown and analytics
+   * @param {Object} options - Statistics options
+   * @param {string} options.date_range - Date range ('7d', '30d', '90d', '1y')
+   * @param {boolean} options.include_breakdown - Include detailed breakdown
+   * @returns {Promise<Object>} Detailed user statistics
+   */
+  async getUserStatisticsDetailed(options = {}) {
+    try {
+      const { date_range = '30d', include_breakdown = true } = options;
+      
+      const params = { date_range, include_breakdown };
+      const response = await apiInstance.get(API_ENDPOINTS.AUTH.STATS, { params });
+      
+      // Enhance response with calculated metrics
+      const stats = response.data;
+      const enhanced = {
+        ...stats,
+        calculated_metrics: {
+          growth_rate: this._calculateGrowthRate(stats),
+          retention_rate: this._calculateRetentionRate(stats),
+          activation_rate: this._calculateActivationRate(stats),
+          geographic_distribution: this._calculateGeographicDistribution(stats)
+        },
+        trends: {
+          daily_registrations: stats.daily_registrations || [],
+          role_distribution_trend: stats.role_distribution_trend || [],
+          email_verification_trend: stats.email_verification_trend || []
+        }
+      };
+      
+      return enhanced;
+    } catch (error) {
+      console.error('Failed to fetch detailed user statistics:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to load detailed user statistics');
+    }
+  }
+
+  /**
+   * Calculate growth rate from statistics
+   * @private
+   */
+  _calculateGrowthRate(stats) {
+    if (!stats.period_comparison) return 0;
+    
+    const current = stats.period_comparison.current_period || 0;
+    const previous = stats.period_comparison.previous_period || 0;
+    
+    if (previous === 0) return current > 0 ? 100 : 0;
+    
+    return ((current - previous) / previous) * 100;
+  }
+
+  /**
+   * Calculate retention rate from statistics
+   * @private
+   */
+  _calculateRetentionRate(stats) {
+    if (!stats.activity_metrics) return 0;
+    
+    const totalUsers = stats.total_users || 0;
+    const activeUsers = stats.activity_metrics.active_users_30d || 0;
+    
+    return totalUsers > 0 ? (activeUsers / totalUsers) * 100 : 0;
+  }
+
+  /**
+   * Calculate email activation rate
+   * @private
+   */
+  _calculateActivationRate(stats) {
+    if (!stats.email_verification) return 0;
+    
+    const totalUsers = stats.total_users || 0;
+    const verifiedUsers = stats.email_verification.verified_count || 0;
+    
+    return totalUsers > 0 ? (verifiedUsers / totalUsers) * 100 : 0;
+  }
+
+  /**
+   * Calculate geographic distribution
+   * @private
+   */
+  _calculateGeographicDistribution(stats) {
+    if (!stats.geographic_data) return [];
+    
+    return stats.geographic_data.map(item => ({
+      ...item,
+      percentage: (item.count / stats.total_users) * 100
+    }));
+  }
+
+  /**
    * Get all children (admin view)
    * @param {Object} params - Query parameters
    * @param {boolean} params.include_inactive - Include inactive children
@@ -152,92 +284,238 @@ class AdminService {
   }
 
   /**
-   * Get user activity logs
-   * @param {number} userId - User ID (optional, all users if not provided)
-   * @param {number} days - Days to look back
-   * @returns {Promise<Array>} Activity logs
+   * BULK OPERATIONS METHODS
+   * Methods for UserBulkActions component
    */
-  async getUserActivityLogs(userId = null, days = 7) {
-    try {
-      const params = { days };
-      if (userId) params.user_id = userId;
 
-      const response = await apiInstance.get('/api/v1/admin/activity-logs', { params });
+  /**
+   * Update role for multiple users
+   * @param {Array<number>} userIds - Array of user IDs
+   * @param {string} newRole - New role to assign
+   * @returns {Promise<Object>} Operation result
+   */
+  async bulkUpdateUserRole(userIds, newRole) {
+    try {
+      const response = await apiInstance.patch(API_ENDPOINTS.USERS.BULK_UPDATE_ROLE, {
+        user_ids: userIds,
+        new_role: newRole
+      });
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch activity logs:', error);
-      throw new Error('Failed to load activity logs');
+      console.error('Failed to bulk update user roles:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to update user roles');
     }
   }
 
   /**
-   * Get platform insights and recommendations
-   * @returns {Promise<Object>} Platform insights
+   * Update status for multiple users
+   * @param {Array<number>} userIds - Array of user IDs
+   * @param {string} newStatus - New status to assign
+   * @returns {Promise<Object>} Operation result
    */
-  async getPlatformInsights() {
+  async bulkUpdateUserStatus(userIds, newStatus) {
     try {
-      // Combine multiple data sources for insights
-      const [dashboard, analytics, userStats] = await Promise.all([
-        this.getDashboardStats(),
-        this.getPlatformAnalytics(30),
-        this.getUserStatistics()
-      ]);
-
-      return {
-        dashboard,
-        analytics,
-        userStats,
-        insights: this._generateInsights(dashboard, analytics, userStats),
-        generated_at: new Date().toISOString()
-      };
+      const response = await apiInstance.patch(API_ENDPOINTS.USERS.BULK_UPDATE_STATUS, {
+        user_ids: userIds,
+        new_status: newStatus
+      });
+      return response.data;
     } catch (error) {
-      console.error('Failed to fetch platform insights:', error);
-      throw new Error('Failed to load platform insights');
+      console.error('Failed to bulk update user status:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to update user status');
     }
   }
 
   /**
-   * Generate insights from platform data
-   * @private
+   * Send bulk email to multiple users
+   * @param {Array<number>} userIds - Array of user IDs
+   * @param {Object} emailData - Email configuration
+   * @returns {Promise<Object>} Operation result
    */
-  _generateInsights(dashboard, analytics, userStats) {
-    const insights = [];
-
-    // User growth insights
-    if (analytics.growth_rate > 20) {
-      insights.push({
-        type: 'growth',
-        title: 'Rapid User Growth',
-        message: `Platform growing at ${analytics.growth_rate}% monthly`,
-        priority: 'high',
-        action: 'Consider scaling infrastructure'
+  async bulkSendEmail(userIds, emailData) {
+    try {
+      const response = await apiInstance.post(API_ENDPOINTS.USERS.BULK_SEND_EMAIL, {
+        user_ids: userIds,
+        email_data: emailData
       });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to send bulk email:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to send emails');
     }
+  }
 
-    // Engagement insights
-    if (dashboard.platform_stats?.total_activities > 1000) {
-      insights.push({
-        type: 'engagement',
-        title: 'High User Engagement',
-        message: 'Users are highly active on the platform',
-        priority: 'positive',
-        action: 'Maintain current engagement strategies'
+  /**
+   * Export user data
+   * @param {Array<number>} userIds - Array of user IDs
+   * @param {string} format - Export format (csv, xlsx, json)
+   * @returns {Promise<Object>} Export result with download URL
+   */
+  async exportUserData(userIds, format = 'csv') {
+    try {
+      const response = await apiInstance.post(API_ENDPOINTS.USERS.EXPORT, {
+        user_ids: userIds,
+        format: format
       });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export user data:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to export data');
     }
+  }
 
-    // Professional utilization
-    const profRatio = dashboard.platform_stats?.professional_users / dashboard.platform_stats?.parent_users;
-    if (profRatio < 0.1) {
-      insights.push({
-        type: 'utilization',
-        title: 'Low Professional Adoption',
-        message: 'Consider professional outreach programs',
-        priority: 'medium',
-        action: 'Increase professional marketing efforts'
+  /**
+   * Delete multiple users (soft delete)
+   * @param {Array<number>} userIds - Array of user IDs
+   * @returns {Promise<Object>} Operation result
+   */
+  async bulkDeleteUsers(userIds) {
+    try {
+      const response = await apiInstance.delete(API_ENDPOINTS.USERS.BULK_DELETE, {
+        data: { user_ids: userIds }
       });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to bulk delete users:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to delete users');
     }
+  }
 
-    return insights;
+  /**
+   * STATISTICS DASHBOARD METHODS
+   * Methods for StatisticsDashboard component
+   */
+
+  /**
+   * Get overall user statistics for dashboard
+   * @param {string} timeRange - Time range (7d, 30d, 90d, 1y)
+   * @returns {Promise<Object>} Overall statistics
+   */
+  async getOverallUserStats(timeRange = '30d') {
+    try {
+      const response = await apiInstance.get(`${API_ENDPOINTS.ADMIN.STATS}/overview`, {
+        params: { time_range: timeRange }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch overall user stats:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to load overall statistics');
+    }
+  }
+
+  /**
+   * Get users distribution by role
+   * @returns {Promise<Array>} Role distribution data
+   */
+  async getUsersByRoleDistribution() {
+    try {
+      const response = await apiInstance.get(`${API_ENDPOINTS.ADMIN.STATS}/roles-distribution`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch users by role distribution:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to load role distribution');
+    }
+  }
+
+  /**
+   * Get users distribution by status
+   * @returns {Promise<Array>} Status distribution data
+   */
+  async getUsersByStatusDistribution() {
+    try {
+      const response = await apiInstance.get(`${API_ENDPOINTS.ADMIN.STATS}/status-distribution`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch users by status distribution:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to load status distribution');
+    }
+  }
+
+  /**
+   * Get registrations trend over time
+   * @param {string} timeRange - Time range (7d, 30d, 90d, 1y)
+   * @returns {Promise<Array>} Registrations trend data
+   */
+  async getRegistrationsTrend(timeRange = '30d') {
+    try {
+      const response = await apiInstance.get(`${API_ENDPOINTS.ADMIN.STATS}/registrations-trend`, {
+        params: { time_range: timeRange }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch registrations trend:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to load registrations trend');
+    }
+  }
+
+  /**
+   * Get activity trend over time
+   * @param {string} timeRange - Time range (7d, 30d, 90d, 1y)
+   * @returns {Promise<Array>} Activity trend data
+   */
+  async getActivityTrend(timeRange = '30d') {
+    try {
+      const response = await apiInstance.get(`${API_ENDPOINTS.ADMIN.STATS}/activity-trend`, {
+        params: { time_range: timeRange }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch activity trend:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to load activity trend');
+    }
+  }
+
+  /**
+   * Get top user metrics
+   * @param {string} timeRange - Time range (7d, 30d, 90d, 1y)
+   * @returns {Promise<Array>} Top metrics data
+   */
+  async getTopUserMetrics(timeRange = '30d') {
+    try {
+      const response = await apiInstance.get(`${API_ENDPOINTS.ADMIN.STATS}/top-metrics`, {
+        params: { time_range: timeRange }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch top user metrics:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to load top metrics');
+    }
+  }
+
+  /**
+   * Export dashboard data
+   * @param {string} timeRange - Time range for the export
+   * @returns {Promise<Object>} Export result with download URL
+   */
+  async exportDashboardData(timeRange = '30d') {
+    try {
+      const response = await apiInstance.post(`${API_ENDPOINTS.ADMIN.STATS}/export`, {
+        time_range: timeRange,
+        format: 'xlsx'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export dashboard data:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to export dashboard data');
+    }
+  }
+
+  /**
+   * Get user activity logs
+   * @param {number} userId - User ID
+   * @param {number} days - Number of days to look back
+   * @returns {Promise<Array>} Activity logs
+   */
+  async getUserActivityLogs(userId, days = 30) {
+    try {
+      const response = await apiInstance.get(`${API_ENDPOINTS.USERS.DETAIL}/${userId}/activity-logs`, {
+        params: { days }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user activity logs:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to load activity logs');
+    }
   }
 }
 

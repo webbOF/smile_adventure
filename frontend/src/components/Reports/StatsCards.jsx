@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 /**
  * Statistics Cards Component
@@ -84,6 +85,18 @@ const StatsCards = ({ stats, loading = false }) => {
       </div>
     </div>
   );
+};
+
+// PropTypes validation
+StatsCards.propTypes = {
+  stats: PropTypes.arrayOf(PropTypes.shape({
+    type: PropTypes.string,
+    title: PropTypes.string.isRequired,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    change: PropTypes.number,
+    description: PropTypes.string
+  })),
+  loading: PropTypes.bool
 };
 
 export default StatsCards;

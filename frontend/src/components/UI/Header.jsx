@@ -25,11 +25,12 @@ const Header = ({
 
   const handleLogout = async () => {
     try {
-      setIsLoggingOut(true);
-      await logout();
+      setIsLoggingOut(true);      await logout();
       navigate('/login', { replace: true });
     } catch (error) {
-      console.error('Logout error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Logout error:', error);
+      }
       navigate('/login', { replace: true });
     } finally {
       setIsLoggingOut(false);

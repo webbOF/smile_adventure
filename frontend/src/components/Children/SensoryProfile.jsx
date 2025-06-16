@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import childrenService from '../../services/childrenService';
 import './SensoryProfile.css';
 
@@ -126,10 +127,12 @@ const SensoryProfile = ({ childId, childName }) => {
         domain.aspects.forEach(aspect => {
           initialData[domain.key][aspect.key] = data?.[domain.key]?.[aspect.key] || 3;
         });
-      });
-      setFormData(initialData);
+      });      setFormData(initialData);
     } catch (error) {
-      console.error('Error loading sensory profile:', error);
+      // Error logging for production monitoring
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading sensory profile:', error);
+      }
       // Inizializza con valori default in caso di errore
       const defaultData = {};
       sensoryDomains.forEach(domain => {
@@ -149,10 +152,12 @@ const SensoryProfile = ({ childId, childName }) => {
     setLoading(true);
     try {
       const updatedProfile = await childrenService.updateChildSensoryProfile(childId, formData);
-      setProfile(updatedProfile);
-      setEditing(false);
+      setProfile(updatedProfile);      setEditing(false);
     } catch (error) {
-      console.error('Error updating sensory profile:', error);
+      // Error logging for production monitoring
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating sensory profile:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -360,8 +365,13 @@ const SensoryProfile = ({ childId, childName }) => {
           </div>
         </div>
       )}
-    </div>
-  );
+    </div>  );
+};
+
+// PropTypes for type checking
+SensoryProfile.propTypes = {
+  childId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  childName: PropTypes.string.isRequired
 };
 
 export default SensoryProfile;

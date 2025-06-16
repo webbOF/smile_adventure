@@ -83,11 +83,12 @@ const LoginPage = () => {
         password: formData.password,
         rememberMe: formData.rememberMe
       });
-      
-      notificationService.success('Login effettuato con successo!');
+        notificationService.success('Login effettuato con successo!');
       // Navigation handled by useEffect above
     } catch (error) {
-      console.error('Login error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Login error:', error);
+      }
       notificationService.error(error.message || 'Errore durante il login. Riprova.');
     } finally {
       setIsSubmitting(false);

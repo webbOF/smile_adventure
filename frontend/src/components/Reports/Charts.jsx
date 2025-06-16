@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 /**
  * Simple Progress Chart Component
@@ -279,8 +280,35 @@ const DonutChart = ({ data, title, size = 200 }) => {
           </div>
         ))}
       </div>
-    </div>
-  );
+    </div>  );
+};
+
+// PropTypes for all chart components
+ProgressChart.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.shape({
+    label: PropTypes.string.isRequired,
+    value: PropTypes.number.isRequired
+  })).isRequired,
+  title: PropTypes.string.isRequired,
+  height: PropTypes.number
+};
+
+BarChart.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.shape({
+    label: PropTypes.string.isRequired,
+    value: PropTypes.number.isRequired
+  })).isRequired,
+  title: PropTypes.string.isRequired,
+  height: PropTypes.number
+};
+
+DonutChart.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.shape({
+    label: PropTypes.string.isRequired,
+    value: PropTypes.number.isRequired
+  })).isRequired,
+  title: PropTypes.string.isRequired,
+  size: PropTypes.number
 };
 
 export { ProgressChart, BarChart, DonutChart };

@@ -32,9 +32,10 @@ export const startGameSession = async (sessionData) => {
       support_person_present: sessionData.support_person_present || false,
       session_data_quality: 'good'
     });
-    return response.data;
-  } catch (error) {
-    console.error('Error starting game session:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error starting game session:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nell\'avvio della sessione');
   }
 };
@@ -48,9 +49,10 @@ export const startGameSession = async (sessionData) => {
 export const updateGameSession = async (sessionId, updateData) => {
   try {
     const response = await axiosInstance.patch(API_ENDPOINTS.GAME_SESSION_UPDATE(sessionId), updateData);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating game session:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error updating game session:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nell\'aggiornamento della sessione');
   }
 };
@@ -92,9 +94,10 @@ export const endGameSession = async (sessionId, endData) => {
       emotional_data: endData.emotional_data || {},
       interaction_patterns: endData.interaction_patterns || {}
     });
-    return response.data;
-  } catch (error) {
-    console.error('Error ending game session:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error ending game session:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nella terminazione della sessione');
   }
 };
@@ -115,9 +118,10 @@ export const addParentFeedback = async (sessionId, parentData) => {
       parent_rating: parentData.parent_rating,
       parent_observed_behavior: parentData.parent_observed_behavior || {}
     });
-    return response.data;
-  } catch (error) {
-    console.error('Error adding parent feedback:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error adding parent feedback:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nell\'aggiunta del feedback');
   }
 };
@@ -143,9 +147,10 @@ export const getChildGameSessions = async (childId, options = {}) => {
     if (options.date_to) params.append('date_to', options.date_to);
 
     const response = await axiosInstance.get(`${API_ENDPOINTS.CHILD_GAME_SESSIONS(childId)}?${params}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching child game sessions:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching child game sessions:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nel caricamento delle sessioni');
   }
 };
@@ -158,9 +163,10 @@ export const getChildGameSessions = async (childId, options = {}) => {
 export const getGameSession = async (sessionId) => {
   try {
     const response = await axiosInstance.get(API_ENDPOINTS.GAME_SESSION_BY_ID(sessionId));
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching game session:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching game session:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nel caricamento della sessione');
   }
 };
@@ -182,9 +188,10 @@ export const getChildSessionStats = async (childId, options = {}) => {
     if (options.date_to) params.append('date_to', options.date_to);
 
     const response = await axiosInstance.get(`${API_ENDPOINTS.CHILD_SESSION_STATS(childId)}?${params}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching child session stats:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching child session stats:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nel caricamento delle statistiche');
   }
 };
@@ -204,9 +211,10 @@ export const getChildProgressAnalysis = async (childId, options = {}) => {
     if (options.metric_type) params.append('metric_type', options.metric_type);
 
     const response = await axiosInstance.get(`${API_ENDPOINTS.CHILD_PROGRESS_REPORT(childId)}?${params}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching child progress analysis:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching child progress analysis:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nell\'analisi dei progressi');
   }
 };
@@ -219,9 +227,10 @@ export const getChildProgressAnalysis = async (childId, options = {}) => {
 export const pauseGameSession = async (sessionId) => {
   try {
     const response = await axiosInstance.patch(API_ENDPOINTS.GAME_SESSION_PAUSE(sessionId));
-    return response.data;
-  } catch (error) {
-    console.error('Error pausing game session:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error pausing game session:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nella pausa della sessione');
   }
 };
@@ -234,9 +243,10 @@ export const pauseGameSession = async (sessionId) => {
 export const resumeGameSession = async (sessionId) => {
   try {
     const response = await axiosInstance.patch(API_ENDPOINTS.GAME_SESSION_RESUME(sessionId));
-    return response.data;
-  } catch (error) {
-    console.error('Error resuming game session:', error);
+    return response.data;  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error resuming game session:', error);
+    }
     throw new Error(error.response?.data?.detail || 'Errore nella ripresa della sessione');
   }
 };

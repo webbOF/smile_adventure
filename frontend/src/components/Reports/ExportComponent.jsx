@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 /**
  * Export Component for Reports
@@ -177,6 +178,17 @@ const ExportComponent = ({
       )}
     </div>
   );
+};
+
+// PropTypes validation
+ExportComponent.propTypes = {
+  data: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  children: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    name: PropTypes.string.isRequired
+  })),
+  currentFilters: PropTypes.object,
+  userRole: PropTypes.oneOf(['parent', 'professional', 'admin'])
 };
 
 export default ExportComponent;

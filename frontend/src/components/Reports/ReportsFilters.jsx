@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 /**
  * Filters Component for Reports
@@ -159,6 +160,22 @@ const ReportsFilters = ({
       </div>
     </div>
   );
+};
+
+// PropTypes validation
+ReportsFilters.propTypes = {
+  childrenList: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    name: PropTypes.string.isRequired
+  })),
+  onFiltersChange: PropTypes.func.isRequired,
+  initialFilters: PropTypes.shape({
+    childId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    period: PropTypes.string,
+    sessionType: PropTypes.string,
+    startDate: PropTypes.string,
+    endDate: PropTypes.string
+  })
 };
 
 export default ReportsFilters;

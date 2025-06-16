@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import childrenService from '../../services/childrenService';
 import './GoalTracking.css';
 
@@ -109,10 +110,12 @@ const GoalTracking = ({ childId, childName }) => {
           ]
         }))
       ];
-      
-      setGoals(transformedGoals);
+        setGoals(transformedGoals);
     } catch (error) {
-      console.error('Error loading goals:', error);
+      // Error logging for production monitoring  
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading goals:', error);
+      }
       // Fallback to mock data if API fails
       loadMockGoals();
     } finally {
@@ -192,10 +195,12 @@ const GoalTracking = ({ childId, childName }) => {
         priority: 'medium',
         target_date: '',
         milestones: []
-      });
-      setShowAddForm(false);
+      });      setShowAddForm(false);
     } catch (error) {
-      console.error('Error adding goal:', error);
+      // Error logging for production monitoring
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error adding goal:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -515,8 +520,13 @@ const GoalTracking = ({ childId, childName }) => {
           );
         })}
       </div>
-    </div>
-  );
+    </div>  );
+};
+
+// PropTypes for type checking
+GoalTracking.propTypes = {
+  childId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  childName: PropTypes.string.isRequired
 };
 
 export default GoalTracking;

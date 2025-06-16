@@ -1,19 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Layout, Button, Spinner, Alert, Header } from '../components/UI';
+import BulkActionToolbar from '../components/BulkActionToolbar';
+import AdvancedSearchFilter from '../components/AdvancedSearchFilter';
+import { BulkSelectionProvider, useBulkSelection } from '../contexts/BulkSelectionContext';
 import childrenService from '../services/childrenService';
 import { ROUTES } from '../utils/constants';
 import './ChildrenListPage.css';
 
 const ChildrenListPage = () => {
+  return (
+    <BulkSelectionProvider>
+      <ChildrenListContent />
+    </BulkSelectionProvider>
+  );
+};
+
+const ChildrenListContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { selectionMode, toggleSelectionMode } = useBulkSelection();
   const [children, setChildren] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [includeInactive, setIncludeInactive] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [searchResults, setSearchResults] = useState(null);
+  const [isSearchMode, setIsSearchMode] = useState(false);
+
+  const fetchChildren = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await childrenService.getChildren(includeInactive);
+      setChildren(data);
+      setSearchResults(null);
+      setIsSearchMode(false);
+    } catch (err) {
+      console.error('Error fetching children:', err);
+      setError('Errore nel caricamento dei bambini. Riprova più tardi.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [includeInactive]);
 
   useEffect(() => {
     fetchChildren();
@@ -24,24 +54,36 @@ const ChildrenListPage = () => {
       // Clear the message from history
       window.history.replaceState({}, document.title);
     }
-  }, [includeInactive, location.state]);
+  }, [fetchChildren, location.state]);
 
-  const fetchChildren = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await childrenService.getChildren(includeInactive);
-      setChildren(data);
-    } catch (err) {
-      console.error('Error fetching children:', err);
-      setError('Errore nel caricamento dei bambini. Riprova più tardi.');
-    } finally {
-      setIsLoading(false);
+  const handleSearchResults = useCallback((results) => {
+    setSearchResults(results);
+    setIsSearchMode(true);
+    setError(null);
+  }, []);
+
+  const handleSearchError = useCallback((errorMessage) => {
+    setError(errorMessage);
+  }, []);
+
+  const handleSearchLoading = useCallback((loading) => {
+    setIsLoading(loading);
+  }, []);
+
+  const currentChildren = isSearchMode && searchResults ? searchResults.children || [] : children;
+  
+  const getChildrenCountText = () => {
+    const count = currentChildren.length;
+    const plural = count !== 1 ? 'i' : '';
+    const baseText = `${count} bambino${plural}`;
+    
+    if (isSearchMode) {
+      return `${baseText} (filtrati)`;
     }
+    return `${baseText} trovato${plural}`;
   };
-
   const handleDeleteChild = async (childId) => {
-    const child = children.find(c => c.id === childId);
+    const child = currentChildren.find(c => c.id === childId);
     if (!child) return;
 
     if (!window.confirm(`Sei sicuro di voler eliminare il profilo di ${child.name}? Questa azione non può essere annullata.`)) {
@@ -50,7 +92,15 @@ const ChildrenListPage = () => {
 
     try {
       await childrenService.deleteChild(childId);
-      setChildren(children.filter(c => c.id !== childId));
+      if (isSearchMode) {
+        // Refresh search results
+        handleSearchResults({
+          ...searchResults,
+          children: searchResults.children.filter(c => c.id !== childId)
+        });
+      } else {
+        setChildren(children.filter(c => c.id !== childId));
+      }
       setSuccessMessage(`Profilo di ${child.name} eliminato con successo`);
     } catch (err) {
       console.error('Error deleting child:', err);
@@ -96,7 +146,6 @@ const ChildrenListPage = () => {
       </Layout>
     );
   }
-
   return (
     <Layout
       header={<Header title="I Miei Bambini" showUserInfo={true} showLogout={true} />}
@@ -106,6 +155,13 @@ const ChildrenListPage = () => {
         {successMessage && (
           <Alert variant="success" onClose={() => setSuccessMessage(null)}>
             {successMessage}
+          </Alert>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <Alert variant="error" onClose={() => setError(null)}>
+            {error}
           </Alert>
         )}
 
@@ -121,6 +177,13 @@ const ChildrenListPage = () => {
           </div>
           <div className="children-page-actions">
             <Button 
+              variant={selectionMode ? 'outline' : 'secondary'} 
+              size="medium"
+              onClick={toggleSelectionMode}
+            >
+              {selectionMode ? '✖️ Annulla Selezione' : '☑️ Selezione Multipla'}
+            </Button>
+            <Button 
               variant="primary" 
               size="large"
               onClick={handleCreateChild}
@@ -130,9 +193,23 @@ const ChildrenListPage = () => {
           </div>
         </div>
 
+        {/* Advanced Search */}
+        <div className="children-search-section">
+          <AdvancedSearchFilter
+            onSearchResults={handleSearchResults}
+            onLoading={handleSearchLoading}
+            onError={handleSearchError}
+          />
+        </div>        {/* Bulk Action Toolbar */}
+        <BulkActionToolbar 
+          childrenData={currentChildren}
+          onRefresh={fetchChildren}
+        />
+
         {/* Filtri e opzioni */}
         <div className="children-filters-section">
-          <div className="children-filter-item">            <label className="children-checkbox-label">
+          <div className="children-filter-item">
+            <label className="children-checkbox-label">
               <input
                 type="checkbox"
                 checked={includeInactive}
@@ -141,35 +218,49 @@ const ChildrenListPage = () => {
               />
               {' '}Mostra profili inattivi
             </label>
-          </div>
-          <div className="children-stats">
+          </div>          <div className="children-stats">
             <span className="children-count">
-              {children.length} bambino{children.length !== 1 ? 'i' : ''} trovato{children.length !== 1 ? 'i' : ''}
+              {getChildrenCountText()}
             </span>
+            {isSearchMode && searchResults?.total && (
+              <span className="children-search-info">
+                {' '}su {searchResults.total} totali
+              </span>
+            )}
           </div>
         </div>
 
         {/* Lista bambini */}
-        {children.length === 0 ? (
+        {currentChildren.length === 0 ? (
           <div className="children-empty-state">
             <div className="children-empty-icon">👶</div>
-            <div className="children-empty-title">Nessun bambino registrato</div>
-            <div className="children-empty-description">
-              Inizia registrando il profilo del tuo primo bambino per accedere alle funzionalità della piattaforma Smile Adventure.
+            <div className="children-empty-title">
+              {isSearchMode ? 'Nessun bambino trovato' : 'Nessun bambino registrato'}
             </div>
-            <Button 
-              variant="primary" 
-              size="large"
-              onClick={handleCreateChild}
-            >
-              Registra il Primo Bambino
-            </Button>
+            <div className="children-empty-description">
+              {isSearchMode ? (
+                'Prova a modificare i filtri di ricerca per trovare i bambini che stai cercando.'
+              ) : (
+                'Inizia registrando il profilo del tuo primo bambino per accedere alle funzionalità della piattaforma Smile Adventure.'
+              )}
+            </div>
+            {!isSearchMode && (
+              <Button 
+                variant="primary" 
+                size="large"
+                onClick={handleCreateChild}
+              >
+                Registra il Primo Bambino
+              </Button>
+            )}
           </div>
         ) : (
-          <div className="children-grid">            {children.map((child) => (
+          <div className="children-grid">
+            {currentChildren.map((child) => (
               <ChildCard
                 key={child.id}
                 child={child}
+                selectionMode={selectionMode}
                 onDelete={() => handleDeleteChild(child.id)}
                 onEdit={() => handleEditChild(child.id)}
                 onView={() => handleViewChild(child.id)}
@@ -185,7 +276,10 @@ const ChildrenListPage = () => {
 };
 
 // Child Card Component
-const ChildCard = ({ child, onDelete, onEdit, onView, onViewProgress, onViewActivities }) => {
+const ChildCard = ({ child, selectionMode, onDelete, onEdit, onView, onViewProgress, onViewActivities }) => {
+  const { isSelected, toggleSelection } = useBulkSelection();
+  const selected = isSelected(child.id);
+
   const getAgeFromBirthDate = (birthDate) => {
     if (!birthDate) return 'N/A';
     const today = new Date();
@@ -206,9 +300,19 @@ const ChildCard = ({ child, onDelete, onEdit, onView, onViewProgress, onViewActi
     if (level >= 3) return 'medium';
     return 'low';
   };
-
   return (
-    <div className="child-card">
+    <div className={`child-card ${selected ? 'selected' : ''} ${selectionMode ? 'selection-mode' : ''}`}>
+      {selectionMode && (
+        <div className="child-selection-checkbox">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={() => toggleSelection(child.id)}
+            className="selection-checkbox"
+          />
+        </div>
+      )}
+      
       <div className="child-card-header">
         <div className="child-avatar">
           {child.photo_url ? (
@@ -265,46 +369,57 @@ const ChildCard = ({ child, onDelete, onEdit, onView, onViewProgress, onViewActi
           {child.activities_this_week || 0}/10 attività
         </div>
       </div>      <div className="child-card-actions">
-        <Button 
-          variant="outline" 
-          size="small"
-          onClick={onView}
-          className="child-action-btn"
-        >
-          📊 Visualizza
-        </Button>
-        <Button 
-          variant="outline" 
-          size="small"
-          onClick={onViewProgress}
-          className="child-action-btn"
-        >
-          📈 Progressi
-        </Button>
-        <Button 
-          variant="outline" 
-          size="small"
-          onClick={onViewActivities}
-          className="child-action-btn"
-        >
-          🎯 Attività
-        </Button>
-        <Button 
-          variant="outline" 
-          size="small"
-          onClick={onEdit}
-          className="child-action-btn"
-        >
-          ✏️ Modifica
-        </Button>
-        <Button 
-          variant="outline" 
-          size="small"
-          onClick={onDelete}
-          className="child-action-btn child-action-delete"
-        >
-          🗑️ Elimina
-        </Button>
+        {!selectionMode && (
+          <>
+            <Button 
+              variant="outline" 
+              size="small"
+              onClick={onView}
+              className="child-action-btn"
+            >
+              📊 Visualizza
+            </Button>
+            <Button 
+              variant="outline" 
+              size="small"
+              onClick={onViewProgress}
+              className="child-action-btn"
+            >
+              📈 Progressi
+            </Button>
+            <Button 
+              variant="outline" 
+              size="small"
+              onClick={onViewActivities}
+              className="child-action-btn"
+            >
+              🎯 Attività
+            </Button>
+            <Button 
+              variant="outline" 
+              size="small"
+              onClick={onEdit}
+              className="child-action-btn"
+            >
+              ✏️ Modifica
+            </Button>
+            <Button 
+              variant="outline" 
+              size="small"
+              onClick={onDelete}
+              className="child-action-btn child-action-delete"
+            >
+              🗑️ Elimina
+            </Button>
+          </>
+        )}
+        {selectionMode && (
+          <div className="selection-info">
+            <span className="selection-text">
+              {selected ? 'Selezionato' : 'Clicca per selezionare'}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -321,6 +436,7 @@ ChildCard.propTypes = {
     activities_this_week: PropTypes.number,
     is_active: PropTypes.bool
   }).isRequired,
+  selectionMode: PropTypes.bool,
   onDelete: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onView: PropTypes.func.isRequired,
