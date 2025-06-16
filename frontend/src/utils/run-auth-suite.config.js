@@ -32,12 +32,12 @@ const colors = {
   cyan: '\x1b[36m'
 };
 
-// Percorsi configurazione
+// Percorsi configurazione - aggiornati per la nuova posizione in frontend/tests/auth/
 const paths = {
   testsDir: path.resolve(__dirname),
-  projectRoot: path.resolve(__dirname, '../..'),
-  frontendRoot: path.resolve(__dirname, '../../frontend'),
-  backendRoot: path.resolve(__dirname, '../../backend')
+  frontendRoot: path.resolve(__dirname, '../..'),  // frontend/
+  projectRoot: path.resolve(__dirname, '../../..'), // smile_adventure/
+  backendRoot: path.resolve(__dirname, '../../../backend')
 };
 
 // Banner della suite
@@ -49,7 +49,7 @@ ${colors.cyan}${colors.bright}
 ║                     (Centralized Version)                   ║
 ║                                                              ║
 ║  Smile Adventure - Suite completa test autenticazione       ║
-║  Location: smile_adventure/tests/auth/                      ║
+║  Location: smile_adventure/frontend/tests/auth/              ║
 ║  Coverage: Registration, Login, Token Management, RBAC      ║
 ╚══════════════════════════════════════════════════════════════╝
 ${colors.reset}
@@ -158,8 +158,7 @@ const runners = {
     
     console.log(`Found ${files.length} unit test files:`);
     files.forEach(file => console.log(`  - ${path.basename(file)}`));
-    
-    let command = `${config.command} ${config.args} "${paths.testsDir}/"`;
+      let command = `${config.command} ${config.args} "tests/auth/"`;
     
     if (options.coverage) {
       command += ' --coverage --coverageDirectory=coverage/auth';
