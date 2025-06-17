@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Layout, Button, Card, Header } from '../components/UI';
+import { Layout, Button, Card, Header, Footer } from '../components/UI';
 import professionalService from '../services/professionalService';
 import notificationService from '../services/notificationService';
 import './ProfessionalProfilePage.css';
@@ -397,9 +397,9 @@ const ProfessionalProfilePage = () => {
             className="primary large"
           >
             {getButtonText()}
-          </Button>
-        </div>
+          </Button>        </div>
       </div>
+      <Footer />
     </Layout>
   );
 };

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import notificationService from '../services/notificationService';
 import Button from '../components/UI/Button';
-import { Header } from '../components/UI';
+import { Header, Footer } from '../components/UI';
 import './ForgotPasswordPage.css';
 
 const ForgotPasswordPage = () => {
@@ -101,13 +101,12 @@ const ForgotPasswordPage = () => {
               >
                 Non hai ricevuto l&apos;email? Riprova
               </button>
-            </div>
-          </div>
-        </div>
+            </div>          </div>        </div>
       </div>
-      </>
+    </>
     );
   }
+
   return (
     <>
       <Header />
@@ -180,12 +179,11 @@ const ForgotPasswordPage = () => {
                 <li>Verifica che l&apos;indirizzo email sia corretto</li>                <li>Controlla la cartella spam/junk</li>
                 <li>Assicurati che l&apos;account sia stato registrato con questa email</li>
                 <li>Contatta il supporto se il problema persiste</li>
-              </ul>
-            </div>
+              </ul>            </div>
           </details>
-        </div>
+        </div>        </div>
       </div>
-    </div>
+      <Footer />
     </>
   );
 };

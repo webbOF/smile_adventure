@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import notificationService from '../services/notificationService';
 import Button from '../components/UI/Button';
+import { Header, Footer } from '../components/UI';
 import './ResetPasswordPage.css';
 
 const ResetPasswordPage = () => {
@@ -125,92 +126,96 @@ const ResetPasswordPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  if (!tokenValid) {
+  };  if (!tokenValid) {
     return (
-      <div className="reset-password-page">
-        <div className="reset-password-container">
-          <div className="reset-error">
-            <div className="error-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="15" y1="9" x2="9" y2="15"></line>
-                <line x1="9" y1="9" x2="15" y2="15"></line>
-              </svg>
-            </div>
-            
-            <h1>Link non valido</h1>
-            <p>
-              Il link per il reset della password non è valido o è scaduto.
-            </p>
-            
-            <div className="error-actions">
-              <Link to="/forgot-password">
-                <Button variant="primary" size="large">
-                  Richiedi nuovo link
-                </Button>
-              </Link>
+      <>
+        <Header />
+        <div className="reset-password-page">
+          <div className="reset-password-container">
+            <div className="reset-error">
+              <div className="error-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+              </div>
               
-              <Link to="/login">
-                <Button variant="outline" size="large">
-                  Torna al Login
-                </Button>
-              </Link>
+              <h1>Link non valido</h1>
+              <p>
+                Il link per il reset della password non è valido o è scaduto.
+              </p>
+              
+              <div className="error-actions">
+                <Link to="/forgot-password">
+                  <Button variant="primary" size="large">
+                    Richiedi nuovo link
+                  </Button>
+                </Link>
+                
+                <Link to="/login">
+                  <Button variant="outline" size="large">
+                    Torna al Login
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </div>        <Footer />
+      </>
     );
   }
 
   if (isSuccess) {
     return (
+      <>
+        <Header />
+        <div className="reset-password-page">
+          <div className="reset-password-container">
+            <div className="reset-success">
+              <div className="success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="20,6 9,17 4,12"></polyline>
+                </svg>
+              </div>
+              
+              <h1>Password Reimpostata!</h1>
+              <p>
+                La tua password è stata reimpostata con successo. 
+                Ora puoi effettuare il login con la nuova password.
+              </p>
+              
+              <div className="success-message">
+                <p>Verrai reindirizzato automaticamente alla pagina di login...</p>
+              </div>
+              
+              <Link to="/login">
+                <Button variant="primary" size="large">
+                  Vai al Login
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+        <Footer />      </>
+    );
+  }  return (
+    <>
+      <Header />
       <div className="reset-password-page">
         <div className="reset-password-container">
-          <div className="reset-success">
-            <div className="success-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="20,6 9,17 4,12"></polyline>
-              </svg>
-            </div>
-            
-            <h1>Password Reimpostata!</h1>
+          <div className="reset-password-header">
+            <h1>Imposta Nuova Password</h1>
             <p>
-              La tua password è stata reimpostata con successo. 
-              Ora puoi effettuare il login con la nuova password.
+              Scegli una nuova password sicura per il tuo account.
             </p>
-            
-            <div className="success-message">
-              <p>Verrai reindirizzato automaticamente alla pagina di login...</p>
+          </div>
+
+          {errors.general && (
+            <div className="alert alert-error">
+              {errors.general}
             </div>
-            
-            <Link to="/login">
-              <Button variant="primary" size="large">
-                Vai al Login
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="reset-password-page">
-      <div className="reset-password-container">
-        <div className="reset-password-header">
-          <h1>Imposta Nuova Password</h1>
-          <p>
-            Scegli una nuova password sicura per il tuo account.
-          </p>
-        </div>
-
-        {errors.general && (
-          <div className="alert alert-error">
-            {errors.general}
-          </div>
-        )}
+          )}
 
         <form onSubmit={handleSubmit} className="reset-password-form">
           <div className="form-group">
@@ -272,19 +277,17 @@ const ResetPasswordPage = () => {
             disabled={isLoading}
           >
             {isLoading ? 'Reimpostazione...' : 'Reimposta Password'}
-          </Button>
-        </form>
-
-        <div className="reset-password-footer">
-          <p>
-            Ti sei ricordato della password?{' '}
-            <Link to="/login" className="auth-link">
-              Torna al Login
-            </Link>
-          </p>
-        </div>
+          </Button>        </form>          <div className="reset-password-footer">
+            <p>
+              Ti sei ricordato della password?{' '}
+              <Link to="/login" className="auth-link">
+                Torna al Login
+              </Link>
+            </p>
+          </div>        </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 };
 

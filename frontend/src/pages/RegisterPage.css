@@ -1,6 +1,33 @@
 /* RegisterPage.css - Modern Design */
 /* Stili specifici per la pagina di registrazione che estende quelli del login */
 
+/* Auth page modificata per layout flessibile */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;  justify-content: center;
+  padding: 1rem;
+  padding-bottom: 200px; /* Spazio per il footer */
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 25%, 
+    #667eea 50%, 
+    #764ba2 75%, 
+    #667eea 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Auth page wrapper per gestire header e footer */
+.auth-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Usa gli stessi stili base di auth-page dal LoginPage */
 
 /* Container più ampio per più campi */
@@ -406,6 +433,18 @@
 .auth-link:hover {
   color: #5a67d8;
   text-decoration: underline;
+}
+
+/* Posizionamento footer in basso */
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Responsive Design */

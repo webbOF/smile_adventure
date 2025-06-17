@@ -298,12 +298,11 @@ const ChildProgressPage = () => {
               <div className="summary-card-label">Punti Totali</div>
             </div>
           </div>
-          
-          <div className="progress-summary-card">
+            <div className="progress-summary-card">
             <div className="summary-card-icon">🏆</div>
             <div className="summary-card-content">
               <div className="summary-card-value">
-                {achievements.filter(a => a.unlocked).length}
+                {Array.isArray(achievements) ? achievements.filter(a => a.unlocked).length : 0}
               </div>
               <div className="summary-card-label">Achievement</div>
             </div>
@@ -316,11 +315,10 @@ const ChildProgressPage = () => {
               <div className="summary-card-label">Livello</div>
             </div>
           </div>
-          
-          <div className="progress-summary-card">
+            <div className="progress-summary-card">
             <div className="summary-card-icon">📝</div>
             <div className="summary-card-content">
-              <div className="summary-card-value">{progressNotes.length}</div>
+              <div className="summary-card-value">{Array.isArray(progressNotes) ? progressNotes.length : 0}</div>
               <div className="summary-card-label">Note Periodo</div>
             </div>
           </div>
@@ -356,25 +354,27 @@ const ChildProgressPage = () => {
                 />
               )}
             </div>
-          </div>
-
-          {/* Achievements */}
+          </div>          {/* Achievements */}
           <div className="progress-section">
-            <h2 className="progress-section-title">Achievement</h2>
-            <div className="achievements-grid">
-              {achievements.map((achievement, index) => (
-                <AchievementBadge key={index} achievement={achievement} />
+            <h2 className="progress-section-title">Achievement</h2>            <div className="achievements-grid">
+              {Array.isArray(achievements) && achievements.map((achievement) => (
+                <AchievementBadge key={achievement.id || achievement.title} achievement={achievement} />
               ))}
+              {(!Array.isArray(achievements) || achievements.length === 0) && (
+                <p className="no-achievements">Nessun achievement disponibile per questo periodo.</p>
+              )}
             </div>
           </div>
 
           {/* Progress Notes */}
           <div className="progress-section">
-            <h2 className="progress-section-title">Note sui Progressi</h2>
-            <div className="progress-notes-list">
-              {progressNotes.map((note, index) => (
-                <ProgressNote key={index} note={note} />
+            <h2 className="progress-section-title">Note sui Progressi</h2>            <div className="progress-notes-list">
+              {Array.isArray(progressNotes) && progressNotes.map((note) => (
+                <ProgressNote key={note.id || note.created_at || Math.random()} note={note} />
               ))}
+              {(!Array.isArray(progressNotes) || progressNotes.length === 0) && (
+                <p className="no-notes">Nessuna nota disponibile per questo periodo.</p>
+              )}
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Card, Button, Badge, Header } from '../components/UI';
+import { Card, Button, Badge, Header, Footer } from '../components/UI';
 import Layout from '../components/UI/Layout';
 import './ArticlesPage.css';
 
@@ -210,10 +210,10 @@ const ArticlesPage = () => {
                   Iscriviti
                 </Button>
               </div>
-            </div>
-          </Card>
+            </div>          </Card>
         </div>
       </div>
+      <Footer />
     </Layout>
   );
 };

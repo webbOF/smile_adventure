@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { validateEmail, validatePassword } from '../utils/validation';
 import notificationService from '../services/notificationService';
 import { ROUTES } from '../utils/constants';
-import { Header } from '../components/UI';
+import { Header, Footer } from '../components/UI';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -91,8 +91,7 @@ const LoginPage = () => {
         console.error('Login error:', error);
       }
       notificationService.error(error.message || 'Errore durante il login. Riprova.');
-    } finally {
-      setIsSubmitting(false);
+    } finally {      setIsSubmitting(false);
     }
   };
   return (
@@ -102,7 +101,8 @@ const LoginPage = () => {
         <div className="auth-background">
           <div className="gradient-orb orb-1"></div>
           <div className="gradient-orb orb-2"></div>
-          <div className="gradient-orb orb-3"></div>          <div className="floating-particles">
+          <div className="gradient-orb orb-3"></div>
+          <div className="floating-particles">
             {Array.from({ length: 15 }, (_, i) => (
               <div key={`particle-${i}`} className={`particle particle-${i + 1}`}></div>
             ))}
@@ -204,18 +204,18 @@ const LoginPage = () => {
                 {isSubmitting ? 'Accesso in corso...' : 'Accedi'}
               </span>
               {isSubmitting && <div className="button-spinner"></div>}
-            </button>
-          </form>
+            </button>          </form>
           
           <div className="auth-footer">
             <p className="auth-footer-text">
               Non hai un account?{' '}
               <Link to={ROUTES.REGISTER} className="auth-link">
-                Registrati qui              </Link>
-            </p>
-          </div>
+                Registrati qui
+              </Link>
+            </p>          </div>
         </div>
       </div>
+      <Footer />
     </div>
     </>
   );

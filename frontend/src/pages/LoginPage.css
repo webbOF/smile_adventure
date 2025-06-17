@@ -9,9 +9,9 @@
 .auth-page {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;  justify-content: center;
   padding: 1rem;
+  padding-bottom: 200px; /* Spazio per il footer */
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, 
@@ -509,6 +509,25 @@ label[for="password"].form-label {
 .auth-link:hover {
   color: #5a67d8;
   background: rgba(102, 126, 234, 0.1);
+}
+
+/* Auth page wrapper per gestire header e footer */
+.auth-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Posizionamento footer in basso */
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Responsive Design */

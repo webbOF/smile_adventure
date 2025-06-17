@@ -36,8 +36,8 @@
 
 /* Search Filters */
 .search-filters {
-  max-width: 1200px;
-  margin: 0 auto 2rem auto;
+  width: 100%;
+  margin: 0 0 2rem 0;
   padding: 0 1rem;
 }
 
@@ -98,8 +98,7 @@
 
 /* Search Results */
 .search-results {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   padding: 0 1rem;
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Layout, Button, Card, Header } from '../components/UI';
+import { Layout, Button, Card, Header, Footer } from '../components/UI';
 import { ProfileCompletionBar, EnhancedUserPreferences } from '../components/Profile';
 import profileService from '../services/profileService';
 import { authService } from '../services/authService';
@@ -571,9 +571,9 @@ const ProfilePage = () => {
           {activeTab === 'general' && renderGeneralTab()}
           {activeTab === 'avatar' && renderAvatarTab()}
           {activeTab === 'preferences' && renderPreferencesTab()}
-          {activeTab === 'security' && renderSecurityTab()}
-        </div>
+          {activeTab === 'security' && renderSecurityTab()}        </div>
       </div>
+      <Footer />
     </Layout>
   );
 };

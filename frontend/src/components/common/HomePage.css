@@ -157,8 +157,7 @@
 }
 
 .homepage-nav {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -232,10 +231,9 @@
   left: 100%;
 }
 
-/* Section Gemerale */
+/* Section Generale */
 .homepage-section-content {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   padding: 0 2rem;
 }
 
@@ -281,13 +279,11 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
+  grid-template-columns: 1fr 1fr;  gap: 4rem;
   align-items: center;
   animation: fadeInUp 1s ease-out;
   padding: 2rem;
-  margin: 0 auto;
-  max-width: 1400px;
+  width: 100%;
 }
 
 /* Contenitore del testo con padding aggiuntivo */
@@ -832,8 +828,7 @@
 }
 
 .homepage-footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   padding: 0 2rem;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

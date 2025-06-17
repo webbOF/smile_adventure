@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Card, Button, Header } from '../components/UI';
+import { Card, Button, Header, Footer } from '../components/UI';
 import Layout from '../components/UI/Layout';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../utils/constants';
@@ -266,9 +266,9 @@ const AboutUsPage = () => {
                 </Button>
               </div>
             </div>
-          </Card>
-        </section>
+          </Card>        </section>
       </div>
+      <Footer />
     </Layout>
   );
 };

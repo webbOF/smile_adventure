@@ -121,7 +121,6 @@ const ProfessionalSearchPage = () => {
   useEffect(() => {
     searchProfessionals();
   }, []);
-
   const searchProfessionals = async (resetPage = false) => {
     setLoading(true);
     try {
@@ -131,7 +130,24 @@ const ProfessionalSearchPage = () => {
         offset: (page - 1) * filters.limit
       };
 
-      const results = await professionalService.searchProfessionals(searchFilters);
+      const response = await professionalService.searchProfessionals(searchFilters);
+        // Assicuriamo che professionals sia sempre un array
+      let results = [];
+      let total = 0;
+      
+      if (Array.isArray(response)) {
+        results = response;
+        total = response.length;
+      } else if (response && Array.isArray(response.data)) {
+        results = response.data;
+        total = response.total || response.data.length;
+      } else if (response && response.professionals && Array.isArray(response.professionals)) {
+        results = response.professionals;
+        total = response.total || response.professionals.length;
+      } else {
+        console.warn('Unexpected response format:', response);
+        // results e total mantengono i valori di default ([] e 0)
+      }
       
       if (resetPage) {
         setProfessionals(results);
@@ -140,9 +156,12 @@ const ProfessionalSearchPage = () => {
         setProfessionals(prev => page === 1 ? results : [...prev, ...results]);
       }
       
-      setTotalResults(results.length);
+      setTotalResults(total);
     } catch (error) {
       console.error('Error searching professionals:', error);
+      notificationService.showError('Errore nella ricerca dei professionisti');
+      setProfessionals([]); // Fallback su array vuoto
+      setTotalResults(0);
     } finally {
       setLoading(false);
     }
@@ -171,14 +190,14 @@ const ProfessionalSearchPage = () => {
     setCurrentPage(1);
     searchProfessionals(true);
   };
-
   const handleContactProfessional = (professional) => {
     if (professional.phone) {
       window.open(`tel:${professional.phone}`, '_blank');
     } else if (professional.website) {
       window.open(professional.website, '_blank', 'noopener,noreferrer');
     } else {
-      notificationService.showInfo('Informazioni di contatto non disponibili');    }
+      notificationService.showInfo('Informazioni di contatto non disponibili');
+    }
   };
   return (
     <Layout header={<Header />}>
@@ -243,15 +262,15 @@ const ProfessionalSearchPage = () => {
               </div>
             </div>
           </Card>
-        </div>
-
-        <div className="search-results">
-          {professionals.length > 0 && (
+        </div>        <div className="search-results">
+          {Array.isArray(professionals) && professionals.length > 0 && (
             <div className="results-header">
               <p>{totalResults} professionisti trovati</p>
             </div>
-          )}          <div className="professionals-grid">
-            {professionals.map(professional => (
+          )}
+
+          <div className="professionals-grid">
+            {Array.isArray(professionals) && professionals.map(professional => (
               <ProfessionalCard 
                 key={`professional-${professional.id}`} 
                 professional={professional}
@@ -260,14 +279,14 @@ const ProfessionalSearchPage = () => {
             ))}
           </div>
 
-          {professionals.length === 0 && !loading && (
+          {(!Array.isArray(professionals) || professionals.length === 0) && !loading && (
             <div className="no-results">
               <h3>Nessun professionista trovato</h3>
               <p>Prova a modificare i filtri di ricerca o a cercare in un&apos;area più ampia.</p>
             </div>
           )}
 
-          {professionals.length > 0 && totalResults >= filters.limit && (
+          {Array.isArray(professionals) && professionals.length > 0 && totalResults >= filters.limit && (
             <div className="load-more">
               <Button 
                 onClick={handleLoadMore} 

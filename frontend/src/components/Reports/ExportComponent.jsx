@@ -79,9 +79,11 @@ const ExportComponent = ({
     // Placeholder per PDF export
     alert('Export PDF sarà implementato nella prossima versione');
   };
-
   const generateCSVContent = (data) => {
-    if (!data || !data.children_stats) return '';
+    if (!data || !Array.isArray(data.children_stats)) {
+      console.warn('Invalid data format for CSV export:', data);
+      return 'Nessun dato disponibile per l\'esportazione';
+    }
     
     const headers = ['Bambino', 'Punti', 'Livello', 'Attività Questa Settimana', 'Ultimo Accesso'];
     const rows = data.children_stats.map(child => [

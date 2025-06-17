@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useAuth } from '../hooks/useAuth';
-import { Layout, Button, Spinner, Alert, Header } from '../components/UI';
+import { Layout, Button, Spinner, Alert, Header, Footer } from '../components/UI';
 import { USER_ROLES, ROUTES } from '../utils/constants';
 import dashboardService from '../services/dashboardService';
 import './DashboardPage.css';
@@ -554,9 +554,9 @@ const DashboardPage = () => {
           <p className="dashboard-main-subtitle">
             Dashboard {getRoleDisplayName(user.role)} • Gestisci le tue attività
           </p>
-        </div>
-        {getDashboardComponent()}
+        </div>        {getDashboardComponent()}
       </div>
+      <Footer />
     </Layout>
   );
 };

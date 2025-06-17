@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, Button, Header } from '../components/UI';
+import { Layout, Button, Header, Footer } from '../components/UI';
 import PhotoUpload from '../components/PhotoUpload';
 import SensoryProfileEditor from '../components/SensoryProfileEditor';
 import { childrenService } from '../services/childrenService';
@@ -314,9 +314,9 @@ const ChildCreatePage = () => {
             >
               {loading ? 'Creazione in corso...' : '✅ Crea Profilo'}
             </Button>
-          </div>
-        </form>
+          </div>        </form>
       </div>
+      <Footer />
     </Layout>
   );
 };

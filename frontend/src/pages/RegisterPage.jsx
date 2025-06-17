@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { validateForm } from '../utils/validation';
 import notificationService from '../services/notificationService';
 import { USER_ROLES, ROUTES } from '../utils/constants';
-import { Header } from '../components/UI';
+import { Header, Footer } from '../components/UI';
 import './RegisterPage.css';
 
 const RegisterPage = () => {
@@ -126,7 +126,6 @@ const RegisterPage = () => {
       setIsSubmitting(false);
     }
   };
-
   const roleOptions = [
     { value: USER_ROLES.PARENT, label: 'Genitore/Tutore' },
     { value: USER_ROLES.PROFESSIONAL, label: 'Professionista Sanitario' }
@@ -350,18 +349,18 @@ const RegisterPage = () => {
                 {isSubmitting ? 'Registrazione in corso...' : 'Registrati'}
               </span>
               {isSubmitting && <div className="button-spinner"></div>}
-            </button>
-          </form>
+            </button>          </form>
           
           <div className="auth-footer">
             <p className="auth-footer-text">
               Hai già un account?{' '}
-              <Link to={ROUTES.LOGIN} className="auth-link">                Accedi qui
+              <Link to={ROUTES.LOGIN} className="auth-link">
+                Accedi qui
               </Link>
-            </p>
-          </div>
+            </p>          </div>
         </div>
       </div>
+      <Footer />
     </div>
     </>
   );

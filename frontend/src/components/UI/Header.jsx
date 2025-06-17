@@ -68,12 +68,13 @@ const Header = ({
     { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
     { label: 'Accedi', path: ROUTES.LOGIN, icon: '🔐' },
     { label: 'Registrati', path: ROUTES.REGISTER, icon: '📝' }
-  ];
-  // Navigation items per genitori autenticati
+  ];  // Navigation items per genitori autenticati
   const getParentNavItems = () => [
     { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: '📊' },
     { label: 'I Miei Bambini', path: ROUTES.CHILDREN, icon: '👶' },
     { label: 'Trova Professionisti', path: ROUTES.PROFESSIONAL_SEARCH, icon: '🔍' },
+    { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
+    { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
     { label: 'Profilo', path: ROUTES.PROFILE, icon: '👤' }
   ];  // Navigation items per professionisti autenticati
   const getProfessionalNavItems = () => [
@@ -81,13 +82,17 @@ const Header = ({
     { label: 'Il Mio Profilo', path: ROUTES.PROFESSIONAL_PROFILE, icon: '👤' },
     { label: 'Trova Colleghi', path: ROUTES.PROFESSIONAL_SEARCH, icon: '👥' },
     { label: 'Pazienti', path: '/clinical/patients', icon: '🏥' },
-    { label: 'Analytics', path: '/clinical/analytics', icon: '📈' }
+    { label: 'Analytics', path: '/clinical/analytics', icon: '📈' },
+    { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
+    { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' }
   ];  // Navigation items per admin
   const getAdminNavItems = () => [
     { label: 'Admin Dashboard', path: '/admin', icon: '⚡' },
     { label: 'Gestione Utenti', path: '/admin/users', icon: '👥' },
     { label: 'Analytics', path: '/admin/analytics', icon: '📊' },
     { label: 'Sistema', path: '/admin/system', icon: '⚙️' },
+    { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
+    { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
     { label: 'Profilo', path: ROUTES.PROFILE, icon: '👤' }
   ];
 
