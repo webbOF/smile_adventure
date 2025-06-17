@@ -7,13 +7,15 @@
 
 /* Pagina principale */
 .auth-page {
-  min-height: 100vh;
   display: flex;
-  align-items: center;  justify-content: center;
-  padding: 1rem;
-  padding-bottom: 200px; /* Spazio per il footer */
-  position: relative;
-  overflow: hidden;
+  flex-direction: column; /* Assicura che i figli diretti di auth-page siano in colonna se ce ne fosse più di uno che conta per il flusso principale */
+  align-items: center; /* Centra .auth-container orizzontalmente */
+  justify-content: center; /* Centra .auth-container verticalmente */
+  flex-grow: 1; /* Fa sì che .auth-page occupi lo spazio verticale disponibile in .app */
+  width: 100%; /* Occupa tutta la larghezza disponibile */
+  padding: 1rem; /* Padding interno */
+  position: relative; /* Necessario per gli elementi di sfondo posizionati assolutamente */
+  overflow: hidden; /* Per contenere gli elementi di sfondo */
   background: linear-gradient(135deg, 
     #667eea 0%, 
     #764ba2 25%, 
@@ -125,12 +127,13 @@
   100% { transform: translateY(-100px) translateX(50px) scale(0); opacity: 0; }
 }
 
-/* Container principale */
+/* Container principale del form */
 .auth-container {
   width: 100%;
-  max-width: 480px;
-  position: relative;
-  z-index: 10;
+  max-width: 480px; /* Controlla la larghezza massima del form */
+  position: relative; /* Mantiene il contesto di stacking se necessario */
+  z-index: 10; /* Assicura che sia sopra lo sfondo animato */
+  /* Non ha bisogno di display:flex o margin:auto qui se .auth-page lo centra */
 }
 
 /* Card di autenticazione */
@@ -144,6 +147,9 @@
   padding: 3rem 2.5rem;
   animation: slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Se la card è troppo alta, potrebbe essere necessario max-height e overflow-y: auto */
+  /* max-height: calc(100vh - var(--header-height, 64px) - var(--footer-height, 0px) - 4rem); /* Esempio di calcolo altezza */
+  /* overflow-y: auto; */
 }
 
 @keyframes slideInUp {

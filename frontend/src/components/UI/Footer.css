@@ -1,9 +1,15 @@
 /* Footer Component Styles */
 .app-footer {
-  background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+  background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%) !important; /* Sfondo scuro del footer, !important per testare se è un problema di specificità */
   color: white;
-  margin-top: auto;
+  margin-top: auto; /* Spinge il footer in fondo al contenitore flex .app */
   width: 100%;
+  position: static !important; /* Assicura che non sia fixed/sticky */
+  bottom: auto !important; /* Override any bottom positioning */
+  left: auto !important; /* Override any left positioning */
+  right: auto !important; /* Override any right positioning */
+  top: auto !important; /* Override any top positioning */
+  z-index: 100; /* Assicura che sia visibile sopra altri elementi se ci sono sovrapposizioni */
 }
 
 .footer-content {

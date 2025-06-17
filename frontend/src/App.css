@@ -3,7 +3,9 @@
 
 .app {
   min-height: 100vh;
-  background-color: var(--background-color, #f9fafb);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color, #f9fafb); /* Sfondo di fallback per l'intera app */
   color: var(--text-primary, #111827);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',

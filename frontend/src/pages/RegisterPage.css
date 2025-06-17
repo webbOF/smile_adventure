@@ -3,11 +3,11 @@
 
 /* Auth page modificata per layout flessibile */
 .auth-page {
-  min-height: 100vh;
   display: flex;
-  align-items: center;  justify-content: center;
+  flex-grow: 1; /* Add */
+  align-items: center;
+  justify-content: center;
   padding: 1rem;
-  padding-bottom: 200px; /* Spazio per il footer */
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, 
@@ -20,15 +20,6 @@
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
 }
-
-/* Auth page wrapper per gestire header e footer */
-.auth-page-wrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Usa gli stessi stili base di auth-page dal LoginPage */
 
 /* Container più ampio per più campi */
 .auth-container {
@@ -237,40 +228,12 @@
   cursor: not-allowed;
 }
 
-.form-select {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-  background: white;
-  cursor: pointer;
-}
-
-.form-select:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-select.error {
-  border-color: #e53e3e;
-  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
-}
-
 .error-message {
   display: block;
   color: #e53e3e;
   font-size: 0.875rem;
   margin-top: 0.25rem;
   font-weight: 500;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
 }
 
 .role-selection {
