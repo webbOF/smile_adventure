@@ -148,7 +148,7 @@ const ChildrenListContent = () => {
   }
   return (
     <Layout
-      header={<Header title="I Miei Bambini" showUserInfo={true} showLogout={true} />}
+      header={<Header title="Smile Adventure" showUserInfo={true} showLogout={true} />}
     >
       <div className="children-page-container">
         {/* Success Message */}

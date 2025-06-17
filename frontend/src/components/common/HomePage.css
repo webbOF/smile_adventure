@@ -30,9 +30,7 @@
   background-image: 
     radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
     radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 100px 100px, 150px 150px, 200px 200px;
-  animation: float 20s ease-in-out infinite;
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);  background-size: 100px 100px, 150px 150px, 200px 200px;
   pointer-events: none;
 }
 
@@ -46,9 +44,7 @@
   height: 100%;
   background-image: 
     radial-gradient(circle at 60% 30%, rgba(255, 255, 255, 0.08) 3px, transparent 3px),
-    radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.06) 2px, transparent 2px);
-  background-size: 200px 200px, 300px 300px;
-  animation: float 25s ease-in-out infinite reverse;
+    radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.06) 2px, transparent 2px);  background-size: 200px 200px, 300px 300px;
   pointer-events: none;
 }
 
@@ -64,19 +60,6 @@
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
   100% { transform: scale(1); }
-}
-
-/* Shimmer effect */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-/* Bounce animation */
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-10px); }
-  60% { transform: translateY(-5px); }
 }
 
 /* Glow effect */

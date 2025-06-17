@@ -15,6 +15,7 @@ const Card = ({
   onClick,
   className = '',
   headerAction,
+  href, // Added href prop
   ...props
 }) => {
   const cardClasses = [
@@ -23,30 +24,47 @@ const Card = ({
     `card--${size}`,
     `card--${padding}`,
     hover ? 'card--hover' : '',
-    clickable ? 'card--clickable' : '',
+    (clickable || href) ? 'card--clickable' : '', // Make clickable if href is present
     className
   ].filter(Boolean).join(' ');
 
   const handleClick = (e) => {
+    if (href) {
+      // If it's an external link, let the browser handle it.
+      // onClick might be used for analytics or other purposes.
+      if (onClick) onClick(e);
+      return; 
+    }
     if (clickable && onClick) {
       onClick(e);
     }
   };
   const handleKeyDown = (e) => {
+    if (href && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      // For links, Enter/Space should trigger navigation.
+      // We can simulate a click or directly navigate.
+      // Simulating click is often better to respect any onClick logic.
+      e.currentTarget.click(); 
+      return;
+    }
     if (clickable && onClick && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
       onClick(e);
     }
   };
 
-  const CardElement = clickable ? 'button' : 'div';
+  const CardElement = href ? 'a' : (clickable ? 'button' : 'div');
 
   return (
     <CardElement
       className={cardClasses}
-      onClick={clickable ? handleClick : undefined}
-      onKeyDown={clickable ? handleKeyDown : undefined}
-      type={clickable ? 'button' : undefined}
+      onClick={handleClick} // Always attach handleClick
+      onKeyDown={handleKeyDown} // Always attach handleKeyDown
+      type={(clickable && !href) ? 'button' : undefined} // Set type only if it's a button
+      href={href} // Add href if present
+      target={href ? '_blank' : undefined} // Open external links in new tab
+      rel={href ? 'noopener noreferrer' : undefined} // Security for external links
       {...props}
     >
       {(title || subtitle || headerAction) && (
@@ -87,7 +105,8 @@ Card.propTypes = {
   clickable: PropTypes.bool,
   onClick: PropTypes.func,
   className: PropTypes.string,
-  headerAction: PropTypes.node
+  headerAction: PropTypes.node,
+  href: PropTypes.string // Added href proptype
 };
 
 export default Card;

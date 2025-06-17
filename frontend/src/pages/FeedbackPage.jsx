@@ -9,14 +9,14 @@ const feedbackForms = [
     title: 'Feedback sulla Piattaforma',
     description: 'Condividi la tua opinione generale sull\'utilizzo di Smile Adventure.',
     icon: '🗣️',
-    url: 'https://forms.gle/placeholderplatformfeedback', // Sostituisci con il tuo URL reale
+    url: 'https://forms.gle/TVt1W28GtstYf3st7', // Updated URL
   },
   {
     id: 'feature-suggestions',
     title: 'Suggerimenti per Nuove Funzionalità',
     description: 'Hai idee per migliorare la piattaforma o aggiungere nuove attività?',
     icon: '💡',
-    url: 'https://forms.gle/placeholdersuggestions', // Sostituisci con il tuo URL reale
+    url: 'https://forms.gle/2xjwTHxZN4n3sHCg8', // Updated URL
   },
   {
     id: 'technical-issues',

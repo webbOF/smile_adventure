@@ -17,17 +17,18 @@ const ArticlesPage = () => {
       id: 1,
       title: "Come Preparare il Bambino alla Prima Visita Dentistica",
       excerpt: "Consigli pratici per rendere la prima esperienza dal dentista un momento positivo e sereno per il tuo bambino.",
-      content: "La prima visita dentistica è un momento importante nella vita di un bambino. Con i giusti preparativi e approccio, può diventare un'esperienza positiva che getta le basi per una buona salute orale...",
+      content: "La prima visita dentistica è un momento importante nella vita di un bambino. Con i giusti preparativi e approccio, può diventare un\\'esperienza positiva che getta le basi per una buona salute orale...",
       category: "salute-orale",
       author: "Dr.ssa Maria Rossi",
       publishDate: "2024-12-15",
       readTime: "5 min",
       image: "/api/placeholder/400/250",
-      tags: ["prima visita", "bambini", "dentista", "ansia"]
+      tags: ["prima visita", "bambini", "dentista", "ansia"],
+      externalLink: "https://www.autismspeaks.org/autism-diagnostic-criteria-dsm-5"
     },
     {
       id: 2,
-      title: "L'Importanza del Gioco nella Terapia Infantile",
+      title: "L\\'Importanza del Gioco nella Terapia Infantile",
       excerpt: "Scopri come il gioco digitale può essere utilizzato come strumento terapeutico efficace per i bambini.",
       content: "Il gioco è il linguaggio naturale dei bambini. Attraverso attività ludiche mirate, è possibile raggiungere obiettivi terapeutici importanti...",
       category: "terapia",
@@ -35,43 +36,47 @@ const ArticlesPage = () => {
       publishDate: "2024-12-10",
       readTime: "7 min",
       image: "/api/placeholder/400/250",
-      tags: ["gioco", "terapia", "sviluppo", "psicologia"]
+      tags: ["gioco", "terapia", "sviluppo", "psicologia"],
+      externalLink: "https://www.ncbi.nlm.nih.gov/books/NBK573609/"
     },
     {
       id: 3,
       title: "Tecnologia e Innovazione nella Cura Pediatrica",
-      excerpt: "Le nuove tecnologie digitali stanno rivoluzionando l'approccio alla cura e al benessere dei bambini.",
-      content: "L'integrazione di tecnologie innovative nella pratica pediatrica apre nuove possibilità per il trattamento e la prevenzione...",
+      excerpt: "Le nuove tecnologie digitali stanno rivoluzionando l\\'approccio alla cura e al benessere dei bambini.",
+      content: "L\\'integrazione di tecnologie innovative nella pratica pediatrica apre nuove possibilità per il trattamento e la prevenzione...",
       category: "tecnologia",
       author: "Dr. Francesco Verde",
       publishDate: "2024-12-05",
       readTime: "6 min",
       image: "/api/placeholder/400/250",
-      tags: ["tecnologia", "innovazione", "pediatria", "digitale"]
+      tags: ["tecnologia", "innovazione", "pediatria", "digitale"],
+      externalLink: "https://www.mastermindbehavior.com/post/how-to-address-repetitive-behaviors-in-aba-therapy"
     },
     {
       id: 4,
       title: "Alimentazione e Salute Dentale nei Bambini",
-      excerpt: "Una guida completa su come l'alimentazione influisce sulla salute dei denti nei più piccoli.",
-      content: "L'alimentazione gioca un ruolo fondamentale nello sviluppo e mantenimento di denti sani nei bambini...",
+      excerpt: "Una guida completa su come l\\'alimentazione influisce sulla salute dei denti nei più piccoli.",
+      content: "L\\'alimentazione gioca un ruolo fondamentale nello sviluppo e mantenimento di denti sani nei bambini...",
       category: "salute-orale",
       author: "Dr.ssa Anna Gialli",
       publishDate: "2024-11-28",
       readTime: "8 min",
       image: "/api/placeholder/400/250",
-      tags: ["alimentazione", "prevenzione", "carie", "nutrizione"]
+      tags: ["alimentazione", "prevenzione", "carie", "nutrizione"],
+      externalLink: "https://www.psychiatry.org/news-room/apa-blogs/understand-stimming-repetitive-behaviors-purpose"
     },
     {
       id: 5,
-      title: "Gestire l'Ansia del Bambino Durante le Cure Mediche",
+      title: "Gestire l\\'Ansia del Bambino Durante le Cure Mediche",
       excerpt: "Strategie efficaci per aiutare i bambini a superare la paura delle visite mediche e dentistiche.",
-      content: "L'ansia medica nei bambini è un fenomeno comune che può essere gestito con le giuste strategie...",
+      content: "L\\'ansia medica nei bambini è un fenomeno comune che può essere gestito con le giuste strategie...",
       category: "psicologia",
       author: "Dr.ssa Elena Azzurri",
       publishDate: "2024-11-20",
       readTime: "6 min",
       image: "/api/placeholder/400/250",
-      tags: ["ansia", "paura", "supporto", "genitori"]
+      tags: ["ansia", "paura", "supporto", "genitori"],
+      externalLink: "https://www.webmd.com/brain/autism/what-is-hyposensitivity"
     }
   ];
 
@@ -128,18 +133,21 @@ const ArticlesPage = () => {
             </div>
           </div>
 
-          {/* Lista articoli */}
+          {/* Contenuto principale degli articoli */}
           <div className="articles-grid">
             {filteredArticles.map(article => (
               <Card
                 key={article.id}
                 className="article-card"
                 hover={true}
-                clickable={true}
-                onClick={() => {
-                  // In futuro, navigare alla pagina dell'articolo
-                  console.log('Apri articolo:', article.id);
-                }}
+                clickable={!!article.externalLink} // Make clickable only if there's an external link
+                href={article.externalLink} // Pass the external link to the Card
+                // onClick={() => {
+                //   // In futuro, navigare alla pagina dell'articolo se non c'è externalLink
+                //   if (!article.externalLink) {
+                //      console.log('Apri articolo interno:', article.id);
+                //   }
+                // }}
               >
                 <div className="article-image">
                   <img 
@@ -194,24 +202,8 @@ const ArticlesPage = () => {
           )}
         </div>
 
-        {/* Newsletter signup */}
-        <div className="newsletter-section">
-          <Card className="newsletter-card" variant="primary">
-            <div className="newsletter-content">
-              <h3>📧 Resta aggiornato</h3>
-              <p>Iscriviti alla nostra newsletter per ricevere i nuovi articoli e consigli utili.</p>
-              <div className="newsletter-form">
-                <input 
-                  type="email" 
-                  placeholder="La tua email"
-                  className="newsletter-input"
-                />
-                <Button variant="secondary">
-                  Iscriviti
-                </Button>
-              </div>
-            </div>          </Card>
-        </div>
+        {/* Newsletter Section - RIMOSSA */}
+
       </div>
       <Footer />
     </Layout>

@@ -4,17 +4,23 @@
  */
 
 .professional-search-page {
+  display: flex; /* Added */
+  flex-direction: column; /* Added */
+  align-items: center; /* Added to center children */
   min-height: 100vh;
   background: linear-gradient(135deg, 
     rgba(52, 152, 219, 0.1) 0%, 
     rgba(46, 204, 113, 0.1) 100%);
-  padding: 2rem 0;
+  padding: 2rem 0; /* Vertical padding for the page */
 }
 
 .search-header {
   text-align: center;
   margin-bottom: 3rem;
-  padding: 0 1rem;
+  width: 100%; /* Take full width available in the centered alignment */
+  max-width: 900px; /* Consistent max-width, adjust as needed */
+  padding: 0 1rem; /* Padding inside the header block */
+  box-sizing: border-box; /* Added */
 }
 
 .search-header h1 {
@@ -35,10 +41,12 @@
 }
 
 /* Search Filters */
-.search-filters {
+.search-filters,
+.professional-search-page > .card.card--default.card--medium.card--default { /* Modificato: aggiunto selettore per la card standalone */
   width: 100%;
-  margin: 0 0 2rem 0;
-  padding: 0 1rem;
+  max-width: 900px;
+  margin-bottom: 2rem;
+  box-sizing: border-box;
 }
 
 .filters-container {
@@ -99,7 +107,10 @@
 /* Search Results */
 .search-results {
   width: 100%;
-  padding: 0 1rem;
+  max-width: 1200px; /* Results can be wider, adjust as needed */
+  padding: 0 1rem; /* Padding for the content within results area */
+  box-sizing: border-box; /* Added */
+  margin-bottom: 2rem; /* Added for spacing */
 }
 
 .results-header {
@@ -117,7 +128,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 2rem;
-  margin-bottom: 2rem;
+  /* margin-bottom: 2rem; /* Spacing handled by .search-results or .load-more */
 }
 
 /* Professional Card */
@@ -318,7 +329,7 @@
 .load-more {
   display: flex;
   justify-content: center;
-  margin-top: 2rem;
+  /* margin-top: 2rem; /* This is fine */
 }
 
 /* Loading */
@@ -329,6 +340,9 @@
   justify-content: center;
   padding: 3rem 1rem;
   gap: 1rem;
+  width: 100%; /* Added */
+  max-width: 900px; /* Added for consistency */
+  box-sizing: border-box; /* Added */
 }
 
 .loading-spinner {
@@ -420,7 +434,7 @@
   }
 
   .professional-card-header,
-  .professional-card-body,
+  .professional-card_body,
   .professional-card-footer {
     padding: 1rem;
   }

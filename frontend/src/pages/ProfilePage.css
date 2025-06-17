@@ -84,6 +84,9 @@
   width: 100%;
   padding: 0 1rem;
   animation: fadeIn 0.3s ease-in-out;
+  display: flex; /* Added */
+  flex-direction: column; /* Added */
+  align-items: center; /* Added */
 }
 
 /* Profile Section */
@@ -180,10 +183,14 @@
 
 /* Forms */
 .profile-form,
-.preferences-form {
+.preferences-form,
+.security-form { /* Added .security-form */
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%; /* Ensure form takes width of its container */
+  max-width: 700px; /* Optional: constrain max-width of form */
+  margin: 0 auto; /* Center form if it's narrower than container */
 }
 
 .form-row {

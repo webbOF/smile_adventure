@@ -36,6 +36,9 @@ const Button = ({
   type = 'button',
   className = '',
   onClick,
+  href, // Added href prop
+  target, // Added target prop
+  rel, // Added rel prop
   ...rest
 }) => {  // Costruisci le classi CSS
   const classes = [
@@ -57,6 +60,48 @@ const Button = ({
     onClick?.(e);
   };
 
+  if (href) {
+    return (
+      <a
+        href={href}
+        className={classes}
+        onClick={handleClick} // Retain onClick for potential analytics or other actions
+        target={target}
+        rel={rel}
+        aria-disabled={disabled || loading}
+        {...rest}
+      >
+        {loading && (
+          <span className="button-spinner" aria-hidden="true">
+            <svg
+              className="button-spinner-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                className="button-spinner-circle"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="button-spinner-path"
+                fill="currentColor"
+                d="m12 2a10 10 0 0 1 10 10h-4a6 6 0 0 0-6-6z"
+              />
+            </svg>
+          </span>
+        )}
+        <span className={`button-content ${loading ? 'button-content--loading' : ''}`}>
+          {children}
+        </span>
+      </a>
+    );
+  }
+
   return (
     <button
       type={type}
@@ -65,7 +110,8 @@ const Button = ({
       disabled={disabled || loading}
       aria-disabled={disabled || loading}
       {...rest}
-    >      {loading && (
+    >
+      {loading && (
         <span className="button-spinner" aria-hidden="true">
           <svg
             className="button-spinner-icon"
@@ -108,5 +154,8 @@ Button.propTypes = {
   fullWidth: PropTypes.bool,
   type: PropTypes.oneOf(['button', 'submit', 'reset']),
   className: PropTypes.string,
-  onClick: PropTypes.func
+  onClick: PropTypes.func,
+  href: PropTypes.string, // Added href proptype
+  target: PropTypes.string, // Added target proptype
+  rel: PropTypes.string // Added rel proptype
 };

@@ -141,18 +141,24 @@ export const childrenService = {
    * @returns {Promise<Child[]>}
    */
   async getChildren(includeInactive = false) {
-    try {      const params = new URLSearchParams();
+    try {
+      const params = new URLSearchParams();
       if (includeInactive) {
         params.append('include_inactive', 'true');
       }
       
+      // Utilizza la proprietà .LIST per ottenere la stringa URL corretta
+      const baseUrl = API_ENDPOINTS.CHILDREN.LIST; 
+      
       const queryString = params.toString();
-      const url = queryString ? `${API_ENDPOINTS.CHILDREN}?${queryString}` : API_ENDPOINTS.CHILDREN;
+      // Costruisci l'URL finale correttamente
+      const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
       
       const response = await axiosInstance.get(url);
-      return response.data;    } catch (error) {
+      return response.data;
+    } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching children:', error.response?.data || error.message);
+        console.error('Error fetching children:', error.response?.data || error.message, error);
       }
       throw error;
     }
