@@ -84,6 +84,7 @@ export const ROUTES = {
     // Public content pages
   ARTICLES: '/articles',
   ABOUT_US: '/about-us',
+  FEEDBACK: '/feedback', // Added feedback route
   
   // Error pages
   NOT_FOUND: '/404',

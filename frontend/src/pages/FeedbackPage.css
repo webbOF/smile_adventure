@@ -1,0 +1,236 @@
+/* FeedbackPage.css */
+
+/* Stili principali della pagina di feedback, simili a auth-page */
+.feedback-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Allinea all'inizio per permettere lo scroll se necessario */
+  flex-grow: 1;
+  width: 100%;
+  padding: 2rem 1rem; /* Più padding verticale */
+  position: relative;
+  overflow-x: hidden; /* Nasconde lo scroll orizzontale */
+  overflow-y: auto; /* Permette lo scroll verticale se il contenuto è lungo */
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 25%, 
+    #667eea 50%, 
+    #764ba2 75%, 
+    #667eea 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite; /* Animazione definita in LoginPage.css o globale */
+}
+
+/* Riutilizzo degli stili di sfondo da LoginPage.css */
+/* Assicurati che @keyframes gradientShift, .auth-background, .gradient-orb, .floating-particles siano disponibili globalmente o importati */
+/* Se non lo sono, copia quelle regole qui o in un file CSS globale importato da App.css */
+
+.feedback-container {
+  width: 100%;
+  max-width: 900px; /* Più largo per griglia di card */
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05); /* Leggero sfondo per il container se necessario */
+  border-radius: 16px;
+  /* box-shadow: 0 8px 16px rgba(0,0,0,0.1); */ /* Ombra opzionale */
+}
+
+.feedback-header-content {
+  margin-bottom: 3rem;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.feedback-main-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.feedback-main-subtitle {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.feedback-forms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.feedback-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* Spazia il contenuto verticalmente */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.feedback-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+.feedback-card-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  line-height: 1; /* Per evitare spazio extra */
+}
+
+.feedback-card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+}
+
+.feedback-card-description {
+  font-size: 0.95rem;
+  color: #4a5568;
+  line-height: 1.5;
+  margin-bottom: 1.5rem; /* Spazio prima del bottone */
+  flex-grow: 1; /* Permette alla descrizione di espandersi */
+}
+
+.feedback-button {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  /* Stili specifici del bottone se diversi da quelli globali di Button.jsx */
+}
+
+.feedback-page-footer-link {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.feedback-page-footer-link p {
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 0.5rem;
+}
+
+.feedback-page-footer-link .auth-link { /* Riutilizzo stile link */
+  color: #f0f0f0;
+  font-weight: 600;
+}
+.feedback-page-footer-link .auth-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* Animazioni generiche (se non definite globalmente) */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stili per lo sfondo animato (copiati da LoginPage.css se non globali) */
+/* .auth-background, .gradient-orb, .particle, @keyframes gradientShift, @keyframes float, @keyframes particleFloat */
+/* Dovrebbero essere qui se non sono in un file CSS importato globalmente */
+
+.auth-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0; /* Dietro il contenuto */
+}
+
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(30px);
+  animation: float 20s infinite ease-in-out; /* float deve essere definito */
+}
+
+.orb-1 { width: 300px; height: 300px; top: -150px; right: -150px; animation-delay: 0s; }
+.orb-2 { width: 200px; height: 200px; bottom: -100px; left: -100px; animation-delay: -7s; }
+.orb-3 { width: 150px; height: 150px; top: 50%; left: -75px; animation-delay: -14s; }
+
+.floating-particles { position: absolute; width: 100%; height: 100%; }
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: particleFloat 25s infinite linear; /* particleFloat deve essere definito */
+}
+.particle:nth-child(odd) { background: rgba(255, 255, 255, 0.4); animation-duration: 30s; }
+.particle-1 { top: 10%; left: 10%; animation-delay: 0s; }
+.particle-2 { top: 20%; left: 80%; animation-delay: -2s; }
+.particle-3 { top: 80%; left: 20%; animation-delay: -4s; }
+.particle-4 { top: 30%; left: 70%; animation-delay: -6s; }
+.particle-5 { top: 70%; left: 10%; animation-delay: -8s; }
+.particle-6 { top: 15%; left: 50%; animation-delay: -10s; }
+.particle-7 { top: 85%; left: 60%; animation-delay: -12s; }
+.particle-8 { top: 40%; left: 15%; animation-delay: -14s; }
+.particle-9 { top: 60%; left: 85%; animation-delay: -16s; }
+.particle-10 { top: 25%; left: 25%; animation-delay: -18s; }
+.particle-11 { top: 75%; left: 75%; animation-delay: -20s; }
+.particle-12 { top: 35%; left: 90%; animation-delay: -22s; }
+.particle-13 { top: 90%; left: 40%; animation-delay: -24s; }
+.particle-14 { top: 5%; left: 65%; animation-delay: -26s; }
+.particle-15 { top: 55%; left: 5%; animation-delay: -28s; }
+
+
+@keyframes gradientShift { /* Assicurati sia definito se non globale */
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes float { /* Assicurati sia definito se non globale */
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(30px, -30px) rotate(90deg); }
+  50% { transform: translate(-20px, 20px) rotate(180deg); }
+  75% { transform: translate(-30px, -10px) rotate(270deg); }
+}
+
+@keyframes particleFloat { /* Assicurati sia definito se non globale */
+  0% { transform: translateY(0px) translateX(0px) scale(1); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100px) translateX(50px) scale(0); opacity: 0; }
+}

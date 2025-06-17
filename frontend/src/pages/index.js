@@ -19,3 +19,4 @@ export { default as AdminDashboardPage } from './AdminDashboardPage';
 export { default as ReportsPage } from './ReportsPage';
 export { default as ArticlesPage } from './ArticlesPage';
 export { default as AboutUsPage } from './AboutUsPage';
+export { default as FeedbackPage } from './FeedbackPage';

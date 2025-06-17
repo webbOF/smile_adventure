@@ -24,7 +24,8 @@ import {
   AdminDashboardPage,
   ReportsPage,
   ArticlesPage,
-  AboutUsPage
+  AboutUsPage,
+  FeedbackPage // Added FeedbackPage import
 } from './pages';
 
 // Components
@@ -114,6 +115,10 @@ const AppRoutes = () => {
       <Route 
         path={ROUTES.ABOUT_US} 
         element={<AboutUsPage />}
+      />
+      <Route 
+        path={ROUTES.FEEDBACK} 
+        element={<FeedbackPage />} // Added FeedbackPage route
       />
 
       {/* Protected routes */}

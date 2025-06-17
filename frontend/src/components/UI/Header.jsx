@@ -5,6 +5,7 @@
     { label: 'Home', path: ROUTES.HOME, icon: '🏠' },
     { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
     { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
+    { label: 'Feedback', path: ROUTES.FEEDBACK, icon: '📣' }, // Added Feedback link
     { label: 'Accedi', path: ROUTES.LOGIN, icon: '🔐' },
     { label: 'Registrati', path: ROUTES.REGISTER, icon: '📝' }
   ];ware per diversi stati utente
@@ -66,6 +67,7 @@ const Header = ({
     { label: 'Home', path: ROUTES.HOME, icon: '🏠' },
     { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
     { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
+    { label: 'Feedback', path: ROUTES.FEEDBACK, icon: '📣' }, // Added Feedback link
     { label: 'Accedi', path: ROUTES.LOGIN, icon: '🔐' },
     { label: 'Registrati', path: ROUTES.REGISTER, icon: '📝' }
   ];  // Navigation items per genitori autenticati
@@ -75,6 +77,7 @@ const Header = ({
     { label: 'Trova Professionisti', path: ROUTES.PROFESSIONAL_SEARCH, icon: '🔍' },
     { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
     { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
+    { label: 'Feedback', path: ROUTES.FEEDBACK, icon: '📣' }, // Added Feedback link
     { label: 'Profilo', path: ROUTES.PROFILE, icon: '👤' }
   ];  // Navigation items per professionisti autenticati
   const getProfessionalNavItems = () => [
@@ -84,7 +87,8 @@ const Header = ({
     { label: 'Pazienti', path: '/clinical/patients', icon: '🏥' },
     { label: 'Analytics', path: '/clinical/analytics', icon: '📈' },
     { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
-    { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' }
+    { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
+    { label: 'Feedback', path: ROUTES.FEEDBACK, icon: '📣' }, // Added Feedback link
   ];  // Navigation items per admin
   const getAdminNavItems = () => [
     { label: 'Admin Dashboard', path: '/admin', icon: '⚡' },
@@ -93,6 +97,7 @@ const Header = ({
     { label: 'Sistema', path: '/admin/system', icon: '⚙️' },
     { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
     { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
+    { label: 'Feedback', path: ROUTES.FEEDBACK, icon: '📣' }, // Added Feedback link
     { label: 'Profilo', path: ROUTES.PROFILE, icon: '👤' }
   ];
 
