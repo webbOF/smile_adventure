@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Card, Button, Badge } from '../components/UI';
+import { Card, Button, Badge, Header } from '../components/UI';
 import Layout from '../components/UI/Layout';
 import './ArticlesPage.css';
 
@@ -96,9 +96,8 @@ const ArticlesPage = () => {
   const filteredArticles = selectedCategory === 'all' 
     ? articles 
     : articles.filter(article => article.category === selectedCategory);
-
   return (
-    <Layout>
+    <Layout header={<Header />}>
       <div className="articles-page">
         <div className="articles-header">
           <div className="articles-hero">

@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Layout, Button, Card } from '../components/UI';
+import { Layout, Button, Card, Header } from '../components/UI';
 import professionalService from '../services/professionalService';
 import notificationService from '../services/notificationService';
 import './ProfessionalSearchPage.css';
@@ -180,9 +180,8 @@ const ProfessionalSearchPage = () => {
     } else {
       notificationService.showInfo('Informazioni di contatto non disponibili');    }
   };
-
   return (
-    <Layout>
+    <Layout header={<Header />}>
       <div className="professional-search-page">
         <div className="search-header">
           <h1>Trova Professionisti</h1>

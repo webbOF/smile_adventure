@@ -137,7 +137,13 @@
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  background: white;
+  background: rgba(0, 0, 0, 0.3);
+  color: white !important;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .form-group input:focus,
@@ -146,6 +152,8 @@
   outline: none;
   border-color: var(--color-primary, #3498db);
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  color: white !important;
 }
 
 .form-group input:required,

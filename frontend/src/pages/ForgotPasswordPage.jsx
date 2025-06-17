@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import notificationService from '../services/notificationService';
 import Button from '../components/UI/Button';
+import { Header } from '../components/UI';
 import './ForgotPasswordPage.css';
 
 const ForgotPasswordPage = () => {
@@ -54,19 +55,20 @@ const ForgotPasswordPage = () => {
       setIsLoading(false);
     }
   };
-
   if (isSubmitted) {
     return (
-      <div className="forgot-password-page">
-        <div className="forgot-password-container">
-          <div className="forgot-password-success">
-            <div className="success-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="20,6 9,17 4,12"></polyline>
-              </svg>
-            </div>
-            
-            <h1>Email Inviata!</h1>
+      <>
+        <Header />
+        <div className="forgot-password-page">
+          <div className="forgot-password-container">
+            <div className="forgot-password-success">
+              <div className="success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="20,6 9,17 4,12"></polyline>
+                </svg>
+              </div>
+              
+              <h1>Email Inviata!</h1>
             
             <p className="success-message">
               Se un account con l&apos;indirizzo <strong>{email}</strong> esiste, 
@@ -94,8 +96,7 @@ const ForgotPasswordPage = () => {
                 type="button" 
                 className="resend-link"
                 onClick={() => {
-                  setIsSubmitted(false);
-                  setEmail('');
+                  setIsSubmitted(false);                  setEmail('');
                 }}
               >
                 Non hai ricevuto l&apos;email? Riprova
@@ -104,19 +105,21 @@ const ForgotPasswordPage = () => {
           </div>
         </div>
       </div>
+      </>
     );
   }
-
   return (
-    <div className="forgot-password-page">
-      <div className="forgot-password-container">
-        <div className="forgot-password-header">
-          <h1>Password Dimenticata?</h1>
-          <p>
-            Inserisci il tuo indirizzo email e ti invieremo un link per 
-            reimpostare la password.
-          </p>
-        </div>
+    <>
+      <Header />
+      <div className="forgot-password-page">
+        <div className="forgot-password-container">
+          <div className="forgot-password-header">
+            <h1>Password Dimenticata?</h1>
+            <p>
+              Inserisci il tuo indirizzo email e ti invieremo un link per 
+              reimpostare la password.
+            </p>
+          </div>
 
         <form onSubmit={handleSubmit} className="forgot-password-form">
           <div className="form-group">
@@ -174,8 +177,7 @@ const ForgotPasswordPage = () => {
             <div className="help-content">
               <p>Se continui ad avere difficoltà:</p>
               <ul>
-                <li>Verifica che l&apos;indirizzo email sia corretto</li>
-                <li>Controlla la cartella spam/junk</li>
+                <li>Verifica che l&apos;indirizzo email sia corretto</li>                <li>Controlla la cartella spam/junk</li>
                 <li>Assicurati che l&apos;account sia stato registrato con questa email</li>
                 <li>Contatta il supporto se il problema persiste</li>
               </ul>
@@ -184,6 +186,7 @@ const ForgotPasswordPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

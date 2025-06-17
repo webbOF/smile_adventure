@@ -140,9 +140,14 @@
   border: 2px solid rgba(99, 102, 241, 0.1);
   border-radius: 12px;
   font-size: 1rem;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
-  color: #1e293b;
+  color: white !important;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .form-group input:focus,
@@ -151,7 +156,8 @@
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  background: white;
+  background: rgba(0, 0, 0, 0.4);
+  color: white !important;
 }
 
 .form-group input.error,

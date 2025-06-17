@@ -83,6 +83,33 @@
   scroll-behavior: auto !important;
 }
 
+/* Global input text color override */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="search"],
+input[type="url"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+  color: white !important;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="search"]::placeholder,
+input[type="url"]::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
 /* Screen Reader Optimizations */
 .smile-theme-screen-reader .visually-hidden {
   position: absolute;

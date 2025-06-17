@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, Button } from '../components/UI';
+import { Layout, Button, Header } from '../components/UI';
 import PhotoUpload from '../components/PhotoUpload';
 import SensoryProfileEditor from '../components/SensoryProfileEditor';
 import { childrenService } from '../services/childrenService';
@@ -152,9 +152,8 @@ const ChildCreatePage = () => {
   };
 
   const calculatedAge = formData.birth_date ? calculateAge(formData.birth_date) : null;
-
   return (
-    <Layout>
+    <Layout header={<Header />}>
       <div className="child-create-page">
         <div className="page-header">
           <h1>➕ Aggiungi Nuovo Bambino</h1>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Layout, Button, Card } from '../components/UI';
+import { Layout, Button, Card, Header } from '../components/UI';
 import { ProfileCompletionBar, EnhancedUserPreferences } from '../components/Profile';
 import profileService from '../services/profileService';
 import { authService } from '../services/authService';
@@ -535,9 +535,8 @@ const ProfilePage = () => {
       </div>
     </Card>
   );
-
   return (
-    <Layout>
+    <Layout header={<Header />}>
       <div className="profile-page">
         <div className="profile-header">
           <h1>Il Mio Profilo</h1>

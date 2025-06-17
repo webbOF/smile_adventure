@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Card, Button } from '../components/UI';
+import { Card, Button, Header } from '../components/UI';
 import Layout from '../components/UI/Layout';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../utils/constants';
@@ -96,9 +96,8 @@ const AboutUsPage = () => {
       description: "Riconoscimento come migliore innovazione in ambito sanitario pediatrico."
     }
   ];
-
   return (
-    <Layout>
+    <Layout header={<Header />}>
       <div className="about-page">
         {/* Hero Section */}
         <section className="about-hero">

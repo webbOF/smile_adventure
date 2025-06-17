@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { validateEmail, validatePassword } from '../utils/validation';
 import notificationService from '../services/notificationService';
 import { ROUTES } from '../utils/constants';
+import { Header } from '../components/UI';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -94,18 +95,19 @@ const LoginPage = () => {
       setIsSubmitting(false);
     }
   };
-
   return (
-    <div className="auth-page">
-      <div className="auth-background">
-        <div className="gradient-orb orb-1"></div>
-        <div className="gradient-orb orb-2"></div>
-        <div className="gradient-orb orb-3"></div>        <div className="floating-particles">
-          {Array.from({ length: 15 }, (_, i) => (
-            <div key={`particle-${i}`} className={`particle particle-${i + 1}`}></div>
-          ))}
+    <>
+      <Header />
+      <div className="auth-page">
+        <div className="auth-background">
+          <div className="gradient-orb orb-1"></div>
+          <div className="gradient-orb orb-2"></div>
+          <div className="gradient-orb orb-3"></div>          <div className="floating-particles">
+            {Array.from({ length: 15 }, (_, i) => (
+              <div key={`particle-${i}`} className={`particle particle-${i + 1}`}></div>
+            ))}
+          </div>
         </div>
-      </div>
       
       <div className="auth-container">
         <div className="auth-card">
@@ -209,13 +211,13 @@ const LoginPage = () => {
             <p className="auth-footer-text">
               Non hai un account?{' '}
               <Link to={ROUTES.REGISTER} className="auth-link">
-                Registrati qui
-              </Link>
+                Registrati qui              </Link>
             </p>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 };
 

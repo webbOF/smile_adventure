@@ -242,10 +242,30 @@
 .form-label {
   display: block;
   font-weight: 600;
-  color: #374151;
+  color: white !important;
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
   letter-spacing: 0.025em;
+}
+
+/* Regola specifica per l'etichetta email */
+label[for="email"].form-label {
+  color: white !important;
+}
+
+/* Regola specifica per l'etichetta password */
+label[for="password"].form-label {
+  color: white !important;
+}
+
+/* Forza il bianco su tutte le label del form */
+.auth-form label {
+  color: white !important;
+}
+
+/* Regola specifica per il testo del checkbox */
+.form-options .checkbox-label {
+  color: white !important;
 }
 
 .input-wrapper {
@@ -262,16 +282,21 @@
   font-size: 1rem;
   font-weight: 400;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(255, 255, 255, 0.8);
-  color: #374151;
+  background: rgba(0, 0, 0, 0.3);
+  color: white !important;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .form-input:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.4);
   transform: translateY(-1px);
+  color: white !important;
 }
 
 .form-input.error {
@@ -280,8 +305,8 @@
 }
 
 .form-input:disabled {
-  background: rgba(249, 250, 251, 0.8);
-  color: #9ca3af;
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.5);
   cursor: not-allowed;
 }
 
@@ -367,7 +392,7 @@
 }
 
 .checkbox-label {
-  color: #374151;
+  color: white !important;
   font-size: 0.95rem;
   font-weight: 500;
 }
@@ -562,9 +587,8 @@
   .auth-subtitle {
     color: #d1d5db;
   }
-  
   .form-label {
-    color: #e5e7eb;
+    color: white !important;
   }
   
   .form-input {
@@ -575,10 +599,11 @@
   
   .form-input:focus {
     background: rgba(31, 41, 55, 0.95);
+    color: #ffffff;
   }
   
   .checkbox-label,
   .auth-footer-text {
-    color: #d1d5db;
+    color: white !important;
   }
 }

@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { validateForm } from '../utils/validation';
 import notificationService from '../services/notificationService';
 import { USER_ROLES, ROUTES } from '../utils/constants';
+import { Header } from '../components/UI';
 import './RegisterPage.css';
 
 const RegisterPage = () => {
@@ -130,19 +131,20 @@ const RegisterPage = () => {
     { value: USER_ROLES.PARENT, label: 'Genitore/Tutore' },
     { value: USER_ROLES.PROFESSIONAL, label: 'Professionista Sanitario' }
   ];
-
   return (
-    <div className="auth-page">
-      <div className="auth-background">
-        <div className="gradient-orb orb-1"></div>
-        <div className="gradient-orb orb-2"></div>
-        <div className="gradient-orb orb-3"></div>
-        <div className="floating-particles">
-          {Array.from({ length: 15 }, (_, i) => (
-            <div key={`particle-${i}`} className={`particle particle-${i + 1}`}></div>
-          ))}
+    <>
+      <Header />
+      <div className="auth-page">
+        <div className="auth-background">
+          <div className="gradient-orb orb-1"></div>
+          <div className="gradient-orb orb-2"></div>
+          <div className="gradient-orb orb-3"></div>
+          <div className="floating-particles">
+            {Array.from({ length: 15 }, (_, i) => (
+              <div key={`particle-${i}`} className={`particle particle-${i + 1}`}></div>
+            ))}
+          </div>
         </div>
-      </div>
       
       <div className="auth-container">
         <div className="auth-card">
@@ -354,14 +356,14 @@ const RegisterPage = () => {
           <div className="auth-footer">
             <p className="auth-footer-text">
               Hai già un account?{' '}
-              <Link to={ROUTES.LOGIN} className="auth-link">
-                Accedi qui
+              <Link to={ROUTES.LOGIN} className="auth-link">                Accedi qui
               </Link>
             </p>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 };
 

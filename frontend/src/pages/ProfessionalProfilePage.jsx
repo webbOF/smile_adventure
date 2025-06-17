@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Layout, Button, Card } from '../components/UI';
+import { Layout, Button, Card, Header } from '../components/UI';
 import professionalService from '../services/professionalService';
 import notificationService from '../services/notificationService';
 import './ProfessionalProfilePage.css';
@@ -345,9 +345,8 @@ const ProfessionalProfilePage = () => {
       </div>
     </Card>
   );
-
   return (
-    <Layout>
+    <Layout header={<Header />}>
       <div className="professional-profile-page">
         <div className="professional-header">
           <h1>Profilo Professionale</h1>
