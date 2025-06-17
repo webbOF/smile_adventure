@@ -6,7 +6,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Button, Card } from '../UI';
+import { Button, Card, Header } from '../UI';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -69,51 +69,17 @@ const HomePage = () => {
       text: 'Gli analytics comportamentali mi permettono di personalizzare meglio le terapie per ogni bambino.'
     }
   ];
-
   return (
-    <div className="homepage">      {/* Header/Navigation */}
-      <header className="homepage-header">
-        <div className="homepage-nav">
-          <div className="homepage-logo">
-            <h1>🌟 Smile Adventure</h1>
-          </div>
-          <div className="homepage-nav-links">
-            {isAuthenticated ? (
-              <>
-                <Link to="/dashboard" className="nav-link">
-                  Dashboard
-                </Link>
-                <Button 
-                  variant="primary" 
-                  size="small"
-                  onClick={() => navigate('/dashboard')}
-                >
-                  Vai alla Dashboard
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="nav-link">
-                  Accedi
-                </Link>
-                <Link to="/register">
-                  <Button variant="primary" size="small">
-                    Registrati
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="homepage">
+      {/* Utilizziamo il componente Header esistente */}
+      <Header title="Smile Adventure" />
 
       {/* Hero Section */}
       <section className="homepage-hero">
         <div className="homepage-hero-content">
-          <div className="homepage-hero-text">
-            <h1 className="homepage-hero-title">
-              Trasforma l&apos;esperienza sanitaria dei bambini con 
-              <span className="highlight"> ASD</span>
+          <div className="homepage-hero-text">            <h1 className="homepage-hero-title">
+              Trasforma l&apos;esperienza sanitaria dei bambini con{' '}
+              <span className="highlight">ASD</span>
             </h1>
             <p className="homepage-hero-subtitle">
               Una piattaforma gamificata che aiuta i bambini con Autism Spectrum Disorder 
@@ -317,12 +283,18 @@ const HomePage = () => {
               <li><Link to="/register?role=parent">Registrati</Link></li>
               <li><Link to="/login">Accedi</Link></li>
             </ul>
-          </div>
-          <div className="homepage-footer-section">
+          </div>          <div className="homepage-footer-section">
             <h4>Per Professionisti</h4>
             <ul>
               <li><Link to="/register?role=professional">Registrati</Link></li>
               <li><Link to="/login">Accedi</Link></li>
+            </ul>
+          </div>
+          <div className="homepage-footer-section">
+            <h4>Risorse</h4>
+            <ul>
+              <li><Link to="/articles">Articoli</Link></li>
+              <li><Link to="/about-us">Chi Siamo</Link></li>
             </ul>
           </div>
           <div className="homepage-footer-section">

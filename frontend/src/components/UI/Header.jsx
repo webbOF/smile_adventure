@@ -1,6 +1,13 @@
 /**
  * Header Component
- * Navigation header con menu context-aware per diversi stati utente
+ * Navigation header con menu c  // Navigation items per utenti non autenticati
+  const getPublicNavItems = () => [
+    { label: 'Home', path: ROUTES.HOME, icon: '🏠' },
+    { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
+    { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
+    { label: 'Accedi', path: ROUTES.LOGIN, icon: '🔐' },
+    { label: 'Registrati', path: ROUTES.REGISTER, icon: '📝' }
+  ];ware per diversi stati utente
  */
 
 import { useState } from 'react';
@@ -54,14 +61,13 @@ const Header = ({
       default:
         return user.role;
     }
-  };
-
-  // Navigation items per utenti non autenticati
+  };  // Navigation items per utenti non autenticati
   const getPublicNavItems = () => [
     { label: 'Home', path: ROUTES.HOME, icon: '🏠' },
+    { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
+    { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
     { label: 'Accedi', path: ROUTES.LOGIN, icon: '🔐' },
-    { label: 'Registrati', path: ROUTES.REGISTER, icon: '📝' },
-    { label: 'Info', path: '/info', icon: 'ℹ️' }
+    { label: 'Registrati', path: ROUTES.REGISTER, icon: '📝' }
   ];
   // Navigation items per genitori autenticati
   const getParentNavItems = () => [
@@ -69,20 +75,18 @@ const Header = ({
     { label: 'I Miei Bambini', path: ROUTES.CHILDREN, icon: '👶' },
     { label: 'Trova Professionisti', path: ROUTES.PROFESSIONAL_SEARCH, icon: '🔍' },
     { label: 'Profilo', path: ROUTES.PROFILE, icon: '👤' }
-  ];
-  // Navigation items per professionisti autenticati
+  ];  // Navigation items per professionisti autenticati
   const getProfessionalNavItems = () => [
     { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: '📊' },
     { label: 'Il Mio Profilo', path: ROUTES.PROFESSIONAL_PROFILE, icon: '👤' },
-    { label: 'Trova Colleghi', path: ROUTES.PROFESSIONAL_SEARCH, icon: '�' },
-    { label: 'Pazienti', path: '/clinical/patients', icon: '�' },
-    { label: 'Analytics', path: '/clinical/analytics', icon: '�' }
-  ];
-  // Navigation items per admin
+    { label: 'Trova Colleghi', path: ROUTES.PROFESSIONAL_SEARCH, icon: '👥' },
+    { label: 'Pazienti', path: '/clinical/patients', icon: '🏥' },
+    { label: 'Analytics', path: '/clinical/analytics', icon: '📈' }
+  ];  // Navigation items per admin
   const getAdminNavItems = () => [
     { label: 'Admin Dashboard', path: '/admin', icon: '⚡' },
     { label: 'Gestione Utenti', path: '/admin/users', icon: '👥' },
-    { label: 'Analytics', path: '/admin/analytics', icon: '�' },
+    { label: 'Analytics', path: '/admin/analytics', icon: '📊' },
     { label: 'Sistema', path: '/admin/system', icon: '⚙️' },
     { label: 'Profilo', path: ROUTES.PROFILE, icon: '👤' }
   ];
@@ -133,10 +137,20 @@ const Header = ({
               // Previene eventuali conflitti con altri event handlers
               e.stopPropagation();
             }}
-          >
-            <div className="header-logo">
+          >            <div className="header-logo">
               <span className="logo-icon">😊</span>
-              <h1 className="header-title">{title}</h1>
+              <h1 
+                className="header-title" 
+                style={{ 
+                  color: 'white !important',
+                  background: 'none !important',
+                  backgroundClip: 'unset !important',
+                  WebkitBackgroundClip: 'unset !important',
+                  WebkitTextFillColor: 'white !important'
+                }}
+              >
+                {title}
+              </h1>
             </div>
           </Link>
         </div>{/* Desktop Navigation */}

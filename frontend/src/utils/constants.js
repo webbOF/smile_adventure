@@ -81,6 +81,9 @@ export const ROUTES = {
   // Password reset
   PASSWORD_RESET_REQUEST: '/password-reset',
   PASSWORD_RESET_CONFIRM: '/password-reset/confirm',
+    // Public content pages
+  ARTICLES: '/articles',
+  ABOUT_US: '/about-us',
   
   // Error pages
   NOT_FOUND: '/404',

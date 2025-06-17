@@ -1,0 +1,93 @@
+/**
+ * Global Theme Override - Forza tema chiaro e rimuove adattamento sistema
+ */
+
+/* Forza tema chiaro per tutto il sito */
+:root {
+  color-scheme: light !important;
+  --text-color: #2d3748 !important;
+  --bg-color: #ffffff !important;
+  --primary-color: #1a365d !important;
+  --secondary-color: #2d3748 !important;
+}
+
+/* Override dei colori di sistema */
+* {
+  color-scheme: light !important;
+}
+
+/* Forza colori per tutti gli elementi - ma non il background */
+html, body {
+  color: #2d3748 !important;
+}
+
+/* Forza colori per input e form */
+input, textarea, select {
+  background-color: #ffffff !important;
+  color: #2d3748 !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Forza colori per i link */
+a {
+  color: #1a365d !important;
+}
+
+a:hover {
+  color: #2d3748 !important;
+}
+
+/* Forza colori per i bottoni */
+button {
+  color: inherit !important;
+}
+
+/* Disabilita media query per dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light !important;
+  }
+  
+  * {
+    color-scheme: light !important;
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+}
+
+/* Forza background bianco per alcuni contenitori - MA NON TUTTI */
+.content-section {
+  background-color: #ffffff !important;
+  color: #2d3748 !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Forza colori per le card - ma mantieni sfumature */
+.card-item {
+  background-color: #ffffff !important;
+  color: #2d3748 !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Forza colori per tutti i titoli */
+h1, h2, h3, h4, h5, h6 {
+  color: #2d3748 !important;
+}
+
+/* Forza colori per paragrafi e testo */
+p, span, div {
+  color: #4a5568 !important;
+}
+
+/* Eccezioni per elementi con colori specifici */
+.page-title,
+.homepage-hero h1,
+.homepage-hero p,
+.page-subtitle {
+  color: white !important;
+}
+
+.header,
+.header * {
+  color: white !important;
+}

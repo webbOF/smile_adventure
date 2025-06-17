@@ -4,12 +4,17 @@
 
 .header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: white !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
   border-bottom: 3px solid #5a6fd8;
+}
+
+/* Forza tutti gli elementi interni ad essere bianchi */
+.header * {
+  color: white !important;
 }
 
 .header-content {
@@ -30,13 +35,14 @@
 
 .header-logo-link {
   text-decoration: none;
-  color: inherit;
+  color: white !important;
 }
 
 .header-logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  color: white !important;
 }
 
 .logo-icon {
@@ -47,8 +53,13 @@
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: white;
+  color: white !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: none !important;
+  background-image: none !important;
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: white !important;
 }
 
 /* Navigation */
@@ -92,7 +103,7 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.9) !important;
   border-radius: 6px;
   font-weight: 500;
   font-size: 0.9rem;
@@ -104,7 +115,7 @@
 
 .nav-link:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: white;
+  color: white !important;
 }
 
 .nav-link:focus {
@@ -253,9 +264,10 @@
   .desktop-nav {
     display: none;
   }
-  
-  .mobile-nav {
+    .mobile-nav {
     display: block;
+    background: rgba(102, 126, 234, 0.95);
+    backdrop-filter: blur(10px);
   }
   
   .mobile-nav .nav-list {
@@ -267,12 +279,17 @@
   .mobile-nav .nav-item {
     width: 100%;
   }
-  
-  .mobile-nav .nav-link {
+    .mobile-nav .nav-link {
     width: 100%;
     justify-content: flex-start;
     padding: 0.75rem 1rem;
     border-radius: 4px;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  .mobile-nav .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white !important;
   }
   
   .mobile-menu-toggle {
@@ -321,70 +338,7 @@
   }
   
   .nav-link {
-    padding: 0.6rem 1.2rem;
-  }
-}
-
-/* Dark theme variants */
-.header--dark {
-  background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-  border-bottom-color: #4a5568;
-}
-
-/* Minimal variant */
-.header--minimal {
-  background: white;
-  color: #2d3748;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.header--minimal .header-title {
-  color: #2d3748;
-  text-shadow: none;
-}
-
-.header--minimal .nav-link {
-  color: #4a5568;
-}
-
-.header--minimal .nav-link:hover {
-  background: #f7fafc;
-  color: #2d3748;
-}
-
-.header--minimal .header-user-name {
-  color: #2d3748;
-}
-
-.header--minimal .header-user-role {
-  color: #718096;
-}
-
-.header--minimal .header-logout-btn {
-  background: #f7fafc !important;
-  border-color: #e2e8f0 !important;
-  color: #2d3748 !important;
-}
-
-.header--minimal .header-logout-btn:hover {
-  background: #edf2f7 !important;
-  border-color: #cbd5e0 !important;
-}
-
-.header--minimal .user-avatar {
-  background: #edf2f7;
-  color: #2d3748;
-  border-color: #e2e8f0;
-}
-
-.header--minimal .mobile-menu-toggle {
-  color: #2d3748;
-}
-
-.header--minimal .mobile-nav {
-  background: white;
-  border-top-color: #e2e8f0;
+    padding: 0.6rem 1.2rem;  }
 }
 
 /* Loading state */
@@ -401,31 +355,23 @@
   }
 }
 
-/* Focus styles for keyboard navigation */
+/* Focus styles for keyboard navigation - tutti con colori chiari */
 .header-logout-btn:focus {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline: 2px solid rgba(255, 255, 255, 0.8);
   outline-offset: 2px;
-}
-
-.header--minimal .header-logout-btn:focus {
-  outline-color: #4299e1;
 }
 
 .nav-link:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline: 2px solid rgba(255, 255, 255, 0.8);
   outline-offset: 2px;
 }
 
-.header--minimal .nav-link:focus-visible {
-  outline-color: #4299e1;
-}
-
 .user-info-link:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline: 2px solid rgba(255, 255, 255, 0.8);
   outline-offset: 2px;
 }
 
 .mobile-menu-toggle:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline: 2px solid rgba(255, 255, 255, 0.8);
   outline-offset: 2px;
 }

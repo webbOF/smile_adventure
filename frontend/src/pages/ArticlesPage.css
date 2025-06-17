@@ -1,0 +1,273 @@
+/* ArticlesPage Styles */
+.articles-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.articles-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.articles-hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary-600, #2563eb);
+}
+
+.articles-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary, #6b7280);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.articles-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.articles-filters {
+  flex: 0 0 250px;
+  position: sticky;
+  top: 2rem;
+}
+
+.articles-filters h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: var(--text-primary, #1f2937);
+}
+
+.category-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-filter {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.category-icon {
+  margin-right: 0.5rem;
+}
+
+.articles-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.article-card {
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.article-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.article-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.article-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.article-card:hover .article-image img {
+  transform: scale(1.05);
+}
+
+.article-category-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.article-content {
+  padding: 1.5rem;
+}
+
+.article-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary, #1f2937);
+  line-height: 1.4;
+}
+
+.article-excerpt {
+  color: var(--text-secondary, #6b7280);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.article-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.article-author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary, #1f2937);
+  font-weight: 500;
+}
+
+.author-icon {
+  font-size: 1.1rem;
+}
+
+.article-info {
+  display: flex;
+  gap: 1rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+.article-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  font-size: 0.8rem;
+  color: var(--primary-600, #2563eb);
+  background: var(--primary-50, #eff6ff);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+}
+
+.no-articles {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+.no-articles-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.no-articles h3 {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary, #1f2937);
+}
+
+.newsletter-section {
+  margin-top: 4rem;
+}
+
+.newsletter-card {
+  text-align: center;
+  background: linear-gradient(135deg, var(--primary-500, #3b82f6) 0%, var(--primary-600, #2563eb) 100%);
+  color: white;
+}
+
+.newsletter-content h3 {
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.newsletter-content p {
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.newsletter-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.newsletter-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .articles-page {
+    padding: 1rem;
+  }
+
+  .articles-hero h1 {
+    font-size: 2rem;
+  }
+
+  .articles-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .articles-filters {
+    flex: none;
+    position: static;
+  }
+
+  .category-filters {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .articles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .article-meta {
+    font-size: 0.8rem;
+  }
+
+  .article-info {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .articles-page {
+    padding: 0.5rem;
+  }
+
+  .article-content {
+    padding: 1rem;
+  }
+
+  .articles-hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .articles-subtitle {
+    font-size: 1rem;
+  }
+}
