@@ -46,11 +46,11 @@ const Modal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-backdrop">      <button
-        type="button"
+    <div className="modal-backdrop">
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      <div
         className="modal-overlay" 
         onClick={handleOverlayClick}
-        aria-label="Chiudi modale"
       >
         <dialog 
           className={`modal-container modal-${size}`}
@@ -81,9 +81,8 @@ const Modal = ({
         )}        {/* Modal Content */}
         <div className="modal-content">
           {children}
-        </div>
-      </dialog>
-      </button>
+        </div>      </dialog>
+      </div>
     </div>
   );
 };

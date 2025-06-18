@@ -1,6 +1,8 @@
 /**
  * Header Component
- * Navigation header con menu c  // Navigation items per utenti non autenticati
+ * Navigation header con menu c  // Navigation items per     { label: 'Trova Colleghi', path: ROUTES.PROFESSIONAL_SEARCH, icon: '👥' },
+    { label: 'Analytics', path: ROUTES.REPORTS, icon: '�' }, // usa stessa icona dashboard
+    { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },  { label: 'Reports', path: ROUTES.REPORTS, icon: '�' },enti non autenticati
   const getPublicNavItems = () => [
     { label: 'Home', path: ROUTES.HOME, icon: '🏠' },
     { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
@@ -80,16 +82,13 @@ const Header = ({
     { label: 'Feedback', path: ROUTES.FEEDBACK, icon: '📣' }, // Added Feedback link
     { label: 'Profilo', path: ROUTES.PROFILE, icon: '👤' }
   ];  // Navigation items per professionisti autenticati
-  const getProfessionalNavItems = () => [
-    { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: '📊' },
-    { label: 'Il Mio Profilo', path: ROUTES.PROFESSIONAL_PROFILE, icon: '👤' },
+  const getProfessionalNavItems = () => [    { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: '📊' },
     { label: 'Trova Colleghi', path: ROUTES.PROFESSIONAL_SEARCH, icon: '👥' },
-    { label: 'Pazienti', path: '/clinical/patients', icon: '🏥' },
-    { label: 'Analytics', path: '/clinical/analytics', icon: '📈' },
+    { label: 'Reports', path: ROUTES.REPORTS, icon: '�' },
     { label: 'Articoli', path: ROUTES.ARTICLES, icon: '📚' },
     { label: 'Chi Siamo', path: ROUTES.ABOUT_US, icon: 'ℹ️' },
     { label: 'Feedback', path: ROUTES.FEEDBACK, icon: '📣' }, // Added Feedback link
-  ];  // Navigation items per admin
+  ];// Navigation items per admin
   const getAdminNavItems = () => [
     { label: 'Admin Dashboard', path: '/admin', icon: '⚡' },
     { label: 'Gestione Utenti', path: '/admin/users', icon: '👥' },

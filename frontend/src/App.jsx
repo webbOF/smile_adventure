@@ -192,16 +192,7 @@ const AppRoutes = () => {
             <ProfessionalSearchPage />
           </ProtectedRoute>
         }
-      />      <Route
-        path="/clinical/*"
-        element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.PROFESSIONAL]}>
-            <div>Clinical routes (TODO: implement)</div>
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Reports routes - Available to Parents and Professionals */}
+      />      {/* Reports routes - Available to Parents and Professionals */}
       <Route
         path="/reports"
         element={

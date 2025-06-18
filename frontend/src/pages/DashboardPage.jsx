@@ -176,13 +176,6 @@ ParentDashboard.propTypes = {
 
 const ProfessionalDashboard = ({ user, dashboardData }) => (
   <div className="dashboard-container">
-    <div className="dashboard-header">      <div className="dashboard-welcome">
-        <h2 className="dashboard-title">
-          Dashboard Professionale
-        </h2>
-      </div>
-    </div>
-
     <div className="dashboard-stats-grid">
       <div className="dashboard-stat-card primary">
         <div className="dashboard-stat-icon">

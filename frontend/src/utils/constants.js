@@ -63,9 +63,8 @@ export const ROUTES = {
   CHILDREN_EDIT: '/children/:id/edit',
   CHILD_PROGRESS: '/children/:childId/progress',
   CHILD_ACTIVITIES: '/children/:childId/activities',
-  
-  // Professional routes
-  PROFESSIONAL_PROFILE: '/professional/profile',
+    // Professional routes
+  PROFESSIONAL_PROFILE: '/professional/professional-profile',
   PROFESSIONAL_SEARCH: '/professional/search',
   CLINICAL_ANALYTICS: '/professional/analytics',
   

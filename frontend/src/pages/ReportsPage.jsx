@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { reportsService } from '../services/reportsService';
 import { childrenService } from '../services/childrenService';
 import { ReportsFilters, StatsCards, ProgressChart, BarChart, DonutChart } from '../components/Reports';
-import { Layout } from '../components/UI';
+import { Layout, Header } from '../components/UI';
 import './ReportsPage.css';
 import '../components/Reports/Charts.css';
 
@@ -253,16 +253,14 @@ const ReportsPage = () => {
         </div>
       </Layout>
     );
-  }
-
-  return (
-    <Layout>
+  }  return (
+    <Layout header={<Header title="Smile Adventure" showUserInfo={true} showLogout={true} />}>
       <div className="reports-page">
         {/* Header */}
         <div className="reports-header">
           <h1>Reports e Analytics</h1>
           <p>Dashboard completo per monitorare i progressi e le attività</p>
-        </div>        {/* Filters */}
+        </div>{/* Filters */}
         <ReportsFilters
           childrenList={children}
           onFiltersChange={handleFiltersChange}
@@ -385,10 +383,10 @@ const ReportsPage = () => {
               <div className="professional-tools">
                 <div className="section-header">
                   <h3 className="section-title">Strumenti Professionali</h3>
-                </div>
-                <div className="tools-grid">                  <button className="tool-button" onClick={() => navigate('/clinical/analytics')}>
+                </div>                <div className="tools-grid">
+                  <button className="tool-button" onClick={() => navigate('/reports')}>
                     <span className="tool-icon">📊</span>{' '}
-                    Analytics Clinici
+                    Analytics Report
                   </button>
                   <button className="tool-button" onClick={() => navigate('/reports/export')}>
                     <span className="tool-icon">📄</span>{' '}
