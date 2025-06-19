@@ -120,21 +120,44 @@ const ProfileTab = ({ child }) => (
             )}
           </div>
         </div>
-      )}
-
-      {child.sensory_profile && (
+      )}      {child.sensory_profile && (
         <div className="info-section">
           <h3>🌈 Profilo Sensoriale</h3>
-          <div className="sensory-profile">
-            <div className="sensory-grid">
-              {Object.entries(child.sensory_profile).map(([key, value]) => (
-                <div key={key} className="sensory-item">
-                  <label>{key.replace(/_/g, ' ').toUpperCase()}:</label>
-                  <span className={`sensory-value level-${value}`}>
-                    {value}/5
-                  </span>
-                </div>
-              ))}
+          <div className="sensory-profile">            <div className="sensory-grid">
+              {Object.entries(child.sensory_profile).map(([key, value]) => {
+                // Handle null values
+                if (value === null || value === undefined) {
+                  return (
+                    <div key={key} className="sensory-item">
+                      <label>{key.replace(/_/g, ' ').toUpperCase()}:</label>
+                      <span className="sensory-value level-none">
+                        Non specificato
+                      </span>
+                    </div>
+                  );
+                }                // Handle both old format (number) and new format (object)
+                const displayValue = (typeof value === 'object' && value !== null)
+                  ? (value.sensitivity || 'Non specificato')
+                  : `${value}/5`;
+                
+                const sensitivityClass = (typeof value === 'object' && value !== null)
+                  ? `level-${value.sensitivity || 'none'}`
+                  : `level-${value}`;
+
+                return (
+                  <div key={key} className="sensory-item">
+                    <label>{key.replace(/_/g, ' ').toUpperCase()}:</label>
+                    <span className={`sensory-value ${sensitivityClass}`}>
+                      {displayValue}
+                    </span>
+                    {typeof value === 'object' && value !== null && value.preferences && Array.isArray(value.preferences) && value.preferences.length > 0 && (
+                      <div className="sensory-details">
+                        <small>Preferenze: {value.preferences.join(', ')}</small>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -303,13 +326,14 @@ const ChildDetailPage = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [deleting, setDeleting] = useState(false);
-
   useEffect(() => {
     const fetchChild = async () => {
       try {
         setLoading(true);
         setError(null);
+        console.log('ChildDetailPage useEffect - fetching child with ID:', id);
         const childData = await getChild(id);
+        console.log('ChildDetailPage - received child data:', childData);
         setChild(childData);
       } catch (err) {
         console.error('Error fetching child:', err);
@@ -320,6 +344,7 @@ const ChildDetailPage = () => {
     };
 
     if (id) {
+      console.log('ChildDetailPage useEffect - ID from useParams:', id);
       fetchChild();
     }
   }, [id]);

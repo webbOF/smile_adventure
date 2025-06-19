@@ -28,12 +28,13 @@ const ChildrenListContent = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [searchResults, setSearchResults] = useState(null);
   const [isSearchMode, setIsSearchMode] = useState(false);
-
   const fetchChildren = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
+      console.log('ChildrenListPage - fetching children, includeInactive:', includeInactive);
       const data = await childrenService.getChildren(includeInactive);
+      console.log('ChildrenListPage - received children data:', data);
       setChildren(data);
       setSearchResults(null);
       setIsSearchMode(false);
@@ -43,9 +44,8 @@ const ChildrenListContent = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [includeInactive]);
-
-  useEffect(() => {
+  }, [includeInactive]);useEffect(() => {
+    // Always fetch children when component mounts or dependencies change
     fetchChildren();
     
     // Check for success message from navigation state
@@ -54,7 +54,28 @@ const ChildrenListContent = () => {
       // Clear the message from history
       window.history.replaceState({}, document.title);
     }
-  }, [fetchChildren, location.state]);
+
+    // Force refresh if requested
+    if (location.state?.refresh) {
+      console.log('ChildrenListPage - refresh requested via navigation state');
+      setTimeout(() => fetchChildren(), 100); // Small delay to ensure state is updated
+    }
+  }, [fetchChildren, location.state, location.pathname]);
+
+  // Force refresh when returning to this page
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('ChildrenListPage - window focus detected, refreshing children list');
+      fetchChildren();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    
+    // Also refresh when the component mounts or when location changes
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchChildren]);
 
   const handleSearchResults = useCallback((results) => {
     setSearchResults(results);
@@ -111,8 +132,9 @@ const ChildrenListContent = () => {
   const handleCreateChild = () => {
     navigate(ROUTES.CHILDREN_NEW);
   };
-
   const handleViewChild = (childId) => {
+    console.log('handleViewChild called with childId:', childId);
+    console.log('Navigating to:', ROUTES.CHILDREN_DETAIL(childId));
     navigate(ROUTES.CHILDREN_DETAIL(childId));
   };
   const handleEditChild = (childId) => {
@@ -279,6 +301,8 @@ const ChildrenListContent = () => {
 const ChildCard = ({ child, selectionMode, onDelete, onEdit, onView, onViewProgress, onViewActivities }) => {
   const { isSelected, toggleSelection } = useBulkSelection();
   const selected = isSelected(child.id);
+
+  console.log('ChildCard rendered for child:', child.id, child.name, 'is_active:', child.is_active);
 
   const getAgeFromBirthDate = (birthDate) => {
     if (!birthDate) return 'N/A';

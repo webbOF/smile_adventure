@@ -73,6 +73,91 @@ const formatDateForInput = (dateString) => {
 };
 
 /**
+ * Convert sensory profile from object format to numeric format for the editor
+ * @param {Object} sensoryProfile - Sensory profile with object format
+ * @returns {Object} - Sensory profile with numeric format
+ */
+const convertSensoryProfileToNumeric = (sensoryProfile) => {
+  if (!sensoryProfile || typeof sensoryProfile !== 'object') {
+    return {
+      visual: 3,
+      auditory: 3,
+      tactile: 3,
+      proprioceptive: 3,
+      vestibular: 3
+    };
+  }
+
+  const sensitivityMap = {
+    'low': 2,
+    'moderate': 3,
+    'high': 4
+  };
+
+  const result = {};
+  
+  // Convert each domain from object to numeric value
+  Object.keys(sensoryProfile).forEach(key => {
+    const value = sensoryProfile[key];
+    
+    if (typeof value === 'object' && value !== null && value.sensitivity) {
+      // Convert object format to numeric
+      result[key] = sensitivityMap[value.sensitivity] || 3;
+    } else if (typeof value === 'number') {
+      // Already numeric, use as is
+      result[key] = value;
+    } else {
+      // Default value
+      result[key] = 3;
+    }
+  });
+
+  // Ensure all required domains exist
+  const requiredDomains = ['visual', 'auditory', 'tactile', 'proprioceptive', 'vestibular'];
+  requiredDomains.forEach(domain => {
+    if (result[domain] === undefined) {
+      result[domain] = 3;
+    }
+  });
+
+  return result;
+};
+
+/**
+ * Convert sensory profile from numeric format back to object format for backend
+ * @param {Object} numericProfile - Sensory profile with numeric format
+ * @returns {Object} - Sensory profile with object format
+ */
+const convertSensoryProfileToObject = (numericProfile) => {
+  if (!numericProfile || typeof numericProfile !== 'object') {
+    return {};
+  }
+
+  const sensitivityMap = {
+    1: 'low',
+    2: 'low', 
+    3: 'moderate',
+    4: 'high',
+    5: 'high'
+  };
+
+  const result = {};
+  
+  Object.keys(numericProfile).forEach(key => {
+    const value = numericProfile[key];
+    if (typeof value === 'number') {
+      result[key] = {
+        sensitivity: sensitivityMap[value] || 'moderate',
+        preferences: [],
+        triggers: []
+      };
+    }
+  });
+
+  return result;
+};
+
+/**
  * Child Edit Page Component
  */
 const ChildEditPage = () => {
@@ -105,22 +190,14 @@ const ChildEditPage = () => {
         setLoading(true);
         setErrors({});
         const childData = await getChild(id);
-        
-        const formattedData = {
+          const formattedData = {
           name: childData.name || '',
           birth_date: formatDateForInput(childData.birth_date),
           gender: childData.gender || '',
           asd_diagnosis: Boolean(childData.asd_diagnosis),
           diagnosis_notes: childData.diagnosis_notes || '',
           special_notes: childData.special_notes || '',
-          sensory_profile: {
-            visual: 3,
-            auditory: 3,
-            tactile: 3,
-            proprioceptive: 3,
-            vestibular: 3,
-            ...childData.sensory_profile
-          }
+          sensory_profile: convertSensoryProfileToNumeric(childData.sensory_profile)
         };
         
         setFormData(formattedData);
@@ -167,12 +244,12 @@ const ChildEditPage = () => {
     setSaving(true);
     setErrors({});
 
-    try {
-      // Calculate age and prepare data
+    try {      // Calculate age and prepare data
       const childData = {
         ...formData,
         age: calculateAge(formData.birth_date),
-        name: formData.name.trim()
+        name: formData.name.trim(),
+        sensory_profile: convertSensoryProfileToObject(formData.sensory_profile)
       };
 
       // Remove empty optional fields

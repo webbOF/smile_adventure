@@ -51,7 +51,10 @@ export const API_ENDPOINTS = {
   // Children endpoints  
   CHILDREN: {
     LIST: '/users/children',
-    BY_ID: (id) => `/users/children/${id}`,
+    CREATE: '/users/children',
+    DETAIL: (id) => `/users/children/${id}`,
+    UPDATE: (id) => `/users/children/${id}`,
+    DELETE: (id) => `/users/children/${id}`,
     SEARCH: '/users/children/search'
   },
 

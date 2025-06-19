@@ -59,10 +59,10 @@ export const ROUTES = {
     // Children routes (for PARENT role)
   CHILDREN: '/children',
   CHILDREN_NEW: '/children/new',
-  CHILDREN_DETAIL: '/children/:id',
-  CHILDREN_EDIT: '/children/:id/edit',
-  CHILD_PROGRESS: '/children/:childId/progress',
-  CHILD_ACTIVITIES: '/children/:childId/activities',
+  CHILDREN_DETAIL: (id) => `/children/${id}`,
+  CHILDREN_EDIT: (id) => `/children/${id}/edit`,
+  CHILD_PROGRESS: (childId) => `/children/${childId}/progress`,
+  CHILD_ACTIVITIES: (childId) => `/children/${childId}/activities`,
     // Professional routes
   PROFESSIONAL_PROFILE: '/professional/professional-profile',
   PROFESSIONAL_SEARCH: '/professional/search',
@@ -145,14 +145,14 @@ export const DEFAULTS = {
 export const generateChildRoute = (childId, type = 'detail') => {
   switch (type) {
     case 'detail':
-      return `/children/${childId}`;
+      return ROUTES.CHILDREN_DETAIL(childId);
     case 'edit':
-      return `/children/${childId}/edit`;
+      return ROUTES.CHILDREN_EDIT(childId);
     case 'progress':
-      return `/children/${childId}/progress`;
+      return ROUTES.CHILD_PROGRESS(childId);
     case 'activities':
-      return `/children/${childId}/activities`;
+      return ROUTES.CHILD_ACTIVITIES(childId);
     default:
-      return `/children/${childId}`;
+      return ROUTES.CHILDREN_DETAIL(childId);
   }
 };

@@ -581,9 +581,12 @@
 
 .homepage-user-types-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 3rem;
   margin-top: 3rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .homepage-user-type-card {
@@ -865,6 +868,14 @@
 }
 
 /* Responsive Design */
+/* Media query per tablet */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .homepage-user-types-grid {
+    max-width: 900px;
+    gap: 2rem;
+  }
+}
+
 @media (max-width: 768px) {
   .homepage-nav {
     padding: 1rem;

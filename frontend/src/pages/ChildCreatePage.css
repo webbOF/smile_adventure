@@ -1,9 +1,87 @@
 /* ChildCreatePage.css */
 
+/* GLOBAL OVERRIDE - Forza colori su TUTTI i campi input della pagina */
+.child-create-page {
+  color-scheme: light !important;
+}
+
+.child-create-page *,
+.child-create-page *::before,
+.child-create-page *::after {
+  color-scheme: light !important;
+}
+
+.child-create-page input *,
+.child-create-page textarea *,
+.child-create-page select * {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* Forza colori input - priorità massima */
+.child-create-page input,
+.child-create-page textarea,
+.child-create-page select,
+.child-create-page input:visited,
+.child-create-page input:active,
+.child-create-page input:valid,
+.child-create-page input:invalid {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  border: 2px solid #3b82f6 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  -webkit-text-fill-color: #000000 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  text-shadow: none !important;
+}
+
+/* Media query per disabilitare dark mode */
+@media (prefers-color-scheme: dark) {
+  .child-create-page input,
+  .child-create-page textarea,
+  .child-create-page select {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+  }
+}
+
+.child-create-page input::placeholder,
+.child-create-page textarea::placeholder {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #6b7280 !important;
+}
+
+.child-create-page input:focus,
+.child-create-page textarea:focus,
+.child-create-page select:focus {
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* Forza tutti i selettori possibili per il testo digitato */
+.child-create-page input[type="text"],
+.child-create-page input[type="email"],
+.child-create-page input[type="tel"],
+.child-create-page input[type="date"],
+.child-create-page input[type="password"],
+.child-create-page textarea,
+.child-create-page select {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  text-shadow: none !important;
+}
+
 .child-create-page {
   width: 100%;
   padding: 2rem;
   min-height: 100vh;
+  color-scheme: light !important;
 }
 
 /* Page Header */
@@ -58,7 +136,7 @@
 .form-section h2 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #1f2937 !important;
   margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
@@ -93,11 +171,12 @@
 
 .form-group label {
   font-weight: 600;
-  color: #374151;
+  color: #1f2937 !important;
   font-size: 0.95rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Form Inputs */
@@ -105,34 +184,52 @@
 .form-group select,
 .form-group textarea {
   padding: 1rem 1.25rem;
-  border: 2px solid rgba(99, 102, 241, 0.1);
+  border: 2px solid #3b82f6 !important;
   border-radius: 12px;
   font-size: 1rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: #ffffff !important;
   transition: all 0.3s ease;
-  color: white !important;
+  color: #000000 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  -webkit-text-fill-color: #000000 !important;
+  text-shadow: none !important;
+}
+
+/* Specifico per tutti i tipi di input */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="date"],
+.form-group input[type="password"],
+.form-group textarea,
+.form-group select {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
 }
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280 !important;
+  opacity: 1 !important;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  background: rgba(0, 0, 0, 0.4);
-  color: white !important;
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+  background: #ffffff !important;
+  color: #000000 !important;
 }
 
 .form-group input.error,
 .form-group select.error,
 .form-group textarea.error {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3) !important;
+  background: #ffffff !important;
+  color: #000000 !important;
 }
 
 .form-group input:disabled,
@@ -140,7 +237,9 @@
 .form-group textarea:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: rgba(248, 250, 252, 0.8);
+  background: #f9fafb !important;
+  color: #6b7280 !important;
+  border-color: #d1d5db !important;
 }
 
 /* Two column layout for larger screens */

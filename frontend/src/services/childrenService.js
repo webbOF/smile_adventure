@@ -139,27 +139,16 @@ export const childrenService = {
    * Get all children for current user
    * @param {boolean} [includeInactive=false] - Include inactive children
    * @returns {Promise<Child[]>}
-   */
-  async getChildren(includeInactive = false) {
+   */  async getChildren(includeInactive = false) {
     try {
-      const params = new URLSearchParams();
-      if (includeInactive) {
-        params.append('include_inactive', 'true');
-      }
-      
-      // Utilizza la proprietà .LIST per ottenere la stringa URL corretta
-      const baseUrl = API_ENDPOINTS.CHILDREN.LIST; 
-      
-      const queryString = params.toString();
-      // Costruisci l'URL finale correttamente
-      const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-      
-      const response = await axiosInstance.get(url);
+      console.log('childrenService.getChildren - includeInactive:', includeInactive);
+      const response = await axiosInstance.get(API_ENDPOINTS.CHILDREN.LIST, {
+        params: { include_inactive: includeInactive }
+      });
+      console.log('childrenService.getChildren - received data:', response.data);
       return response.data;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching children:', error.response?.data || error.message, error);
-      }
+      console.error('Error fetching children:', error);
       throw error;
     }
   },
@@ -168,17 +157,21 @@ export const childrenService = {
    * Get child by ID
    * @param {number} childId
    * @returns {Promise<Child>}
-   */
-  async getChild(childId) {
+   */  async getChild(childId) {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.CHILDREN}/${childId}`);
-      return response.data;    } catch (error) {
+      const endpoint = API_ENDPOINTS.CHILDREN.DETAIL(childId);
+      console.log('getChild called with childId:', childId);
+      console.log('Making API call to endpoint:', endpoint);
+      const response = await axiosInstance.get(endpoint);
+      console.log('getChild response:', response.data);
+      return response.data;
+    } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Error fetching child:', error.response?.data || error.message);
       }
       throw error;
     }
-  },  /**
+  },/**
    * Create new child
    * @param {ChildCreateRequest} childData
    * @returns {Promise<Child>}
@@ -200,11 +193,13 @@ export const childrenService = {
         behavioral_notes: childData.behavioralNotes || childData.behavioral_notes || '',
         communication_style: childData.communicationStyle || childData.communication_style || 'verbal',
         communication_notes: childData.communicationNotes || childData.communication_notes || ''
-      };const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN, backendData);
+      };      const response = await axiosInstance.post(API_ENDPOINTS.CHILDREN.CREATE, backendData);
+      
+      console.log('childrenService.createChild - child created successfully:', response.data);
       
       // Notifica di successo
       notificationService.childCreated(backendData.name);
-        return response.data;    } catch (error) {
+        return response.data;} catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Error creating child:', error.response?.data || error.message);
       }
@@ -284,7 +279,7 @@ export const childrenService = {
     try {
       const backendData = this._transformUpdateData(childData);
 
-      const response = await axiosInstance.put(`${API_ENDPOINTS.CHILDREN}/${childId}`, backendData);
+      const response = await axiosInstance.put(API_ENDPOINTS.CHILDREN.UPDATE(childId), backendData);
       
       // Notifica di successo
       const childName = backendData.name || childData.name || 'Bambino';
@@ -305,7 +300,7 @@ export const childrenService = {
    */
   async deleteChild(childId, childName = null) {
     try {
-      const response = await axiosInstance.delete(`${API_ENDPOINTS.CHILDREN}/${childId}`);
+      const response = await axiosInstance.delete(API_ENDPOINTS.CHILDREN.DELETE(childId));
       
       // Notifica di successo
       const name = childName || 'Bambino';
@@ -431,7 +426,7 @@ export const childrenService = {
   async searchChildren(filters = {}) {
     try {
       const params = new URLSearchParams();
-        if (filters.search) params.append('search', filters.search);
+      if (filters.search) params.append('search', filters.search);
       if (filters.gender) params.append('gender', filters.gender);
       if (filters.minAge) params.append('min_age', filters.minAge.toString());
       if (filters.maxAge) params.append('max_age', filters.maxAge.toString());
@@ -440,7 +435,7 @@ export const childrenService = {
       if (filters.limit) params.append('limit', filters.limit.toString());
 
       const response = await axiosInstance.get(
-        `${API_ENDPOINTS.CHILDREN_SEARCH}?${params.toString()}`
+        `${API_ENDPOINTS.CHILDREN.SEARCH}?${params.toString()}`
       );
       return response.data;
     } catch (error) {

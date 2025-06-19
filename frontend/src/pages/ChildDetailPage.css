@@ -346,6 +346,23 @@
 .sensory-value.level-3 { background: #eab308; }
 .sensory-value.level-4 { background: #22c55e; }
 .sensory-value.level-5 { background: #10b981; }
+.sensory-value.level-high { background: #ef4444; color: white; }
+.sensory-value.level-moderate { background: #eab308; color: white; }
+.sensory-value.level-low { background: #22c55e; color: white; }
+.sensory-value.level-none { background: #6b7280; color: white; }
+.sensory-value.level-Non.specificato { background: #6b7280; color: white; }
+
+/* Sensory details */
+.sensory-details {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.sensory-details small {
+  color: #6b7280;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
 
 /* Special Notes */
 .special-notes p {

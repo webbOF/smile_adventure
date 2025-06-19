@@ -190,33 +190,46 @@ async def get_child_detail(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=CHILD_NOT_FOUND
             )
-        
-        # Get additional metrics for detailed response
-        activity_service = get_activity_service(db)
-        session_service = get_session_service(db)
-        
-        # Recent activity counts
-        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
-        recent_activities = activity_service.get_activities_by_child(child_id, limit=10)
-        recent_sessions = session_service.get_sessions_by_child(child_id, limit=5)
-        
-        # Current week points
-        current_week_points = sum(
-            activity.points_earned for activity in recent_activities
-            if activity.completed_at >= week_ago
-        )
-        
-        # Build detailed response
-        child_data = child.__dict__.copy()
-        child_data.update({
-            'recent_activities_count': len(recent_activities),
-            'recent_sessions_count': len(recent_sessions),
-            'current_week_points': current_week_points
-        })
-        
-        logger.info(f"Child detail retrieved: {child.name} (ID: {child_id}) for user {current_user.id}")
-        
-        return ChildDetailResponse.model_validate(child_data)
+          # Get additional metrics for detailed response (with safe fallbacks)
+        try:
+            activity_service = get_activity_service(db)
+            session_service = get_session_service(db)
+            
+            # Recent activity counts (with error handling)
+            week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+            recent_activities = []
+            recent_sessions = []
+            current_week_points = 0
+            
+            try:
+                recent_activities = activity_service.get_activities_by_child(child_id, limit=10) or []
+                recent_sessions = session_service.get_sessions_by_child(child_id, limit=5) or []
+                
+                # Current week points (safe calculation)
+                current_week_points = sum(
+                    getattr(activity, 'points_earned', 0) for activity in recent_activities
+                    if hasattr(activity, 'completed_at') and 
+                       activity.completed_at and activity.completed_at >= week_ago
+                )
+            except Exception as metrics_error:
+                logger.warning(f"Error calculating metrics for child {child_id}: {str(metrics_error)}")
+            
+            # Build detailed response using model conversion
+            child_response = ChildDetailResponse.model_validate(child)
+            
+            # Update with additional computed fields
+            child_response.recent_activities_count = len(recent_activities)
+            child_response.recent_sessions_count = len(recent_sessions)
+            child_response.current_week_points = current_week_points
+            
+            logger.info(f"Child detail retrieved: {child.name} (ID: {child_id}) for user {current_user.id}")
+            
+            return child_response
+            
+        except Exception as detail_error:
+            logger.error(f"Error building detailed response for child {child_id}: {str(detail_error)}")
+            # Fallback to basic response
+            return ChildDetailResponse.model_validate(child)
         
     except HTTPException:
         raise

@@ -129,13 +129,14 @@ const ChildCreatePage = () => {
 
       if (!childData.special_notes?.trim()) {
         delete childData.special_notes;
-      }
-
-      const newChild = await childrenService.createChild(childData);
+      }      const newChild = await childrenService.createChild(childData);
       
-      // Navigate to the new child's detail page
-      navigate(ROUTES.CHILDREN_DETAIL(newChild.id), {
-        state: { message: `Profilo di ${newChild.name} creato con successo!` }
+      // Navigate back to children list with success message
+      navigate(ROUTES.CHILDREN, {
+        state: { 
+          message: `Profilo di ${newChild.name} creato con successo!`,
+          refresh: true // This will trigger a refresh
+        }
       });
     } catch (err) {
       console.error('Error creating child:', err);
@@ -165,8 +166,7 @@ const ChildCreatePage = () => {
           <div className="form-section">
             <h2>📋 Informazioni di Base</h2>
             
-            <div className="form-row">
-              <div className="form-group">
+            <div className="form-row">              <div className="form-group">
                 <label htmlFor="name">Nome completo *</label>
                 <input
                   type="text"
@@ -176,13 +176,17 @@ const ChildCreatePage = () => {
                   className={errors.name ? 'error' : ''}
                   placeholder="Inserisci il nome del bambino"
                   disabled={loading}
+                  style={{
+                    color: '#000000 !important',
+                    backgroundColor: '#ffffff !important',
+                    WebkitTextFillColor: '#000000 !important'
+                  }}
                 />
                 {errors.name && <span className="error-message">{errors.name}</span>}
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
+            <div className="form-row">              <div className="form-group">
                 <label htmlFor="birth_date">Data di nascita *</label>
                 <input
                   type="date"
@@ -192,14 +196,17 @@ const ChildCreatePage = () => {
                   className={errors.birth_date ? 'error' : ''}
                   max={new Date().toISOString().split('T')[0]}
                   disabled={loading}
+                  style={{
+                    color: '#000000 !important',
+                    backgroundColor: '#ffffff !important',
+                    WebkitTextFillColor: '#000000 !important'
+                  }}
                 />
                 {calculatedAge !== null && (
                   <span className="age-display">Età: {calculatedAge} anni</span>
                 )}
                 {errors.birth_date && <span className="error-message">{errors.birth_date}</span>}
-              </div>
-
-              <div className="form-group">
+              </div>              <div className="form-group">
                 <label htmlFor="gender">Genere *</label>
                 <select
                   id="gender"
@@ -207,6 +214,11 @@ const ChildCreatePage = () => {
                   onChange={(e) => handleInputChange('gender', e.target.value)}
                   className={errors.gender ? 'error' : ''}
                   disabled={loading}
+                  style={{
+                    color: '#000000 !important',
+                    backgroundColor: '#ffffff !important',
+                    WebkitTextFillColor: '#000000 !important'
+                  }}
                 >
                   <option value="">Seleziona genere</option>
                   <option value="M">Maschio</option>
@@ -214,7 +226,7 @@ const ChildCreatePage = () => {
                   <option value="O">Altro</option>
                 </select>
                 {errors.gender && <span className="error-message">{errors.gender}</span>}
-              </div>            </div>
+              </div></div>
           </div>
 
           {/* Photo Upload Section */}
