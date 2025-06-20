@@ -117,13 +117,14 @@ def get_db() -> Generator[Session, None, None]:
     Usage:
         @app.get("/")
         def read_items(db: Session = Depends(get_db)):
-            return db.query(Item).all()
-    """
+            return db.query(Item).all()    """
     db = SessionLocal()
     try:
         yield db
     except Exception as e:
-        logger.error(f"Database session error: {e}")
+        logger.error(f"Database session error: {type(e).__name__}: {str(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         db.rollback()
         raise
     finally:
